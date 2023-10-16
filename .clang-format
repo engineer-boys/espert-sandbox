@@ -21,7 +21,7 @@ AlwaysBreakBeforeMultilineStrings: 'false'
 AlwaysBreakTemplateDeclarations: MultiLine
 BinPackArguments: 'true'
 BinPackParameters: 'true'
-BreakBeforeBraces: Custom
+BreakBeforeBraces: Allman
 BreakBeforeTernaryOperators: 'true'
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
