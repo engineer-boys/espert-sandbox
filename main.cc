@@ -35,7 +35,4 @@ class SandBoxApp : public Espert::Application
   SandBoxApp() { push_layer(new CrazyLayer()); }
 };
 
-Espert::Application* Espert::createAppInstance()
-{
-  return new SandBoxApp();
-}
+Espert::Application* Espert::createAppInstance() { return new SandBoxApp(); }
