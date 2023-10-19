@@ -31,7 +31,7 @@ class CrazyLayer : public Espert::Layer
 
 class SandBoxApp : public Espert::Application
 {
-  public:
+ public:
   SandBoxApp() { push_layer(new CrazyLayer()); }
 };
 
