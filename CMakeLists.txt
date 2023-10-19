@@ -40,7 +40,7 @@ foreach (GLSL ${GLSL_SOURCE_FILES})
 endforeach (GLSL)
 
 add_custom_target(
-        shaders
+        sandbox_shaders
         DEPENDS ${SPIRV_BINARY_FILES}
 )
-add_dependencies(${PROJECT_NAME} shaders)
+add_dependencies(${PROJECT_NAME} sandbox_shaders)
