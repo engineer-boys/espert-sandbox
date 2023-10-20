@@ -13,7 +13,8 @@ class CrazyLayer : public Espert::Layer
   virtual void handle_event(Espert::Event& event) override
   {
     Espert::Event::try_hanlder<Espert::KeyPressedEvent>(
-        event, ESP_BIND_EVENT_FOR_FUN(CrazyLayer::my_crazy_event_handler));
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CrazyLayer::my_crazy_event_handler));
   }
 
   bool my_crazy_event_handler(Espert::KeyPressedEvent& event)
