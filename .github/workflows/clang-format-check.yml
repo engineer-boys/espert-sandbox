@@ -6,12 +6,16 @@ jobs:
   formatting-check:
     name: Formatting check
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        path:
+          - check: '.'
+            exclude: 'espert-core'
+        
     steps:
-    - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.14
+    - uses: actions/checkout@v3
+    - name: Run clang-format for C/C++ 
+      uses: jidicula/clang-format-action@v4.11.0
       with:
-        source: '.'
-        exclude: './espert-core'
-        extensions: 'h,hh,c,cc,cpp'
-        clangFormatVersion: 14
+        check-path: ${{ matrix.path }}
+        clang-format-version: '17'
