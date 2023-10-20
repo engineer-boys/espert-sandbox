@@ -5,7 +5,7 @@
 In order to build espert several development tools are needed. Make sure they are installed and reachable from console.
 
 Required packages:
-- gcc-11 and g++-11 or clang-16 and clang++-16
+- gcc and g++ or clang-17 and clang++-17
 - make
 - cmake
 - git
@@ -38,5 +38,5 @@ To format code use:
 ```
 python3 scripts/code-format.py
 ```
-By default it runs in src directory. You can change the directory by adding -p flag.\
+By default it runs on project main directory. You can change the directory by adding -p flag.\
 To fix coding style errors inplace add -i flag.
