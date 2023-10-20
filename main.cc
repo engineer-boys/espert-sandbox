@@ -8,6 +8,8 @@
 
 class CrazyLayer : public esp::Layer
 {
+  esp::renderer::Camera m_camera{};
+
   my_game::MyGameObject m_cube{};
   my_game::MyRenderSystem m_render_system{};
 
@@ -19,7 +21,7 @@ class CrazyLayer : public esp::Layer
             glm::vec3{0.0f, 0.0f, 0.0f});
 
     m_cube.m_model = model;
-    m_cube.m_transform.m_translation = {0.0f, 0.0f, 0.5f};
+    m_cube.m_transform.m_translation = {0.0f, 0.0f, 2.5f};
     m_cube.m_transform.m_scale = {0.5f, 0.5f, 0.5f};
   }
 
@@ -33,10 +35,13 @@ class CrazyLayer : public esp::Layer
   virtual void update() override
   {
     auto& scheduler = esp::EspRenderContext::get_scheduler();
+
+    m_camera.set_perspective(scheduler.get_aspect_ratio());
+
     if (auto command_buffer = scheduler.begin_frame())
     {
             scheduler.begin_swap_chain_render_pass(command_buffer);
-            m_render_system.render(command_buffer, m_cube);
+            m_render_system.render(command_buffer, m_cube, m_camera);
             scheduler.end_swap_chain_render_pass(command_buffer);
             scheduler.end_frame();
     }
