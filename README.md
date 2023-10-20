@@ -5,7 +5,7 @@
 In order to build espert several development tools are needed. Make sure they are installed and reachable from console.
 
 Required packages:
-- gcc/g++
+- gcc-11 and g++-11 or clang-16 and clang++-16
 - make
 - cmake
 - git

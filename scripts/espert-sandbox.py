@@ -35,6 +35,16 @@ PLATFORM_SUFFIXES = {
 }
 
 
+class BuildType(Enum):
+    DEBUG = 'debug'
+    RELEASE = 'release'
+
+
+class Compiler(Enum):
+    GCC = 'gcc'
+    CLANG = 'clang'
+
+
 class WSI(Enum):
     XCM = 'xcm'
     XLIB = 'xlib'
@@ -65,10 +75,15 @@ def get_wsi_type() -> str:
 def get_configure_command(args: Namespace) -> str:
     CMD = 'cmake -S . -B build'
 
-    if args.debug:
+    if args.build_type == BuildType.DEBUG:
         CMD += f' -DCMAKE_BUILD_TYPE=Debug'
-    elif args.release:
+    elif args.build_type == BuildType.RELEASE:
         CMD += f' -DCMAKE_BUILD_TYPE=Release'
+
+    if args.compiler == Compiler.GCC:
+        CMD += ' -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_CXX_COMPILER=g++-11'
+    elif args.compiler == Compiler.CLANG:
+        CMD += ' -DCMAKE_C_COMPILER=clang-16 -DCMAKE_CXX_COMPILER=clang++-16'
 
     platform = get_platform()
     if platform == Platofrm.LINUX:
@@ -144,14 +159,29 @@ def get_parser() -> ArgumentParser:
     build_type_group = main_parser.add_mutually_exclusive_group()
     build_type_group.add_argument('-d',
                                   '--debug',
-                                  default=True,
-                                  action='store_true',
+                                  action='store_const',
+                                  dest='build_type',
+                                  const=BuildType.DEBUG,
                                   help='Use debug configuration.')
     build_type_group.add_argument('-r',
                                   '--release',
-                                  default=False,
-                                  action='store_true',
+                                  action='store_const',
+                                  dest='build_type',
+                                  const=BuildType.RELEASE,
                                   help='Use release configuration.')
+    main_parser.set_defaults(build_type=BuildType.DEBUG)
+    
+    compiler_selection_group = main_parser.add_mutually_exclusive_group()
+    compiler_selection_group.add_argument('--gcc',
+                                          action='store_const',
+                                          dest='compiler',
+                                          const=Compiler.GCC,
+                                          help='Pick gcc and g++ as project compilers.')
+    compiler_selection_group.add_argument('--clang',
+                                          action='store_const',
+                                          dest='compiler',
+                                          const=Compiler.CLANG,
+                                          help='Pick clang and clang++ as project compilers.')
 
     main_parser.add_argument('-c',
                              '--clean',
