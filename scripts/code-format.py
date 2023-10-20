@@ -15,7 +15,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-CLANG_FORMAT = 'clang-format'
+CLANG_FORMAT = 'clang-format-17'
 
 
 def is_program_avaliable(prog: str) -> bool:
