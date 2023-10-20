@@ -17,5 +17,6 @@ jobs:
     - name: Run clang-format for C/C++ 
       uses: jidicula/clang-format-action@v4.11.0
       with:
-        check-path: ${{ matrix.path }}
+        check-path: ${{ matrix.path['check'] }}
+        exclude-regex: ${{ matrix.path['exclude'] }}
         clang-format-version: '17'
