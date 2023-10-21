@@ -16,13 +16,13 @@ class CrazyLayer : public esp::Layer
  public:
   CrazyLayer()
   {
-    std::shared_ptr<esp::ModelComponent> model = my_game::create_cube_model(
-            esp::EspRenderContext::get_device(),
-            glm::vec3{0.0f, 0.0f, 0.0f});
+    std::shared_ptr<esp::ModelComponent> model =
+        my_game::create_cube_model(esp::EspRenderContext::get_device(),
+                                   glm::vec3{ 0.0f, 0.0f, 0.0f });
 
-    m_cube.m_model = model;
-    m_cube.m_transform.m_translation = {0.0f, 0.0f, 2.5f};
-    m_cube.m_transform.m_scale = {0.5f, 0.5f, 0.5f};
+    m_cube.m_model                   = model;
+    m_cube.m_transform.m_translation = { 0.0f, 0.0f, 2.5f };
+    m_cube.m_transform.m_scale       = { 0.5f, 0.5f, 0.5f };
   }
 
  private:
@@ -40,25 +40,26 @@ class CrazyLayer : public esp::Layer
 
     if (auto command_buffer = scheduler.begin_frame())
     {
-            scheduler.begin_swap_chain_render_pass(command_buffer);
-            m_render_system.render(command_buffer, m_cube, m_camera);
-            scheduler.end_swap_chain_render_pass(command_buffer);
-            scheduler.end_frame();
+      scheduler.begin_swap_chain_render_pass(command_buffer);
+      m_render_system.render(command_buffer, m_cube, m_camera);
+      scheduler.end_swap_chain_render_pass(command_buffer);
+      scheduler.end_frame();
     }
 
     auto& rot_y = m_cube.m_transform.m_rotation.y;
     auto& rot_x = m_cube.m_transform.m_rotation.x;
-    rot_y = glm::mod(rot_x + 0.01f, glm::two_pi<float>());
-    rot_x = glm::mod(rot_y + 0.01f / 2, glm::two_pi<float>());
+    rot_y       = glm::mod(rot_x + 0.01f, glm::two_pi<float>());
+    rot_x       = glm::mod(rot_y + 0.01f / 2, glm::two_pi<float>());
   }
 
-  virtual void handle_event(esp::Event &event) override
+  virtual void handle_event(esp::Event& event) override
   {
-      esp::Event::
-          try_hanlder<esp::KeyPressedEvent>(event, ESP_BIND_EVENT_FOR_FUN(CrazyLayer::my_crazy_event_handler));
+    esp::Event::try_hanlder<esp::KeyPressedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CrazyLayer::my_crazy_event_handler));
   }
 
-  bool my_crazy_event_handler(esp::KeyPressedEvent &event)
+  bool my_crazy_event_handler(esp::KeyPressedEvent& event)
   {
     // implementation ...
     ESP_INFO("You pressed the button {0}", event.get_code());
@@ -74,19 +75,16 @@ class CrazyLayer : public esp::Layer
 class SandBoxApp : public esp::Application
 {
  private:
-	std::unique_ptr<esp::EspRenderContext> m_context;
+  std::unique_ptr<esp::EspRenderContext> m_context;
 
  public:
-    SandBoxApp()
-    {
-      // TODO: perhaps it would be better to store context directly in
-      //  Application and choose api here with some enum
-      m_context = esp::EspRenderContext::create_and_init_vulkan(get_window());
-      push_layer(new CrazyLayer());
-    }
+  SandBoxApp()
+  {
+    // TODO: perhaps it would be better to store context directly in
+    //  Application and choose api here with some enum
+    m_context = esp::EspRenderContext::create_and_init_vulkan(get_window());
+    push_layer(new CrazyLayer());
+  }
 };
 
-esp::Application *esp::createAppInstance()
-{
-  return new SandBoxApp();
-}
+esp::Application* esp::createAppInstance() { return new SandBoxApp(); }
