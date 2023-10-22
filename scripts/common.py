@@ -3,8 +3,9 @@ from enum import Enum
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.absolute()
-BUILD_DIR = ROOT / 'build'
+BUILD_DIR = ROOT / "build"
 SOURCE_DIR = ROOT
+
 
 class EnumAction(Action):
     def __init__(self, **kwargs):
