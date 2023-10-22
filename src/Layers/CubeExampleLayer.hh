@@ -1,7 +1,7 @@
 #ifndef LAYERS_CUBE_EXAMPLE_LAYER_H
 #define LAYERS_CUBE_EXAMPLE_LAYER_H
 
-#include "MyRenderSystem.hh"
+#include "../MyRenderSystem.hh"
 
 // libs
 #include "Espert.hh"
