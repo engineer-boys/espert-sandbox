@@ -55,7 +55,7 @@ def get_wsi_type() -> str:
 
 
 def get_configure_command(args: Namespace) -> str:
-    CMD = "cmake -S . -B build"
+    CMD = "cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 
     if args.build_type == BuildType.DEBUG:
         CMD += f" -DCMAKE_BUILD_TYPE=Debug"
@@ -75,9 +75,6 @@ def get_configure_command(args: Namespace) -> str:
         if wsi == "x11":
             wsi = "xlib"
         CMD += f" -DVKB_WSI_SELECTION={wsi.upper()}"
-
-    if args.export_compile_commands:
-        CMD += " -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
 
     return CMD
 
@@ -180,14 +177,6 @@ def get_parser() -> ArgumentParser:
         default=False,
         action="store_true",
         help="Clean out build directory first.",
-    )
-    main_parser.add_argument(
-        "-e",
-        "--export-compile-commands",
-        required=False,
-        default=False,
-        action="store_true",
-        help="Add CMAKE_EXPORT_COMPILE_COMMANDS to build.",
     )
     main_parser.add_argument(
         "-j",

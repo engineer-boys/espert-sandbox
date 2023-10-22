@@ -62,10 +62,10 @@ def run_analysis(command: str):
         entries = [args.path]
     else:
         entries = (
-            [entry for entry in args.path.glob("*.h")]
-            + [entry for entry in args.path.glob("*.hh")]
-            + [entry for entry in args.path.glob("*.c")]
-            + [entry for entry in args.path.glob("*.cc")]
+            [entry for entry in args.path.rglob("*.h")]
+            + [entry for entry in args.path.rglob("*.hh")]
+            + [entry for entry in args.path.rglob("*.c")]
+            + [entry for entry in args.path.rglob("*.cc")]
         )
 
     for entry in entries:
