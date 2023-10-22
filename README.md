@@ -16,27 +16,38 @@ All code dependecies are managed within project. To download all external module
 git submodule update --init --recursive
 ```
 
-To configure project run:
+To run project use:
 ```
-python3 scripts/espert-core.py configure
+python3 scripts/espert-sandbox.py run
+```
+The project will be configured and build automatically. You can configure project explicitly by runing:
+
+```
+python3 scripts/espert-sandbox.py configure
+```
+and build by running:
+```
+python3 scripts/espert-sandbox.py build
 ```
 
-To build project run:
-```
-python3 scripts/espert-core.py build
-```
-Running configure before build is not necessary as the script will take care of it.
-
-To run program use:
-```
-python3 scripts/espert-core.py run
-```
 
 ## Formatting
+
+Required dependencies for code formatting are:
+- clang-format-17
+- clang-tidy-17
 
 To format code use:
 ```
 python3 scripts/code-format.py
 ```
-By default it runs on project main directory. You can change the directory by adding -p flag.\
-To fix coding style errors inplace add -i flag.
+By default it will run both clang-format and clang-tidy. Keep in mind that clang-tidy works only if you use clang and clang++ as project compilers. To rebuild project with clang run
+```
+python3 scripts/espert-core.py -c --clang build
+```
+By default it runs in src/ directory. You can change the directory by adding -p flag.\
+To fix coding style errors inplace add -i flag. To fix suggestions add -x and to fix all errors add -e.\
+To learn more about code formatting options run
+```
+python3 scripts/code-format.py --help
+```
