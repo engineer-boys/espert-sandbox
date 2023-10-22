@@ -4,14 +4,16 @@ project(espert-sandbox VERSION 0.0.1 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
+file(GLOB_RECURSE SOURCES ${PROJECT_SOURCE_DIR}/src/*.cc)
+
 add_executable(${PROJECT_NAME}
-        main.cc
-        )
+    ${SOURCES}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
-        ${PROJECT_SOURCE_DIR}
-        ${PROJECT_SOURCE_DIR}/espert-core/src
-        )
+    ${PROJECT_SOURCE_DIR}/src
+    ${PROJECT_SOURCE_DIR}/espert-core/src
+)
 
 include_directories(${PROJECT_SOURCE_DIR})
 

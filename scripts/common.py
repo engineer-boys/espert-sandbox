@@ -4,7 +4,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent.absolute()
 BUILD_DIR = ROOT / "build"
-SOURCE_DIR = ROOT
+SOURCE_DIR = ROOT / "src"
 
 
 class EnumAction(Action):
