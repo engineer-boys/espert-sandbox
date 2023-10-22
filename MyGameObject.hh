@@ -1,5 +1,5 @@
-#ifndef ESPERT_SANDBOX__MY_GAME_OBJECT_H_
-#define ESPERT_SANDBOX__MY_GAME_OBJECT_H_
+#ifndef ESPERT_SANDBOX__MY_GAME_OBJECT_H
+#define ESPERT_SANDBOX__MY_GAME_OBJECT_H
 
 #include "Espert.hh"
 
@@ -16,8 +16,7 @@ namespace my_game
   };
 
   // temporary helper function, creates a 1x1x1 cube centered at offset
-  std::unique_ptr<esp::ModelComponent> create_cube_model(esp::EspDevice& device,
-                                                         glm::vec3 offset)
+  std::unique_ptr<esp::ModelComponent> create_cube_model(esp::EspDevice& device, glm::vec3 offset)
   {
     std::vector<esp::ModelComponent::Vertex> vertices{
 
@@ -78,4 +77,4 @@ namespace my_game
   }
 } // namespace my_game
 
-#endif // ESPERT_SANDBOX__MY_GAME_OBJECT_H_
+#endif // ESPERT_SANDBOX__MY_GAME_OBJECT_H
