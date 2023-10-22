@@ -22,4 +22,4 @@ class SandBoxApp : public esp::Application
   }
 };
 
-esp::Application* esp::createAppInstance() { return new SandBoxApp(); }
+esp::Application* esp::create_app_instance() { return new SandBoxApp(); }

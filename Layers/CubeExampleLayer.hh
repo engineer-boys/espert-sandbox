@@ -19,8 +19,7 @@ namespace my_game
     CubeExampleLayer()
     {
       std::shared_ptr<esp::ModelComponent> model =
-          my_game::create_cube_model(esp::EspRenderContext::get_device(),
-                                     glm::vec3{ 0.0f, 0.0f, 0.0f });
+          my_game::create_cube_model(esp::EspRenderContext::get_device(), glm::vec3{ 0.0f, 0.0f, 0.0f });
 
       m_cube.m_model                   = model;
       m_cube.m_transform.m_translation = { 0.0f, 0.0f, 2.5f };
@@ -56,9 +55,8 @@ namespace my_game
 
     virtual void handle_event(esp::Event& event) override
     {
-      esp::Event::try_hanlder<esp::KeyPressedEvent>(
-          event,
-          ESP_BIND_EVENT_FOR_FUN(CubeExampleLayer::my_crazy_event_handler));
+      esp::Event::try_hanlder<esp::KeyPressedEvent>(event,
+                                                    ESP_BIND_EVENT_FOR_FUN(CubeExampleLayer::my_crazy_event_handler));
     }
 
     bool my_crazy_event_handler(esp::KeyPressedEvent& event)
