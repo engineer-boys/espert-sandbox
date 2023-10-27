@@ -21,6 +21,14 @@ import sys
 GET_WSI_COMMAND = "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type | cut -d'=' -f2"
 NAME = "espert-sandbox"
 BIN_NAME = f'{NAME}{".exe" if sys.platform.startswith("win32") else ""}'
+LD_LIBRARY_PATH = (
+    BUILD_DIR
+    / "espert-core"
+    / "validation_layers"
+    / "lib"
+    / "libVkLayer_khronos_validation.so"
+)
+VK_LAYER_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "layers"
 
 
 class BuildType(Enum):
@@ -116,7 +124,9 @@ def run_espert(args: Namespace) -> None:
     if args.clean or not os.path.exists(BUILD_DIR / BIN_NAME):
         run_build(args)
 
-    run_command = f"./{BIN_NAME}"
+    run_command = (
+        f"LD_LIBRARY_PATH={LD_LIBRARY_PATH} VK_LAYER_PATH={VK_LAYER_PATH} ./{BIN_NAME}"
+    )
     run_command_detached(run_command, BUILD_DIR)
 
 
