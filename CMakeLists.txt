@@ -39,7 +39,7 @@ foreach (GLSL ${GLSL_SOURCE_FILES})
     set(SPIRV "${PROJECT_SOURCE_DIR}/resources/Shaders/${FILE_DIR}/${FILE_NAME}.spv")
     add_custom_command(
             OUTPUT ${SPIRV}
-            COMMAND $<TARGET_FILE:glslang-standalone> -V ${GLSL} -o ${SPIRV}
+            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/espert-core/bin/glslang -V ${GLSL} -o ${SPIRV}
             DEPENDS ${GLSL}
     )
     list(APPEND SPIRV_BINARY_FILES ${SPIRV})
