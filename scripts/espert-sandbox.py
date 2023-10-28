@@ -21,13 +21,7 @@ import sys
 GET_WSI_COMMAND = "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type | cut -d'=' -f2"
 NAME = "espert-sandbox"
 BIN_NAME = f'{NAME}{".exe" if sys.platform.startswith("win32") else ""}'
-LD_LIBRARY_PATH = (
-    BUILD_DIR
-    / "espert-core"
-    / "validation_layers"
-    / "lib"
-    / "libVkLayer_khronos_validation.so"
-)
+LD_LIBRARY_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "lib"
 VK_LAYER_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "layers"
 
 
