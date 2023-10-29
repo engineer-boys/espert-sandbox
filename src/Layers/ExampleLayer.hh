@@ -13,7 +13,11 @@ namespace my_game
     std::unique_ptr<ExamplePipelineLayout> m_pipeline_layout;
     std::unique_ptr<ExamplePipeline> m_pipeline;
 
-    std::vector<glm::vec2> m_square_pos    = { { -0.5f, -0.5f }, { -0.5f, 0.5f }, { 0.5f, 0.5f }, { 0.5f, -0.5f } };
+    std::vector<glm::vec2> m_square_pos = { { -0.05f, -0.05f },
+                                            { -0.05f, 0.05f },
+                                            { 0.05f, 0.05f },
+                                            { 0.05f, -0.05f } };
+    std::vector<glm::vec2> m_instance_pos{};
     std::vector<glm::vec3> m_square_color  = { { 1.0f, 0.0f, 0.0f },
                                                { 0.0f, 1.0f, 0.0f },
                                                { 0.0f, 0.0f, 1.0f },
@@ -26,6 +30,14 @@ namespace my_game
    public:
     ExampleLayer()
     {
+      for (float x = -.75f; x < 1.f; x += .25f)
+      {
+        for (float y = -.75f; y < 1.f; y += .25f)
+        {
+          m_instance_pos.emplace_back(x, y);
+        }
+      }
+
       ExamplePipelineConfigInfo pipeline_config{};
       ExamplePipeline::default_pipeline_config_info(pipeline_config);
 
@@ -36,8 +48,9 @@ namespace my_game
       m_pipeline        = builder.build_pipeline(pipeline_config);
 
       m_vertex_buffers = EspVertexBuffers::create();
-      m_vertex_buffers->add(m_square_pos.data(), sizeof(glm::vec2), m_square_pos.size());
-      m_vertex_buffers->add(m_square_color.data(), sizeof(glm::vec3), m_square_color.size());
+      m_vertex_buffers->add(m_square_pos.data(), sizeof(m_square_pos[0]), m_square_pos.size());
+      m_vertex_buffers->add(m_instance_pos.data(), sizeof(m_instance_pos[0]), m_instance_pos.size());
+      m_vertex_buffers->add(m_square_color.data(), sizeof(m_square_color[0]), m_square_color.size());
 
       m_square_index_buffer = EspIndexBuffer::create(m_square_indices.data(), m_square_indices.size());
     }
@@ -55,7 +68,7 @@ namespace my_game
 
       m_vertex_buffers->attach();
       m_square_index_buffer->attach();
-      EspCommandHandler::draw_indexed(m_square_indices.size());
+      EspCommandHandler::draw_indexed(m_square_indices.size(), m_instance_pos.size());
     }
 
     virtual void handle_event(esp::Event& event) override
