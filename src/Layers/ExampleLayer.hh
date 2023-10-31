@@ -8,20 +8,42 @@ using namespace esp;
 
 namespace my_game
 {
+  struct ExampleVertex
+  {
+    glm::vec2 position;
+    glm::vec3 color;
+  };
+
+  struct MVP
+  {
+    alignas(16) glm::mat4 model;
+    alignas(16) glm::mat4 view;
+    alignas(16) glm::mat4 proj;
+  };
+
+  static MVP get_new_mvp()
+  {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    MVP mvp{};
+    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.view  = glm::mat4(1.0f);
+    mvp.proj  = glm::mat4(1.0f);
+
+    return mvp;
+  }
+
   class ExampleLayer : public esp::Layer
   {
-    std::unique_ptr<ExamplePipelineLayout> m_pipeline_layout;
-    std::unique_ptr<ExamplePipeline> m_pipeline;
+    std::unique_ptr<EspPipeline> m_pipeline;
 
-    std::vector<glm::vec2> m_square_pos = { { -0.05f, -0.05f },
-                                            { -0.05f, 0.05f },
-                                            { 0.05f, 0.05f },
-                                            { 0.05f, -0.05f } };
-    std::vector<glm::vec2> m_instance_pos{};
-    std::vector<glm::vec3> m_square_color  = { { 1.0f, 0.0f, 0.0f },
-                                               { 0.0f, 1.0f, 0.0f },
-                                               { 0.0f, 0.0f, 1.0f },
-                                               { 0.0f, 1.0f, 0.0f } };
+    std::vector<ExampleVertex> m_square    = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+                                               { { -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+                                               { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+                                               { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } } };
     std::vector<uint32_t> m_square_indices = { 0, 1, 2, 2, 3, 0 };
 
     std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
@@ -30,27 +52,25 @@ namespace my_game
    public:
     ExampleLayer()
     {
-      for (float x = -.75f; x < 1.f; x += .25f)
-      {
-        for (float y = -.75f; y < 1.f; y += .25f)
-        {
-          m_instance_pos.emplace_back(x, y);
-        }
-      }
+      auto pp_layout = EspUniformMetaData::create();
+      pp_layout->establish_descriptor_set();
+      pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
 
-      ExamplePipelineConfigInfo pipeline_config{};
-      ExamplePipeline::default_pipeline_config_info(pipeline_config);
-
-      ExamplePipeline::Builder builder;
-      builder.set_vert_shader_path("../shaders/shader.vert.spv").set_frag_shader_path("../shaders/shader.frag.spv");
-
-      m_pipeline_layout = builder.build_pipeline_layout(pipeline_config);
-      m_pipeline        = builder.build_pipeline(pipeline_config);
+      auto builder = EspPipelineBuilder::create();
+      builder->set_shaders("../shaders/shader.vert.spv", "../shaders/shader.frag.spv");
+      builder->set_vertex_layouts({
+          VTX_LAYOUT(
+              sizeof(ExampleVertex),
+              0,
+              ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
+              ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
+      }                                                                                            /* VTX_LAYOUTS */
+      );
+      builder->set_pipeline_layout(std::move(pp_layout));
+      m_pipeline = builder->build_pipeline();
 
       m_vertex_buffers = EspVertexBuffers::create();
-      m_vertex_buffers->add(m_square_pos.data(), sizeof(m_square_pos[0]), m_square_pos.size());
-      m_vertex_buffers->add(m_instance_pos.data(), sizeof(m_instance_pos[0]), m_instance_pos.size());
-      m_vertex_buffers->add(m_square_color.data(), sizeof(m_square_color[0]), m_square_color.size());
+      m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
 
       m_square_index_buffer = EspIndexBuffer::create(m_square_indices.data(), m_square_indices.size());
     }
@@ -64,11 +84,16 @@ namespace my_game
 
     virtual void update() override
     {
-      m_pipeline->bind();
-
+      m_pipeline->attach();
       m_vertex_buffers->attach();
+
+      auto mvp = get_new_mvp();
+      m_pipeline->update_buffer_uniform(0, 0, sizeof(MVP), &mvp);
+
+      m_pipeline->attach_uniforms();
+
       m_square_index_buffer->attach();
-      EspCommandHandler::draw_indexed(m_square_indices.size(), m_instance_pos.size());
+      EspCommandHandler::draw_indexed(m_square_indices.size());
     }
 
     virtual void handle_event(esp::Event& event) override
