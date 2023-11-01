@@ -57,7 +57,7 @@ def get_wsi_type() -> str:
 
 
 def get_configure_command(args: Namespace) -> str:
-    CMD = "cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+    CMD = "cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G \"MinGW Makefiles\""
 
     if args.build_type == BuildType.DEBUG:
         CMD += f" -DCMAKE_BUILD_TYPE=Debug"

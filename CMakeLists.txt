@@ -21,7 +21,7 @@ add_subdirectory(espert-core)
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
         espert-core
-        )
+)
 
 
 ############## Build shaders #######################
@@ -31,6 +31,11 @@ file(GLOB_RECURSE GLSL_SOURCE_FILES
         "${PROJECT_SOURCE_DIR}/resources/Shaders/*.vert"
         )
 
+set(GLSLANG ${CMAKE_CURRENT_BINARY_DIR}/espert-core/bin/glslang)
+if (WIN32)
+        set(GLSLANG ${GLSLANG}.exe)
+endif()
+
 # run glslang compiler for every shader source file
 foreach (GLSL ${GLSL_SOURCE_FILES})
     get_filename_component(FILE_NAME ${GLSL} NAME)
@@ -39,7 +44,7 @@ foreach (GLSL ${GLSL_SOURCE_FILES})
     set(SPIRV "${PROJECT_SOURCE_DIR}/resources/Shaders/${FILE_DIR}/${FILE_NAME}.spv")
     add_custom_command(
             OUTPUT ${SPIRV}
-            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/espert-core/bin/glslang -V ${GLSL} -o ${SPIRV}
+            COMMAND ${GLSLANG} -V ${GLSL} -o ${SPIRV}
             DEPENDS ${GLSL}
     )
     list(APPEND SPIRV_BINARY_FILES ${SPIRV})
@@ -50,3 +55,4 @@ add_custom_target(
         DEPENDS ${SPIRV_BINARY_FILES}
 )
 add_dependencies(${PROJECT_NAME} sandbox_shaders)
+add_dependencies(sandbox_shaders espert-core)
