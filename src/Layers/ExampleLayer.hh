@@ -58,51 +58,38 @@ namespace my_game
     return mvp;
   }
 
-  class ExampleInstancingLayer : public esp::Layer
+  class ExampleLayer : public esp::Layer
   {
     std::unique_ptr<EspPipeline> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager_1;
     std::unique_ptr<EspUniformManager> m_uniform_manager_2;
 
-    std::vector<ExampleVertex> m_square    = { { { -0.05f, -0.05f }, { 1.0f, 0.0f, 0.0f } },
-                                               { { -0.05f, 0.05f }, { 0.0f, 1.0f, 0.0f } },
-                                               { { 0.05f, 0.05f }, { 0.0f, 0.0f, 1.0f } },
-                                               { { 0.05f, -0.05f }, { 0.0f, 1.0f, 0.0f } } };
+    std::vector<ExampleVertex> m_square    = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+                                               { { -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+                                               { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+                                               { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } } };
     std::vector<uint32_t> m_square_indices = { 0, 1, 2, 2, 3, 0 };
-    std::vector<glm::vec2> m_instance_pos{};
 
     std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
     std::unique_ptr<EspIndexBuffer> m_square_index_buffer;
 
    public:
-    ExampleInstancingLayer()
+    ExampleLayer()
     {
-      for (float x = -.75f; x < 1.f; x += .25f)
-      {
-        for (float y = -.75f; y < 1.f; y += .25f)
-        {
-          m_instance_pos.emplace_back(x, y);
-        }
-      }
-
       auto pp_layout = EspUniformMetaData::create();
       pp_layout->establish_descriptor_set();
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
 
       auto builder = EspPipelineBuilder::create();
-      builder->set_shaders("../shaders/InstancingExample/shader.vert.spv",
-                           "../shaders/InstancingExample/shader.frag.spv");
+      builder->set_shaders("../shaders/Example/shader.vert.spv", "../shaders/Example/shader.frag.spv");
       builder->set_vertex_layouts({
-          VTX_LAYOUT(sizeof(ExampleVertex),
-                     0,
-                     ESP_VERTEX_INPUT_RATE_VERTEX,
-                     ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
-                     ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))),
-          VTX_LAYOUT(sizeof(glm::vec2),
-                     1,
-                     ESP_VERTEX_INPUT_RATE_INSTANCE,
-                     ATTR(2, ESP_FORMAT_R32G32_SFLOAT, 0)) /* VTX_LAYOUT*/
-      }                                                    /* VTX_LAYOUTS */
+          VTX_LAYOUT(
+              sizeof(ExampleVertex),
+              0,
+              ESP_VERTEX_INPUT_RATE_VERTEX,
+              ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
+              ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
+      }                                                                                            /* VTX_LAYOUTS */
       );
       builder->set_pipeline_layout(std::move(pp_layout));
       m_pipeline          = builder->build_pipeline();
@@ -111,13 +98,12 @@ namespace my_game
 
       m_vertex_buffers = EspVertexBuffers::create();
       m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
-      m_vertex_buffers->add(m_instance_pos.data(), sizeof(m_instance_pos[0]), m_instance_pos.size());
 
       m_square_index_buffer = EspIndexBuffer::create(m_square_indices.data(), m_square_indices.size());
     }
 
    private:
-    virtual ~ExampleInstancingLayer() override {}
+    virtual ~ExampleLayer() override {}
 
     virtual void attach() override {}
 
@@ -127,7 +113,6 @@ namespace my_game
     {
       m_pipeline->attach();
       m_vertex_buffers->attach();
-      m_square_index_buffer->attach();
 
       auto mvp = get_new_mvp();
       m_uniform_manager_1->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
@@ -142,14 +127,14 @@ namespace my_game
       m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
       m_uniform_manager_2->attach();
 
-      EspCommandHandler::draw_indexed(m_square_indices.size(), m_instance_pos.size());
+      m_square_index_buffer->attach();
+      EspCommandHandler::draw_indexed(m_square_indices.size());
     }
 
     virtual void handle_event(esp::Event& event) override
     {
-      esp::Event::try_hanlder<esp::KeyPressedEvent>(
-          event,
-          ESP_BIND_EVENT_FOR_FUN(ExampleInstancingLayer::my_crazy_event_handler));
+      esp::Event::try_hanlder<esp::KeyPressedEvent>(event,
+                                                    ESP_BIND_EVENT_FOR_FUN(ExampleLayer::my_crazy_event_handler));
     }
 
     bool my_crazy_event_handler(esp::KeyPressedEvent& event)
