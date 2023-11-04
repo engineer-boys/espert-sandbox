@@ -30,8 +30,30 @@ namespace my_game
 
     MVP mvp{};
     mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.view  = glm::mat4(1.0f);
-    mvp.proj  = glm::mat4(1.0f);
+
+    mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.proj = glm::perspective(glm::radians(45.0f), 1280.0f / ((float)720.0f), 0.1f, 10.0f);
+
+    // mvp.view = glm::mat4(1.0f);
+    // mvp.proj = glm::mat4(1.0f);
+
+    return mvp;
+  }
+
+  static MVP get_new_mvp2()
+  {
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    MVP mvp{};
+    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.model = glm::translate(mvp.model, glm::vec3(1, 1, 0));
+    //
+
+    mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.proj = glm::perspective(glm::radians(45.0f), 1280.0f / ((float)720.0f), 0.1f, 10.0f);
 
     return mvp;
   }
@@ -39,6 +61,8 @@ namespace my_game
   class ExampleLayer : public esp::Layer
   {
     std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspUniformManager> m_uniform_manager_1;
+    std::unique_ptr<EspUniformManager> m_uniform_manager_2;
 
     std::vector<ExampleVertex> m_square    = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
                                                { { -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
@@ -67,7 +91,9 @@ namespace my_game
       }                                                                                            /* VTX_LAYOUTS */
       );
       builder->set_pipeline_layout(std::move(pp_layout));
-      m_pipeline = builder->build_pipeline();
+      m_pipeline          = builder->build_pipeline();
+      m_uniform_manager_1 = m_pipeline->create_uniform_manager();
+      m_uniform_manager_2 = m_pipeline->create_uniform_manager();
 
       m_vertex_buffers = EspVertexBuffers::create();
       m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
@@ -88,9 +114,17 @@ namespace my_game
       m_vertex_buffers->attach();
 
       auto mvp = get_new_mvp();
-      m_pipeline->update_buffer_uniform(0, 0, sizeof(MVP), &mvp);
+      m_uniform_manager_1->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
+      m_uniform_manager_1->attach();
 
-      m_pipeline->attach_uniforms();
+      m_square_index_buffer->attach();
+      EspCommandHandler::draw_indexed(m_square_indices.size());
+
+      m_vertex_buffers->attach();
+
+      mvp = get_new_mvp2();
+      m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
+      m_uniform_manager_2->attach();
 
       m_square_index_buffer->attach();
       EspCommandHandler::draw_indexed(m_square_indices.size());
