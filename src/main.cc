@@ -16,6 +16,13 @@ class SandBoxApp : public esp::Application
     // push_layer(new my_game::InstancingExampleLayer());
     push_layer(new my_game::TextureExampleLayer());
   }
+
+  void set_background_color() { m_frame_manager->set_clear_color(glm::vec4{ .1f, .1f, .3f, 1.f }); }
 };
 
-esp::Application* esp::create_app_instance() { return new SandBoxApp(); }
+esp::Application* esp::create_app_instance()
+{
+  const auto& app = new SandBoxApp();
+  app->set_background_color();
+  return app;
+}
