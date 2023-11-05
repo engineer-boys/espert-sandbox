@@ -1,6 +1,4 @@
-#include "Layers/ExampleLayer.hh"
-#include "Layers/InstancingExampleLayer.hh"
-#include "Layers/TextureExampleLayer.hh"
+#include "Layers/Layers.hh"
 
 // libs
 #include <Espert.hh>
@@ -14,7 +12,8 @@ class SandBoxApp : public esp::Application
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
     // push_layer(new my_game::InstancingExampleLayer());
-    push_layer(new my_game::TextureExampleLayer());
+    // push_layer(new my_game::TextureExampleLayer());
+    push_layer(new my_game::TextureDepthExampleLayer());
   }
 
   void set_background_color() { m_frame_manager->set_clear_color(glm::vec4{ .1f, .1f, .3f, 1.f }); }
