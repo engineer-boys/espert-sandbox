@@ -1,5 +1,6 @@
 #include "Layers/ExampleLayer.hh"
 #include "Layers/InstancingExampleLayer.hh"
+#include "Layers/TextureExampleLayer.hh"
 
 // libs
 #include <Espert.hh>
@@ -11,8 +12,9 @@ class SandBoxApp : public esp::Application
   SandBoxApp()
   {
     /* ----------- Select 1 example ----------- */
-    push_layer(new my_game::ExampleLayer());
+    // push_layer(new my_game::ExampleLayer());
     // push_layer(new my_game::InstancingExampleLayer());
+    push_layer(new my_game::TextureExampleLayer());
   }
 };
 
