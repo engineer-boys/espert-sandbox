@@ -32,7 +32,8 @@ namespace my_game
     TextureExampleUniform ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj  = glm::perspective(glm::radians(45.0f), 1280.0f / ((float)720.0f), 0.1f, 10.0f);
+    ubo.proj =
+        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
     ubo.proj[1][1] *= -1;
 
     return ubo;
@@ -94,7 +95,7 @@ namespace my_game
       m_index_buffer->attach();
 
       auto ubo = get_new_texture_example_uniform();
-      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP), &ubo);
+      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
       m_uniform_manager->attach();
 
       m_index_buffer->attach();
