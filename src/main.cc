@@ -11,9 +11,10 @@ class SandBoxApp : public esp::Application
   {
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
-    // push_layer(new my_game::InstancingExampleLayer());
-    // push_layer(new my_game::TextureExampleLayer());
-    push_layer(new my_game::TextureDepthExampleLayer());
+    //  push_layer(new my_game::InstancingExampleLayer());
+    //  push_layer(new my_game::TextureExampleLayer());
+    // push_layer(new my_game::TextureDepthExampleLayer());
+    push_layer(new my_game::ModelExampleLayer());
   }
 
   void set_background_color() { m_frame_manager->set_clear_color(glm::vec4{ .1f, .1f, .3f, 1.f }); }
