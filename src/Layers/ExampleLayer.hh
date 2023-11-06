@@ -1,5 +1,5 @@
-#ifndef LAYERS_CUBE_EXAMPLE_LAYER_H
-#define LAYERS_CUBE_EXAMPLE_LAYER_H
+#ifndef LAYERS_EXAMPLE_LAYER_H
+#define LAYERS_EXAMPLE_LAYER_H
 
 // libs
 #include "Espert.hh"
@@ -94,7 +94,9 @@ namespace my_game
       builder->set_pipeline_layout(std::move(pp_layout));
       m_pipeline          = builder->build_pipeline();
       m_uniform_manager_1 = m_pipeline->create_uniform_manager();
+      m_uniform_manager_1->build();
       m_uniform_manager_2 = m_pipeline->create_uniform_manager();
+      m_uniform_manager_2->build();
 
       m_vertex_buffers = EspVertexBuffers::create();
       m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
@@ -151,4 +153,4 @@ namespace my_game
   };
 } // namespace my_game
 
-#endif // LAYERS_CUBE_EXAMPLE_LAYER_H
+#endif // LAYERS_EXAMPLE_LAYER_H

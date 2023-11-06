@@ -1,5 +1,5 @@
-#ifndef LAYERS_TEXTURE_EXAMPLE_LAYER_HH
-#define LAYERS_TEXTURE_EXAMPLE_LAYER_HH
+#ifndef LAYERS_TEXTURE_DEPTH_EXAMPLE_LAYER_HH
+#define LAYERS_TEXTURE_DEPTH_EXAMPLE_LAYER_HH
 
 // libs
 #include "Espert.hh"
@@ -22,7 +22,7 @@ namespace my_game
     glm::mat4 proj;
   };
 
-  static TextureDepthExampleUniform get_new_texture_example_uniform()
+  static TextureDepthExampleUniform get_new_texture_depth_example_uniform()
   {
     TextureDepthExampleUniform ubo{};
     ubo.model = glm::mat4(1.f);
@@ -97,7 +97,7 @@ namespace my_game
       m_vertex_buffers->attach();
       m_index_buffer->attach();
 
-      auto ubo = get_new_texture_example_uniform();
+      auto ubo = get_new_texture_depth_example_uniform();
       m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureDepthExampleUniform), &ubo);
       m_uniform_manager->attach();
 
@@ -107,4 +107,4 @@ namespace my_game
   };
 } // namespace my_game
 
-#endif // LAYERS_TEXTURE_EXAMPLE_LAYER_HH
+#endif // LAYERS_TEXTURE_DEPTH_EXAMPLE_LAYER_HH

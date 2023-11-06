@@ -85,6 +85,7 @@ namespace my_game
       builder->set_pipeline_layout(std::move(pp_layout));
       m_pipeline        = builder->build_pipeline();
       m_uniform_manager = m_pipeline->create_uniform_manager();
+      m_uniform_manager->build();
 
       m_vertex_buffers = EspVertexBuffers::create();
       m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
