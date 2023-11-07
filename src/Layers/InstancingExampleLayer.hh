@@ -29,10 +29,12 @@ namespace my_game
     float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     InstancingExampleUniform mvp{};
-    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.model = glm::scale(glm::mat4(1.0f), { 0.05f, 0.05f, 0.05f });
+    mvp.model = glm::rotate(mvp.model, time * glm::radians(-90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
-    mvp.view = glm::mat4(1.0f);
-    mvp.proj = glm::mat4(1.0f);
+    mvp.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 1.25f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+    mvp.proj =
+        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return mvp;
   }
@@ -42,10 +44,10 @@ namespace my_game
     std::unique_ptr<EspPipeline> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
-    std::vector<ExampleVertex> m_square    = { { { -0.05f, -0.05f }, { 1.0f, 0.0f, 0.0f } },
-                                               { { -0.05f, 0.05f }, { 0.0f, 1.0f, 0.0f } },
-                                               { { 0.05f, 0.05f }, { 0.0f, 0.0f, 1.0f } },
-                                               { { 0.05f, -0.05f }, { 0.0f, 1.0f, 0.0f } } };
+    std::vector<ExampleVertex> m_square    = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
+                                               { { -0.5f, 0.5f }, { 0.0f, 1.0f, 0.0f } },
+                                               { { 0.5f, 0.5f }, { 0.0f, 0.0f, 1.0f } },
+                                               { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } } };
     std::vector<uint32_t> m_square_indices = { 0, 2, 1, 2, 0, 3 };
     std::vector<glm::vec2> m_instance_pos{};
 
@@ -55,9 +57,9 @@ namespace my_game
    public:
     InstancingExampleLayer()
     {
-      for (float x = -1.f; x < 1.f; x += .25f)
+      for (float x = -1.f; x <= 1.f; x += .25f)
       {
-        for (float y = -1.f; y < 1.f; y += .25f)
+        for (float y = -1.f; y <= 1.f; y += .25f)
         {
           m_instance_pos.emplace_back(x, y);
         }
@@ -68,8 +70,8 @@ namespace my_game
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
 
       auto builder = EspPipelineBuilder::create();
-      builder->set_shaders("../shaders/InstancingExample/shader.vert.spv",
-                           "../shaders/InstancingExample/shader.frag.spv");
+      builder->set_shaders("../resources/Shaders/InstancingExample/shader.vert.spv",
+                           "../resources/Shaders/InstancingExample/shader.frag.spv");
       builder->set_vertex_layouts({
           VTX_LAYOUT(sizeof(ExampleVertex),
                      0,
@@ -107,7 +109,7 @@ namespace my_game
       m_vertex_buffers->attach();
       m_square_index_buffer->attach();
 
-      auto mvp = get_new_mvp();
+      auto mvp = get_new_instancing_example_uniform();
       m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
       m_uniform_manager->attach();
 
