@@ -32,10 +32,8 @@ namespace my_game
     mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.proj = glm::perspective(glm::radians(45.0f), 1280.0f / ((float)720.0f), 0.1f, 10.0f);
-
-    // mvp.view = glm::mat4(1.0f);
-    // mvp.proj = glm::mat4(1.0f);
+    mvp.proj =
+        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return mvp;
   }
@@ -48,12 +46,13 @@ namespace my_game
     float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
     MVP mvp{};
-    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     mvp.model = glm::translate(mvp.model, glm::vec3(1, 1, 0));
     //
 
     mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    mvp.proj = glm::perspective(glm::radians(45.0f), 1280.0f / ((float)720.0f), 0.1f, 10.0f);
+    mvp.proj =
+        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return mvp;
   }
@@ -81,7 +80,8 @@ namespace my_game
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
 
       auto builder = EspPipelineBuilder::create();
-      builder->set_shaders("../shaders/Example/shader.vert.spv", "../shaders/Example/shader.frag.spv");
+      builder->set_shaders("../resources/Shaders/Example/shader.vert.spv",
+                           "../resources/Shaders/Example/shader.frag.spv");
       builder->set_vertex_layouts({
           VTX_LAYOUT(
               sizeof(ExampleVertex),

@@ -63,8 +63,8 @@ namespace my_game
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
       auto builder = EspPipelineBuilder::create();
-      builder->set_shaders("../shaders/TextureDepthExample/shader.vert.spv",
-                           "../shaders/TextureDepthExample/shader.frag.spv");
+      builder->set_shaders("../resources/Shaders/TextureDepthExample/shader.vert.spv",
+                           "../resources/Shaders/TextureDepthExample/shader.frag.spv");
       builder->set_vertex_layouts({ VTX_LAYOUT(
           sizeof(TextureDepthExampleVertex),
           0,
@@ -77,7 +77,7 @@ namespace my_game
 
       m_uniform_manager = m_pipeline->create_uniform_manager();
 
-      m_uniform_manager->load_texture(0, 1, "../textures/image.jpeg");
+      m_uniform_manager->load_texture(0, 1, "../resources/Textures/image.jpeg");
 
       m_uniform_manager->build();
 

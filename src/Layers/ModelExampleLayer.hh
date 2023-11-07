@@ -63,7 +63,9 @@ namespace my_game
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
 
       auto builder = EspPipelineBuilder::create();
-      builder->set_shaders("../shaders/ModelExample/shader.vert.spv", "../shaders/ModelExample/shader.frag.spv");
+
+      builder->set_shaders("../resources/Shaders/ModelExample/shader.vert.spv",
+                           "../resources/Shaders/ModelExample/shader.frag.spv");
       builder->set_vertex_layouts({ ModelComponent::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
