@@ -4,6 +4,7 @@
 #include "Layers/ExampleLayer.hh"
 #include "Layers/InstancingExampleLayer.hh"
 #include "Layers/ModelExampleLayer.hh"
+#include "Layers/ObjModelExampleLayer.hh"
 #include "Layers/TextureDepthExampleLayer.hh"
 #include "Layers/TextureExampleLayer.hh"
 
