@@ -46,7 +46,7 @@ namespace my_game
                                                { { -0.05f, 0.05f }, { 0.0f, 1.0f, 0.0f } },
                                                { { 0.05f, 0.05f }, { 0.0f, 0.0f, 1.0f } },
                                                { { 0.05f, -0.05f }, { 0.0f, 1.0f, 0.0f } } };
-    std::vector<uint32_t> m_square_indices = { 0, 1, 2, 2, 3, 0 };
+    std::vector<uint32_t> m_square_indices = { 0, 2, 1, 2, 0, 3 };
     std::vector<glm::vec2> m_instance_pos{};
 
     std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
