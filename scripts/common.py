@@ -1,10 +1,21 @@
+from abc import ABC
 from argparse import Action
 from enum import Enum
+import multiprocessing
 from pathlib import Path
+import sys
 
 ROOT = Path(__file__).parent.parent.absolute()
 BUILD_DIR = ROOT / "build"
 SOURCE_DIR = ROOT / "src"
+
+
+def get_cpu_count() -> int:
+    return multiprocessing.cpu_count()
+
+
+def get_optimal_job_count() -> int:
+    return max(1, get_cpu_count() - 2)
 
 
 class EnumAction(Action):
@@ -25,3 +36,50 @@ class EnumAction(Action):
     def __call__(self, parser, namespace, values, option_string=None):
         value = self._enum(values)
         setattr(namespace, self.dest, value)
+
+
+class CmakeParameter:
+    def __init__(self, name: str, value: str) -> None:
+        self._name = name
+        self._value = value
+
+    def __str__(self) -> str:
+        return f"-D{self._name}={self._value}"
+
+
+class CmakeCommand(ABC):
+    def __init__(self) -> None:
+        super().__init__()
+        self._command = "cmake"
+
+    def __str__(self) -> str:
+        return self._command
+
+    def add_parameter(self, param: CmakeParameter):
+        self._command += f" {param}"
+        return self
+
+
+class CmakeConfigureCommand(CmakeCommand):
+    def __init__(self, build_dir: str = "build", source_dir: str = ".") -> None:
+        super().__init__()
+        self._command += f" -B {build_dir}"
+        self._command += f" -S {source_dir}"
+        if is_platform_windows():
+            self._command += ' -G "MinGW Makefiles"'
+
+
+class CmakeBuildCommand(CmakeCommand):
+    def __init__(
+        self, build_dir: str = "build", jobs: int = get_optimal_job_count()
+    ) -> None:
+        super().__init__()
+        self._command += f" --build {build_dir} -j {jobs}"
+
+
+def is_platform_linux() -> bool:
+    return sys.platform.startswith("linux")
+
+
+def is_platform_windows() -> bool:
+    return sys.platform.startswith("win32")
