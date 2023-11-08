@@ -10,7 +10,17 @@
 ###########################################################################
 
 from argparse import ArgumentParser, Namespace
-from common import EnumAction, ROOT, BUILD_DIR
+from common import (
+    EnumAction,
+    ROOT,
+    BUILD_DIR,
+    get_optimal_job_count,
+    is_platform_linux,
+    is_platform_windows,
+    CmakeParameter,
+    CmakeConfigureCommand,
+    CmakeBuildCommand,
+)
 from enum import Enum
 import multiprocessing
 import os
@@ -26,8 +36,8 @@ VK_LAYER_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "layers"
 
 
 class BuildType(Enum):
-    DEBUG = "debug"
-    RELEASE = "release"
+    DEBUG = "Debug"
+    RELEASE = "Release"
 
 
 class Compiler(Enum):
@@ -37,54 +47,44 @@ class Compiler(Enum):
 
 class WSI(Enum):
     XCM = "xcm"
+    X11 = "xlib"
     XLIB = "xlib"
     WAYLAND = "wayland"
     D2D = "d2d"
 
 
-def get_cpu_count() -> int:
-    return multiprocessing.cpu_count()
-
-
-def get_number_of_jobs() -> int:
-    return max(1, get_cpu_count() - 2)
-
-
-def get_wsi_type() -> str:
+def get_wsi_type() -> WSI:
     proc = subprocess.Popen(GET_WSI_COMMAND, shell=True, stdout=subprocess.PIPE)
     proc.wait()
-    return proc.stdout.read().decode("utf-8").strip()
+    return WSI[proc.stdout.read().decode("utf-8").strip().upper()]
 
 
 def get_configure_command(args: Namespace) -> str:
-    CMD = "cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G \"MinGW Makefiles\""
-
-    if args.build_type == BuildType.DEBUG:
-        CMD += f" -DCMAKE_BUILD_TYPE=Debug"
-    elif args.build_type == BuildType.RELEASE:
-        CMD += f" -DCMAKE_BUILD_TYPE=Release"
+    CMD = CmakeConfigureCommand(build_dir="build", source_dir=".")
+    CMD.add_parameter(CmakeParameter("CMAKE_BUILD_TYPE", args.build_type.value))
+    CMD.add_parameter(CmakeParameter("CMAKE_EXPORT_COMPILE_COMMANDS", "ON"))
 
     if args.compiler == Compiler.GCC:
-        CMD += " -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++"
+        CMD.add_parameter(CmakeParameter("CMAKE_C_COMPILER", "gcc"))
+        CMD.add_parameter(CmakeParameter("CMAKE_CXX_COMPILER", "g++"))
     elif args.compiler == Compiler.CLANG:
-        CMD += " -DCMAKE_C_COMPILER=clang-17 -DCMAKE_CXX_COMPILER=clang++-17"
+        CMD.add_parameter(CmakeParameter("CMAKE_C_COMPILER", "clang-17"))
+        CMD.add_parameter(CmakeParameter("CMAKE_CXX_COMPILER", "clang++-17"))
 
-    if sys.platform.startswith("linux"):
-        if args.wsi is None:
-            wsi = get_wsi_type()
-        else:
-            wsi = args.wsi.value
-        if wsi == "x11":
-            wsi = "xlib"
-        CMD += f" -DVKB_WSI_SELECTION={wsi.upper()}"
+    if is_platform_linux():
+        CMD.add_parameter(CmakeParameter("VKB_WSI_SELECTION", args.wsi.value.upper()))
 
-    return CMD
+    if args.vvl:
+        CMD.add_parameter(CmakeParameter("ESP_BUILD_VVL", "ON"))
+
+    return str(CMD)
 
 
 def get_build_command(args) -> str:
-    CMD = f"make -j{args.jobs}"
+    CMD = CmakeBuildCommand(build_dir="build", jobs=args.jobs)
+    # CMD = f"make -j{args.jobs}"
 
-    return CMD
+    return str(CMD)
 
 
 def run_command_detached(command: str, cwd: str) -> None:
@@ -111,17 +111,20 @@ def run_build(args: Namespace) -> None:
         run_configure(args)
 
     build_command = get_build_command(args)
-    run_command_detached(build_command, BUILD_DIR)
+    run_command_detached(build_command, ROOT)
 
 
 def run_espert(args: Namespace) -> None:
     if args.clean or not os.path.exists(BUILD_DIR / BIN_NAME):
         run_build(args)
 
-    run_command = (
-        f"LD_LIBRARY_PATH={LD_LIBRARY_PATH} VK_LAYER_PATH={VK_LAYER_PATH} ./{BIN_NAME}"
-    )
-    run_command_detached(run_command, BUILD_DIR)
+    CMD = ""
+    if args.build_type == BuildType.DEBUG and args.vvl and not is_platform_windows():
+        CMD += f"LD_LIBRARY_PATH={LD_LIBRARY_PATH} VK_LAYER_PATH={VK_LAYER_PATH} "
+
+    CMD += f"./{BIN_NAME}"
+
+    run_command_detached(CMD, BUILD_DIR)
 
 
 def get_parser() -> ArgumentParser:
@@ -187,7 +190,7 @@ def get_parser() -> ArgumentParser:
         "--jobs",
         required=False,
         type=int,
-        default=get_number_of_jobs(),
+        default=get_optimal_job_count(),
         help="Number of paralell jobs during build. (default: max system threads - 2)",
     )
     main_parser.add_argument(
@@ -198,6 +201,13 @@ def get_parser() -> ArgumentParser:
         action=EnumAction,
         help="Select WSI type for linux systems.",
     )
+    main_parser.add_argument(
+        "--vvl",
+        required=False,
+        default=False,
+        action="store_true",
+        help="Build vulkan validation layers.",
+    )
 
     return main_parser
 
@@ -205,8 +215,13 @@ def get_parser() -> ArgumentParser:
 if __name__ == "__main__":
     parser = get_parser()
     args = parser.parse_args()
+
+    if args.wsi is None and is_platform_linux():
+        args.wsi = get_wsi_type()
+
     if args.cmd is None:
         print("Command not given.")
         parser.print_usage()
         sys.exit(1)
+
     args.func(args)
