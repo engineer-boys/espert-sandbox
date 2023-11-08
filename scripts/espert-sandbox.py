@@ -122,7 +122,10 @@ def run_espert(args: Namespace) -> None:
     if args.build_type == BuildType.DEBUG and args.vvl and not is_platform_windows():
         CMD += f"LD_LIBRARY_PATH={LD_LIBRARY_PATH} VK_LAYER_PATH={VK_LAYER_PATH} "
 
-    CMD += f"./{BIN_NAME}"
+    if is_platform_windows():
+        CMD += f".\{BIN_NAME}"
+    else:
+        CMD += f"./{BIN_NAME}"
 
     run_command_detached(CMD, BUILD_DIR)
 
