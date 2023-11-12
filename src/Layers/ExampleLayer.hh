@@ -111,7 +111,7 @@ namespace my_game
 
     virtual void detach() override {}
 
-    virtual void update() override
+    virtual void update(float dt) override
     {
       m_pipeline->attach();
       m_vertex_buffers->attach();
@@ -133,9 +133,9 @@ namespace my_game
       EspCommandHandler::draw_indexed(m_square_indices.size());
     }
 
-    virtual void handle_event(esp::Event& event) override
+    virtual void handle_event(esp::Event& event, float dt) override
     {
-      esp::Event::try_hanlder<esp::KeyPressedEvent>(event,
+      esp::Event::try_handler<esp::KeyPressedEvent>(event,
                                                     ESP_BIND_EVENT_FOR_FUN(ExampleLayer::my_crazy_event_handler));
     }
 
@@ -145,8 +145,8 @@ namespace my_game
       ESP_INFO("You pressed the button {0}", event.get_code());
 
       /*
-          true - propagate to lower layers
-          false - this is the last layer of this event
+          false - propagate to lower layers
+          true - this is the last layer of this event
       */
       return true;
     }

@@ -75,7 +75,7 @@ namespace my_game
     }
 
    private:
-    virtual void update() override
+    virtual void update(float dt) override
     {
       m_pipeline->attach();
       m_cube.m_model->attach();
