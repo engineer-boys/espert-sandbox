@@ -103,7 +103,7 @@ namespace my_game
 
     virtual void detach() override {}
 
-    virtual void update() override
+    virtual void update(float dt) override
     {
       m_pipeline->attach();
       m_vertex_buffers->attach();

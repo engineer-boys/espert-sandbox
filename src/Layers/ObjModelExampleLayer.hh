@@ -30,17 +30,17 @@ namespace my_game
       m_model = std::make_unique<ModelComponent>(builder);
     }
 
-    VikingRoomUniform update()
+    VikingRoomUniform update(Camera& camera, float dt)
     {
-      float dt = .005f;
-
       auto& rot_y = m_transform.m_rotation.y;
-      rot_y       = glm::mod(rot_y + dt, glm::two_pi<float>());
+      rot_y       = glm::mod(rot_y + dt / 5, glm::two_pi<float>());
+
+      camera.set_perspective(EspFrameManager::get_swap_chain_extent_aspect_ratio());
+
       VikingRoomUniform ubo{};
       ubo.model = m_transform.get_model_mat();
-      ubo.view  = glm::lookAt(glm::vec3(0.0f, -2.0f, 3.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-      ubo.proj =
-          glm::perspective(glm::radians(50.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
+      ubo.view  = camera.get_view();
+      ubo.proj  = camera.get_projection();
 
       return ubo;
     }
@@ -52,11 +52,18 @@ namespace my_game
     std::unique_ptr<EspPipeline> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
+    Camera m_camera{};
+
     VikingRoom m_viking_room;
 
    public:
     ObjModelExampleLayer()
     {
+      m_camera.set_position(glm::vec3(0.0f, -2.0f, 3.0f));
+      m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
+      m_camera.set_move_speed(3.f);
+      m_camera.set_sensitivity(4.f);
+
       m_viking_room                        = VikingRoom();
       m_viking_room.m_transform.m_rotation = { glm::radians(90.f), glm::radians(-45.f), 0.0f };
 
@@ -80,12 +87,14 @@ namespace my_game
     }
 
    private:
-    virtual void update() override
+    virtual void update(float dt) override
     {
+      Camera::set_current_camera(&m_camera);
+
       m_pipeline->attach();
       m_viking_room.m_model->attach();
 
-      auto ubo = m_viking_room.update();
+      auto ubo = m_viking_room.update(m_camera, dt);
       m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
       m_uniform_manager->attach();
 
