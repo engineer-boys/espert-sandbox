@@ -82,7 +82,8 @@ namespace my_game
       m_pipeline = builder->build_pipeline();
 
       m_uniform_manager = m_pipeline->create_uniform_manager();
-      m_uniform_manager->load_texture(0, 1, "../resources/Textures/viking_room.png");
+      auto texture      = TextureSystem::acquire("Textures/viking_room.png");
+      m_uniform_manager->load_texture(0, 1, texture);
       m_uniform_manager->build();
     }
 
