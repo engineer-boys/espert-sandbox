@@ -37,9 +37,8 @@ namespace my_game
 
       auto viking_room                                            = m_scene->create_entity("viking room");
       viking_room->add_component<TransformComponent>().m_rotation = { glm::radians(90.f), glm::radians(-45.f), 0.0f };
-      ModelComponent::Builder model_builder{};
-      model_builder.load_model("../resources/Models/viking_room.obj"); // TODO: return Builder&
-      viking_room->add_component<ModelComponent>(model_builder);
+      viking_room->add_component<ModelComponent>(
+          ModelComponent::Builder{}.load_model("../resources/Models/viking_room.obj"));
 
       m_viking_room_node->attach_entity(viking_room);
 
