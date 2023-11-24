@@ -6,8 +6,6 @@
 
 using namespace esp;
 
-static std::unique_ptr<ModelComponent> create_cube_model();
-
 namespace my_game
 {
   struct VikingRoomUniform
@@ -35,12 +33,13 @@ namespace my_game
       m_viking_room_node = SceneNode::create();
       m_scene->get_root().add_child(m_viking_room_node);
 
-      auto viking_room                                            = m_scene->create_entity("viking room");
-      viking_room->add_component<TransformComponent>().m_rotation = { glm::radians(90.f), glm::radians(-45.f), 0.0f };
+      auto viking_room = m_scene->create_entity("viking room");
+      viking_room->add_component<TransformComponent>();
       viking_room->add_component<ModelComponent>(
           ModelComponent::Builder{}.load_model("../resources/Models/viking_room.obj"));
 
       m_viking_room_node->attach_entity(viking_room);
+      TransformAction::update_rotation(m_viking_room_node.get(), glm::radians(90.f), { 1.f, 0.f, 0.f }, ABSOLUTE);
 
       m_camera.set_position(glm::vec3(0.0f, -2.0f, 3.0f));
       m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -67,8 +66,6 @@ namespace my_game
       m_uniform_manager->build();
     }
 
-    ~ObjModelExampleLayer() override { m_scene->destroy_entity(m_viking_room_node->get_entity()); }
-
    private:
     virtual void update(float dt) override
     {
@@ -76,20 +73,20 @@ namespace my_game
 
       m_pipeline->attach();
 
-      auto& model = m_viking_room_node->get_entity().get_component<ModelComponent>();
+      auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
       model.attach();
 
       m_viking_room_node->act(
-          [dt](Entity& e)
+          [&dt](SceneNode* node)
           {
-            auto& transform = e.get_component<TransformComponent>();
-            auto& rot_y     = transform.m_rotation.y;
-            rot_y           = glm::mod(rot_y + dt / 5, glm::two_pi<float>());
+            auto& transform = node->get_entity()->get_component<TransformComponent>();
+            transform.reset_model_mat();
+            TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ABSOLUTE);
           });
 
       m_camera.set_perspective(EspFrameManager::get_swap_chain_extent_aspect_ratio());
 
-      auto& transform = m_viking_room_node->get_entity().get_component<TransformComponent>();
+      auto& transform = m_viking_room_node->get_entity()->get_component<TransformComponent>();
       VikingRoomUniform ubo{};
       ubo.model = transform.get_model_mat();
       ubo.view  = m_camera.get_view();

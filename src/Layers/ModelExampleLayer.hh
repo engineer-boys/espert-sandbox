@@ -5,8 +5,9 @@
 #include "Espert.hh"
 
 using namespace esp;
+using namespace esp::action;
 
-static std::unique_ptr<ModelComponent> create_cube_model();
+static std::vector<ModelComponent::Vertex> create_cube_vertices();
 
 namespace my_game
 {
@@ -17,46 +18,55 @@ namespace my_game
     glm::mat4 proj;
   };
 
-  class Cube
-  {
-   public:
-    TransformComponent m_transform;
-    std::unique_ptr<ModelComponent> m_model;
-
-    Cube() { m_model = create_cube_model(); }
-
-    CubeUniform update()
-    {
-      float dt = .01f;
-
-      auto& rot_y = m_transform.m_rotation.y;
-      auto& rot_x = m_transform.m_rotation.x;
-      rot_y       = glm::mod(rot_x + dt, glm::two_pi<float>());
-      rot_x       = glm::mod(rot_y + dt / 2, glm::two_pi<float>());
-      CubeUniform ubo{};
-      ubo.model = m_transform.get_model_mat();
-      ubo.view  = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-      ubo.proj =
-          glm::perspective(glm::radians(50.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
-
-      return ubo;
-    }
-  };
-
   class ModelExampleLayer : public Layer
   {
    private:
     std::unique_ptr<EspPipeline> m_pipeline;
-    std::unique_ptr<EspUniformManager> m_uniform_manager;
+    std::array<std::unique_ptr<EspUniformManager>, 3> m_uniform_managers{};
 
-    Cube m_cube;
+    std::shared_ptr<Scene> m_scene;
+    Camera m_camera{};
+
+    std::shared_ptr<SceneNode> m_main_cube_node;
 
    public:
     ModelExampleLayer()
     {
-      m_cube                           = Cube();
-      m_cube.m_transform.m_translation = { 0.0f, 0.0f, 0.5f };
-      m_cube.m_transform.m_scale       = { 0.5f, 0.5f, 0.5f };
+      m_scene = Scene::create();
+
+      m_camera.set_position(glm::vec3{ 0.f, -1.f, -5.f });
+      m_camera.look_at(glm::vec3{ 0.f, 0.f, 0.f });
+      m_camera.set_move_speed(3.f);
+      m_camera.set_sensitivity(4.f);
+
+      std::vector<ModelComponent::Vertex> cube_vertices = create_cube_vertices();
+      std::array<std::shared_ptr<Entity>, 3> cubes{};
+      for (auto& cube : cubes)
+      {
+        cube = m_scene->create_entity();
+        cube->add_component<TransformComponent>();
+        cube->add_component<ModelComponent>(create_cube_vertices());
+      }
+
+      m_main_cube_node = SceneNode::create();
+      m_scene->get_root().add_child(m_main_cube_node);
+      m_main_cube_node->attach_entity(cubes[0]);
+
+      m_main_cube_node->get_entity()->get_component<TransformComponent>();
+      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, 0.f, 2.f }, RELATIVE);
+      TransformAction::set_scale(m_main_cube_node.get(), .5f, RELATIVE);
+
+      for (int i = 1; i < cubes.size(); i++)
+      {
+        auto small_cube_node = SceneNode::create();
+        m_main_cube_node->add_child(small_cube_node);
+        small_cube_node->set_parent(m_main_cube_node);
+        small_cube_node->attach_entity(cubes[i]);
+        TransformAction::set_translation(small_cube_node.get(),
+                                         glm::vec3{ i % 2 == 0 ? -1.f : 1.f, 0.f, 0.f },
+                                         RELATIVE);
+        TransformAction::set_scale(small_cube_node.get(), .5f, RELATIVE);
+      }
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
@@ -69,28 +79,64 @@ namespace my_game
       builder->set_vertex_layouts({ ModelComponent::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
-      m_pipeline        = builder->build_pipeline();
-      m_uniform_manager = m_pipeline->create_uniform_manager();
-      m_uniform_manager->build();
+      m_pipeline = builder->build_pipeline();
+
+      for (auto& manager : m_uniform_managers)
+      {
+        manager = m_pipeline->create_uniform_manager();
+        manager->build();
+      }
     }
 
    private:
     virtual void update(float dt) override
     {
+      Camera::set_current_camera(&m_camera);
+
       m_pipeline->attach();
-      m_cube.m_model->attach();
 
-      auto ubo = m_cube.update();
-      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
-      m_uniform_manager->attach();
+      auto& model = m_main_cube_node->get_entity()->get_component<ModelComponent>();
+      model.attach();
 
-      EspCommandHandler::draw(m_cube.m_model->get_vertex_count());
+      m_main_cube_node->act(
+          [dt](SceneNode* node)
+          {
+            auto& transform = node->get_entity()->get_component<TransformComponent>();
+
+            transform.reset_model_mat();
+
+            TransformAction::update_rotation(node, dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ABSOLUTE);
+            TransformAction::translate(node, ABSOLUTE);
+            TransformAction::scale(node, ABSOLUTE);
+          });
+
+      m_camera.set_perspective(EspFrameManager::get_swap_chain_extent_aspect_ratio());
+
+      int i = 0;
+      m_main_cube_node->act(
+          [this, &i](SceneNode* node)
+          {
+            auto& transform = node->get_entity()->get_component<TransformComponent>();
+
+            CubeUniform ubo{};
+            ubo.model = transform.get_model_mat();
+            ubo.view  = m_camera.get_view();
+            ubo.proj  = m_camera.get_projection();
+
+            m_uniform_managers[i]->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
+            m_uniform_managers[i]->attach();
+
+            auto& model = node->get_entity()->get_component<ModelComponent>();
+            EspCommandHandler::draw(model.get_vertex_count());
+
+            i++;
+          });
     }
   };
 
 } // namespace my_game
 
-static std::unique_ptr<ModelComponent> create_cube_model()
+static std::vector<ModelComponent::Vertex> create_cube_vertices()
 {
   std::vector<ModelComponent::Vertex> vertices{
 
@@ -136,15 +182,14 @@ static std::unique_ptr<ModelComponent> create_cube_model()
 
     // tail face (green)
     { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-    { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
     { { -.5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-    { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-    { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
     { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-
+    { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+    { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+    { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
   };
 
-  return std::make_unique<ModelComponent>(vertices);
+  return vertices;
 }
 
 #endif // LAYERS_MODEL_EXAMPLE_LAYER_HH
