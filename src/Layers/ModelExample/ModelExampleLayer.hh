@@ -7,10 +7,10 @@
 using namespace esp;
 using namespace esp::action;
 
-static std::vector<ModelComponent::Vertex> create_cube_vertices();
-
-namespace my_game
+namespace model_example
 {
+  static std::vector<Model::Vertex> create_cube_vertices();
+
   struct CubeUniform
   {
     glm::mat4 model;
@@ -27,6 +27,7 @@ namespace my_game
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
 
+    std::shared_ptr<Model> m_cube_model;
     std::shared_ptr<SceneNode> m_main_cube_node;
 
    public:
@@ -39,20 +40,20 @@ namespace my_game
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
 
-      std::vector<ModelComponent::Vertex> cube_vertices = create_cube_vertices();
+      m_cube_model = std::make_unique<Model>(create_cube_vertices());
+
+      std::vector<Model::Vertex> cube_vertices = create_cube_vertices();
       std::array<std::shared_ptr<Entity>, 3> cubes{};
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
         cube->add_component<TransformComponent>();
-        cube->add_component<ModelComponent>(create_cube_vertices());
+        cube->add_component<ModelComponent>(m_cube_model);
       }
 
       m_main_cube_node = SceneNode::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
-
-      m_main_cube_node->get_entity()->get_component<TransformComponent>();
       TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, 0.f, 2.f }, RELATIVE);
       TransformAction::set_scale(m_main_cube_node.get(), .5f, RELATIVE);
 
@@ -74,9 +75,9 @@ namespace my_game
 
       auto builder = EspPipelineBuilder::create();
 
-      builder->set_shaders("../resources/Shaders/ModelExample/shader.vert.spv",
-                           "../resources/Shaders/ModelExample/shader.frag.spv");
-      builder->set_vertex_layouts({ ModelComponent::Vertex::get_vertex_layout() });
+      builder->set_shaders("../resources/Shaders/ModelExample/ModelExample/shader.vert.spv",
+                           "../resources/Shaders/ModelExample/ModelExample/shader.frag.spv");
+      builder->set_vertex_layouts({ Model::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
       m_pipeline = builder->build_pipeline();
@@ -95,14 +96,12 @@ namespace my_game
 
       m_pipeline->attach();
 
-      auto& model = m_main_cube_node->get_entity()->get_component<ModelComponent>();
-      model.attach();
+      m_cube_model->attach();
 
       m_main_cube_node->act(
           [dt](SceneNode* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
-
             transform.reset_model_mat();
 
             TransformAction::update_rotation(node, dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ABSOLUTE);
@@ -127,69 +126,68 @@ namespace my_game
             m_uniform_managers[i]->attach();
 
             auto& model = node->get_entity()->get_component<ModelComponent>();
-            EspCommandHandler::draw(model.get_vertex_count());
+            EspCommandHandler::draw(model.m_model_handle->get_vertex_count());
 
             i++;
           });
     }
   };
 
-} // namespace my_game
+  static std::vector<Model::Vertex> create_cube_vertices()
+  {
+    std::vector<Model::Vertex> vertices{
 
-static std::vector<ModelComponent::Vertex> create_cube_vertices()
-{
-  std::vector<ModelComponent::Vertex> vertices{
+      // left face (white)
+      { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
+      { { -.5f, -.5f, .5f }, { .9f, .9f, .9f } },
+      { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
+      { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
+      { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
+      { { -.5f, .5f, -.5f }, { .9f, .9f, .9f } },
 
-    // left face (white)
-    { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
-    { { -.5f, -.5f, .5f }, { .9f, .9f, .9f } },
-    { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
-    { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
-    { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
-    { { -.5f, .5f, -.5f }, { .9f, .9f, .9f } },
+      // right face (yellow)
+      { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
+      { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
+      { { .5f, -.5f, .5f }, { .8f, .8f, .1f } },
+      { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
+      { { .5f, .5f, -.5f }, { .8f, .8f, .1f } },
+      { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
 
-    // right face (yellow)
-    { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
-    { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
-    { { .5f, -.5f, .5f }, { .8f, .8f, .1f } },
-    { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
-    { { .5f, .5f, -.5f }, { .8f, .8f, .1f } },
-    { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
+      // top face (orange, remember y axis points down)
+      { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+      { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
+      { { -.5f, -.5f, .5f }, { .9f, .6f, .1f } },
+      { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+      { { .5f, -.5f, -.5f }, { .9f, .6f, .1f } },
+      { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
 
-    // top face (orange, remember y axis points down)
-    { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-    { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
-    { { -.5f, -.5f, .5f }, { .9f, .6f, .1f } },
-    { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-    { { .5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-    { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
+      // bottom face (red)
+      { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
+      { { -.5f, .5f, .5f }, { .8f, .1f, .1f } },
+      { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
+      { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
+      { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
+      { { .5f, .5f, -.5f }, { .8f, .1f, .1f } },
 
-    // bottom face (red)
-    { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
-    { { -.5f, .5f, .5f }, { .8f, .1f, .1f } },
-    { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
-    { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
-    { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
-    { { .5f, .5f, -.5f }, { .8f, .1f, .1f } },
+      // nose face (blue)
+      { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+      { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+      { { -.5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+      { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+      { { .5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
+      { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
 
-    // nose face (blue)
-    { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-    { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
-    { { -.5f, .5f, 0.5f }, { .1f, .1f, .8f } },
-    { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-    { { .5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-    { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
+      // tail face (green)
+      { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+      { { -.5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+      { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+      { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+      { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
+      { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
+    };
 
-    // tail face (green)
-    { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-    { { -.5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-    { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-    { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-    { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-    { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-  };
-
-  return vertices;
-}
+    return vertices;
+  }
+} // namespace model_example
 
 #endif // LAYERS_MODEL_EXAMPLE_LAYER_HH

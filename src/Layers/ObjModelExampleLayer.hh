@@ -36,7 +36,7 @@ namespace my_game
       auto viking_room = m_scene->create_entity("viking room");
       viking_room->add_component<TransformComponent>();
       viking_room->add_component<ModelComponent>(
-          ModelComponent::Builder{}.load_model("../resources/Models/viking_room.obj"));
+          std::make_shared<Model>(Model::Builder{}.load_model("../resources/Models/viking_room.obj")));
 
       m_viking_room_node->attach_entity(viking_room);
       TransformAction::update_rotation(m_viking_room_node.get(), glm::radians(90.f), { 1.f, 0.f, 0.f }, ABSOLUTE);
@@ -55,7 +55,7 @@ namespace my_game
 
       builder->set_shaders("../resources/Shaders/ObjModelExample/shader.vert.spv",
                            "../resources/Shaders/ObjModelExample/shader.frag.spv");
-      builder->set_vertex_layouts({ ModelComponent::Vertex::get_vertex_layout() });
+      builder->set_vertex_layouts({ Model::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
       m_pipeline = builder->build_pipeline();
@@ -74,7 +74,7 @@ namespace my_game
       m_pipeline->attach();
 
       auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
-      model.attach();
+      model.m_model_handle->attach();
 
       m_viking_room_node->act(
           [&dt](SceneNode* node)
@@ -94,7 +94,7 @@ namespace my_game
       m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
       m_uniform_manager->attach();
 
-      EspCommandHandler::draw_indexed(model.get_index_count());
+      EspCommandHandler::draw_indexed(model.m_model_handle->get_index_count());
     }
   };
 

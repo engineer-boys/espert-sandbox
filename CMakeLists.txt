@@ -38,10 +38,7 @@ endif()
 
 # run glslang compiler for every shader source file
 foreach (GLSL ${GLSL_SOURCE_FILES})
-    get_filename_component(FILE_NAME ${GLSL} NAME)
-    get_filename_component(DIR_PATH ${GLSL} DIRECTORY)
-    get_filename_component(FILE_DIR ${DIR_PATH} NAME)
-    set(SPIRV "${PROJECT_SOURCE_DIR}/resources/Shaders/${FILE_DIR}/${FILE_NAME}.spv")
+    set(SPIRV "${GLSL}.spv")
     add_custom_command(
             OUTPUT ${SPIRV}
             COMMAND ${GLSLANG} -V ${GLSL} -o ${SPIRV}
