@@ -69,7 +69,7 @@ namespace my_game
    private:
     virtual void update(float dt) override
     {
-      Camera::set_current_camera(&m_camera);
+      Scene::set_current_camera(&m_camera);
 
       m_pipeline->attach();
 
@@ -80,7 +80,7 @@ namespace my_game
           [&dt](SceneNode* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
-            transform.reset_model_mat();
+            transform.reset();
             TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ABSOLUTE);
           });
 
