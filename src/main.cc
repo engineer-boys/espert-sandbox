@@ -14,8 +14,7 @@ class SandBoxApp : public esp::Application
     // push_layer(new my_game::InstancingExampleLayer());
     // push_layer(new my_game::TextureExampleLayer());
     // push_layer(new my_game::TextureDepthExampleLayer());
-    // push_layer(new model_example::ModelExampleLayer());
-    push_layer(new model_example_with_instancing::ModelExampleWithInstancingLayer());
+    push_layer(new model_example::ModelExampleLayer());
     // push_layer(new my_game::ObjModelExampleLayer());
   }
 
