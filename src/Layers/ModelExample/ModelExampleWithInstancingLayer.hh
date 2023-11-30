@@ -34,7 +34,7 @@ namespace model_example_with_instancing
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<Model> m_cube_model;
-    std::shared_ptr<SceneNode> m_main_cube_node;
+    std::shared_ptr<Node> m_main_cube_node;
 
     std::shared_ptr<Scene> m_scene;
 
@@ -51,13 +51,13 @@ namespace model_example_with_instancing
         cube->add_component<ModelComponent>(m_cube_model);
       }
 
-      m_main_cube_node = SceneNode::create();
+      m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
       TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, .5f, 2.f }, RELATIVE);
       TransformAction::set_scale(m_main_cube_node.get(), .5f, RELATIVE);
 
-      std::array<std::shared_ptr<SceneNode>, CUBES_Z> temp_parents;
+      std::array<std::shared_ptr<Node>, CUBES_Z> temp_parents;
       for (int i = 0; i < CUBES_X; i++)
       {
         for (int j = 0; j < CUBES_Z; j++)
@@ -69,7 +69,7 @@ namespace model_example_with_instancing
           }
 
           uint32_t parent_j;
-          auto cube_node = SceneNode::create();
+          auto cube_node = Node::create();
 
           parent_j = std::max(j - 2, 0);
 
@@ -90,7 +90,7 @@ namespace model_example_with_instancing
 
       std::vector<CubeInstance> instances{};
       m_main_cube_node->act(
-          [&instances](SceneNode* node)
+          [&instances](Node* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
             instances.emplace_back(transform.get_model_mat());
@@ -135,7 +135,7 @@ namespace model_example_with_instancing
 
       std::vector<CubeInstance> instances{};                                           //
       m_main_cube_node->act(                                                           //
-          [&instances](SceneNode* node)                                                //
+          [&instances](Node* node)                                                     //
           {                                                                            // TODO: This part is likely
             auto& transform = node->get_entity()->get_component<TransformComponent>(); // going to end up in renderer
             instances.emplace_back(transform.get_model_mat());                         //
