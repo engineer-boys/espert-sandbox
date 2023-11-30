@@ -25,7 +25,7 @@ namespace model_example_without_instancing
     std::array<std::unique_ptr<EspUniformManager>, 3> m_uniform_managers{};
 
     std::shared_ptr<Model> m_cube_model;
-    std::shared_ptr<SceneNode> m_main_cube_node;
+    std::shared_ptr<Node> m_main_cube_node;
 
     std::shared_ptr<Scene> m_scene;
 
@@ -42,7 +42,7 @@ namespace model_example_without_instancing
         cube->add_component<ModelComponent>(m_cube_model);
       }
 
-      m_main_cube_node = SceneNode::create();
+      m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
       TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, -.5f, 2.f }, RELATIVE);
@@ -50,7 +50,7 @@ namespace model_example_without_instancing
 
       for (int i = 1; i < cubes.size(); i++)
       {
-        auto small_cube_node = SceneNode::create();
+        auto small_cube_node = Node::create();
         m_main_cube_node->add_child(small_cube_node);
         small_cube_node->set_parent(m_main_cube_node);
         small_cube_node->attach_entity(cubes[i]);
@@ -88,7 +88,7 @@ namespace model_example_without_instancing
       m_cube_model->attach();
 
       m_main_cube_node->act(
-          [dt](SceneNode* node)
+          [dt](Node* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
             transform.reset();
@@ -102,7 +102,7 @@ namespace model_example_without_instancing
 
       int i = 0;
       m_main_cube_node->act(
-          [this, &camera, &i](SceneNode* node)
+          [this, &camera, &i](Node* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
 

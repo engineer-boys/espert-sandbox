@@ -24,13 +24,13 @@ namespace my_game
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
 
-    std::shared_ptr<SceneNode> m_viking_room_node;
+    std::shared_ptr<Node> m_viking_room_node;
 
    public:
     ObjModelExampleLayer()
     {
       m_scene            = Scene::create();
-      m_viking_room_node = SceneNode::create();
+      m_viking_room_node = Node::create();
       m_scene->get_root().add_child(m_viking_room_node);
 
       auto viking_room = m_scene->create_entity("viking room");
@@ -77,7 +77,7 @@ namespace my_game
       model.m_model_handle->attach();
 
       m_viking_room_node->act(
-          [&dt](SceneNode* node)
+          [&dt](Node* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
             transform.reset();
