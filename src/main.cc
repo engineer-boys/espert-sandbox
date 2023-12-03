@@ -10,11 +10,11 @@ class SandBoxApp : public esp::Application
   SandBoxApp()
   {
     /* ----------- Select 1 example ----------- */
-    // push_layer(new my_game::ExampleLayer());
+    push_layer(new my_game::ExampleLayer());
     // push_layer(new my_game::InstancingExampleLayer());
     // push_layer(new my_game::TextureExampleLayer());
     // push_layer(new my_game::TextureDepthExampleLayer());
-    push_layer(new model_example::ModelExampleLayer());
+    // push_layer(new model_example::ModelExampleLayer());
     // push_layer(new my_game::ObjModelExampleLayer());
   }
 
