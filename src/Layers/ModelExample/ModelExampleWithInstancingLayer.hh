@@ -18,12 +18,6 @@ namespace model_example_with_instancing
     CubeInstance(const glm::mat4& mat) : model{ mat } {}
   };
 
-  struct CubeUniform
-  {
-    glm::mat4 view;
-    glm::mat4 proj;
-  };
-
   class ModelExampleWithInstancingLayer : public Layer
   {
    private:
@@ -99,7 +93,7 @@ namespace model_example_with_instancing
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
+      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
 
       auto builder = EspPipelineBuilder::create();
 
@@ -144,11 +138,11 @@ namespace model_example_with_instancing
 
       auto camera = Scene::get_current_camera();
 
-      CubeUniform ubo{};
+      model_example::CameraPush ubo{};
       ubo.view = camera->get_view();
       ubo.proj = camera->get_projection();
 
-      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
+      m_uniform_manager->update_push_uniform(0, &ubo);
       m_uniform_manager->attach();
 
       m_cube_model->attach();

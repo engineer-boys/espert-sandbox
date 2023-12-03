@@ -21,6 +21,12 @@ namespace my_game
     alignas(16) glm::mat4 proj;
   };
 
+  struct ExamplePush
+  {
+    glm::vec2 m_pos;
+    alignas(16) glm::vec3 m_color;
+  };
+
   static MVP get_new_mvp()
   {
     static auto startTime = std::chrono::high_resolution_clock::now();
@@ -72,12 +78,21 @@ namespace my_game
     std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
     std::unique_ptr<EspIndexBuffer> m_square_index_buffer;
 
+    glm::vec2 m_push_pos{ 0.f, 0.f };
+    glm::vec3 m_push_color{ 0.f, 0.f, 0.f };
+
    public:
     ExampleLayer()
     {
       auto pp_layout = EspUniformMetaData::create();
       pp_layout->establish_descriptor_set();
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
+      pp_layout->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE,
+                                  offsetof(ExamplePush, m_pos),
+                                  sizeof(glm::vec2));
+      pp_layout->add_push_uniform(EspUniformShaderStage::ESP_FRAG_STAGE,
+                                  offsetof(ExamplePush, m_color),
+                                  sizeof(glm::vec3));
 
       auto builder = EspPipelineBuilder::create();
       builder->set_shaders("../resources/Shaders/Example/shader.vert.spv",
@@ -115,6 +130,11 @@ namespace my_game
     {
       m_pipeline->attach();
       m_vertex_buffers->attach();
+
+      m_push_pos.x += dt / 4;
+      m_uniform_manager_1->update_push_uniform(0, &m_push_pos);
+      m_push_color += dt / 8;
+      m_uniform_manager_1->update_push_uniform(1, &m_push_color);
 
       auto mvp = get_new_mvp();
       m_uniform_manager_1->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);

@@ -8,6 +8,12 @@ using namespace esp;
 
 namespace model_example
 {
+  struct CameraPush
+  {
+    glm::mat4 view;
+    glm::mat4 proj;
+  };
+
   static std::vector<Model::Vertex> create_cube_vertices()
   {
     std::vector<Model::Vertex> vertices{

@@ -14,8 +14,6 @@ namespace model_example_without_instancing
   struct CubeUniform
   {
     glm::mat4 model;
-    glm::mat4 view;
-    glm::mat4 proj;
   };
 
   class ModelExampleWithoutInstancingLayer : public Layer
@@ -62,12 +60,13 @@ namespace model_example_without_instancing
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
+      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
 
       auto builder = EspPipelineBuilder::create();
 
-      builder->set_shaders("../resources/Shaders/ModelExample/ModelExample/shader.vert.spv",
-                           "../resources/Shaders/ModelExample/ModelExample/shader.frag.spv");
+      builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.vert.spv",
+                           "../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.frag.spv");
       builder->set_vertex_layouts({ Model::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
@@ -98,18 +97,14 @@ namespace model_example_without_instancing
             TransformAction::scale(node, ABSOLUTE);
           });
 
-      auto camera = Scene::get_current_camera();
-
       int i = 0;
       m_main_cube_node->act(
-          [this, &camera, &i](Node* node)
+          [this, &i](Node* node)
           {
             auto& transform = node->get_entity()->get_component<TransformComponent>();
 
             CubeUniform ubo{};
             ubo.model = transform.get_model_mat();
-            ubo.view  = camera->get_view();
-            ubo.proj  = camera->get_projection();
 
             m_uniform_managers[i]->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
             m_uniform_managers[i]->attach();
