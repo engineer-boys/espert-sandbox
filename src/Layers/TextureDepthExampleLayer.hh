@@ -51,7 +51,7 @@ namespace my_game
     };
     std::vector<uint32_t> m_indices = { 0, 1, 2, 2, 3, 0, 4, 5, 6, 6, 7, 4 };
 
-    std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
+    std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
     std::unique_ptr<EspIndexBuffer> m_index_buffer;
 
    public:
@@ -83,8 +83,8 @@ namespace my_game
 
       m_uniform_manager->build();
 
-      m_vertex_buffers = EspVertexBuffers::create();
-      m_vertex_buffers->add(m_vertices.data(), sizeof(TextureDepthExampleVertex), m_vertices.size());
+      m_vertex_buffer =
+          EspVertexBuffer::create(m_vertices.data(), sizeof(TextureDepthExampleVertex), m_vertices.size());
 
       m_index_buffer = EspIndexBuffer::create(m_indices.data(), m_indices.size());
     }
@@ -95,7 +95,7 @@ namespace my_game
     virtual void update(float dt) override
     {
       m_pipeline->attach();
-      m_vertex_buffers->attach();
+      m_vertex_buffer->attach();
       m_index_buffer->attach();
 
       auto ubo = get_new_texture_depth_example_uniform();

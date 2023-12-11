@@ -75,7 +75,7 @@ namespace my_game
                                                { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f } } };
     std::vector<uint32_t> m_square_indices = { 0, 2, 1, 2, 0, 3 };
 
-    std::unique_ptr<EspVertexBuffers> m_vertex_buffers;
+    std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
     std::unique_ptr<EspIndexBuffer> m_square_index_buffer;
 
     glm::vec2 m_push_pos{ 0.f, 0.f };
@@ -113,8 +113,7 @@ namespace my_game
       m_uniform_manager_2 = m_pipeline->create_uniform_manager();
       m_uniform_manager_2->build();
 
-      m_vertex_buffers = EspVertexBuffers::create();
-      m_vertex_buffers->add(m_square.data(), sizeof(ExampleVertex), m_square.size());
+      m_vertex_buffer = EspVertexBuffer::create(m_square.data(), sizeof(ExampleVertex), m_square.size());
 
       m_square_index_buffer = EspIndexBuffer::create(m_square_indices.data(), m_square_indices.size());
     }
@@ -129,7 +128,7 @@ namespace my_game
     virtual void update(float dt) override
     {
       m_pipeline->attach();
-      m_vertex_buffers->attach();
+      m_vertex_buffer->attach();
 
       m_push_pos.x += dt / 4;
       m_uniform_manager_1->update_push_uniform(0, &m_push_pos);
@@ -143,7 +142,7 @@ namespace my_game
       m_square_index_buffer->attach();
       EspCommandHandler::draw_indexed(m_square_indices.size());
 
-      m_vertex_buffers->attach();
+      m_vertex_buffer->attach();
 
       mvp = get_new_mvp2();
       m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
