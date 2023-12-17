@@ -104,6 +104,6 @@ namespace obj_example
     }
   };
 
-} // namespace my_game
+} // namespace obj_example
 
 #endif // LAYERS_VIKING_ROOM_OBJ_MODEL_EXAMPLE_LAYER_HH

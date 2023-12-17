@@ -115,7 +115,6 @@ namespace model_example_with_instancing
           });
       m_cube_model->add_instance_buffer(instances);
 
-
       m_uniform_manager = m_pipeline->create_uniform_manager();
       m_uniform_manager->build();
     }
