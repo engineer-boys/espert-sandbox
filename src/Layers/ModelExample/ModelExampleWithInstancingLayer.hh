@@ -27,6 +27,7 @@ namespace model_example_with_instancing
     std::unique_ptr<EspPipeline> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
+    std::shared_ptr<Mesh> m_cube_mesh;
     std::shared_ptr<Model> m_cube_model;
     std::shared_ptr<Node> m_main_cube_node;
 
@@ -35,7 +36,30 @@ namespace model_example_with_instancing
    public:
     ModelExampleWithInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
     {
-      m_cube_model = std::make_unique<Model>(model_example::create_cube_vertices());
+      auto uniform_meta_data = EspUniformMetaData::create();
+      uniform_meta_data->establish_descriptor_set();
+      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
+
+      auto builder = EspPipelineBuilder::create();
+
+      builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.vert.spv",
+                           "../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.frag.spv");
+      builder->set_vertex_layouts({
+          Mesh::Vertex::get_vertex_layout(),
+          VTX_LAYOUT(sizeof(CubeInstance),
+                     1,
+                     ESP_VERTEX_INPUT_RATE_INSTANCE,
+                     ATTR(4, ESP_FORMAT_R32G32B32A32_SFLOAT, 0 * sizeof(glm::vec4)),
+                     ATTR(5, ESP_FORMAT_R32G32B32A32_SFLOAT, 1 * sizeof(glm::vec4)),
+                     ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
+                     ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
+      });
+      builder->set_pipeline_layout(std::move(uniform_meta_data));
+
+      m_pipeline = builder->build_pipeline();
+
+      m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
+      m_cube_model = std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, *m_pipeline);
 
       std::array<std::shared_ptr<Entity>, CUBES_X * CUBES_Z> cubes{};
       for (auto& cube : cubes)
@@ -91,27 +115,6 @@ namespace model_example_with_instancing
           });
       m_cube_model->add_instance_buffer(instances);
 
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
-
-      auto builder = EspPipelineBuilder::create();
-
-      builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.vert.spv",
-                           "../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.frag.spv");
-      builder->set_vertex_layouts({
-          Model::Vertex::get_vertex_layout(),
-          VTX_LAYOUT(sizeof(CubeInstance),
-                     1,
-                     ESP_VERTEX_INPUT_RATE_INSTANCE,
-                     ATTR(4, ESP_FORMAT_R32G32B32A32_SFLOAT, 0 * sizeof(glm::vec4)),
-                     ATTR(5, ESP_FORMAT_R32G32B32A32_SFLOAT, 1 * sizeof(glm::vec4)),
-                     ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
-                     ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
-      });
-      builder->set_pipeline_layout(std::move(uniform_meta_data));
-
-      m_pipeline = builder->build_pipeline();
 
       m_uniform_manager = m_pipeline->create_uniform_manager();
       m_uniform_manager->build();
@@ -145,8 +148,7 @@ namespace model_example_with_instancing
       m_uniform_manager->update_push_uniform(0, &ubo);
       m_uniform_manager->attach();
 
-      m_cube_model->attach();
-      EspCommandHandler::draw(m_cube_model->get_vertex_count(), CUBES_X * CUBES_Z);
+      m_cube_model->draw();
     }
   };
 } // namespace model_example_with_instancing
