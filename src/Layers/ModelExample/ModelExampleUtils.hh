@@ -14,9 +14,9 @@ namespace model_example
     glm::mat4 proj;
   };
 
-  static std::vector<Model::Vertex> create_cube_vertices()
+  static std::vector<Mesh::Vertex> create_cube_vertices()
   {
-    std::vector<Model::Vertex> vertices{
+    std::vector<Mesh::Vertex> vertices{
 
       // left face (white)
       { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
