@@ -39,7 +39,7 @@ namespace my_game
 
     mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     mvp.proj =
-        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
+        glm::perspective(glm::radians(45.0f), EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return mvp;
   }
@@ -58,14 +58,14 @@ namespace my_game
 
     mvp.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     mvp.proj =
-        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
+        glm::perspective(glm::radians(45.0f), EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return mvp;
   }
 
   class ExampleLayer : public esp::Layer
   {
-    std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspWorker> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager_1;
     std::unique_ptr<EspUniformManager> m_uniform_manager_2;
 
@@ -81,9 +81,18 @@ namespace my_game
     glm::vec2 m_push_pos{ 0.f, 0.f };
     glm::vec3 m_push_color{ 0.f, 0.f, 0.f };
 
+    std::shared_ptr<EspDepthBlock> m_depth_block;
+    std::unique_ptr<EspProductPlan> m_final_product_plan;
+
    public:
     ExampleLayer()
     {
+      m_depth_block =
+          EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
+
+      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+
       auto pp_layout = EspUniformMetaData::create();
       pp_layout->establish_descriptor_set();
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
@@ -94,7 +103,8 @@ namespace my_game
                                   offsetof(ExamplePush, m_color),
                                   sizeof(glm::vec3));
 
-      auto builder = EspPipelineBuilder::create();
+      auto builder = EspWorkerBuilder::create();
+      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       builder->set_shaders("../resources/Shaders/Example/shader.vert.spv",
                            "../resources/Shaders/Example/shader.frag.spv");
       builder->set_vertex_layouts({
@@ -107,7 +117,7 @@ namespace my_game
       }                                                                                            /* VTX_LAYOUTS */
       );
       builder->set_pipeline_layout(std::move(pp_layout));
-      m_pipeline          = builder->build_pipeline();
+      m_pipeline          = builder->build_worker();
       m_uniform_manager_1 = m_pipeline->create_uniform_manager();
       m_uniform_manager_1->build();
       m_uniform_manager_2 = m_pipeline->create_uniform_manager();
@@ -127,29 +137,33 @@ namespace my_game
 
     virtual void update(float dt) override
     {
-      m_pipeline->attach();
-      m_vertex_buffer->attach();
+      m_final_product_plan->begin_plan();
+      {
+        m_pipeline->attach();
+        m_vertex_buffer->attach();
 
-      m_push_pos.x += dt / 4;
-      m_uniform_manager_1->update_push_uniform(0, &m_push_pos);
-      m_push_color += dt / 8;
-      m_uniform_manager_1->update_push_uniform(1, &m_push_color);
+        m_push_pos.x += dt / 4;
+        m_uniform_manager_1->update_push_uniform(0, &m_push_pos);
+        m_push_color += dt / 8;
+        m_uniform_manager_1->update_push_uniform(1, &m_push_color);
 
-      auto mvp = get_new_mvp();
-      m_uniform_manager_1->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
-      m_uniform_manager_1->attach();
+        auto mvp = get_new_mvp();
+        m_uniform_manager_1->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
+        m_uniform_manager_1->attach();
 
-      m_square_index_buffer->attach();
-      EspCommandHandler::draw_indexed(m_square_indices.size());
+        m_square_index_buffer->attach();
+        EspJobs::draw_indexed(m_square_indices.size());
 
-      m_vertex_buffer->attach();
+        // m_vertex_buffer->attach();
 
-      mvp = get_new_mvp2();
-      m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
-      m_uniform_manager_2->attach();
+        mvp = get_new_mvp2();
+        m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
+        m_uniform_manager_2->attach();
 
-      m_square_index_buffer->attach();
-      EspCommandHandler::draw_indexed(m_square_indices.size());
+        m_square_index_buffer->attach();
+        EspJobs::draw_indexed(m_square_indices.size());
+      }
+      m_final_product_plan->end_plan();
     }
 
     virtual void handle_event(esp::Event& event, float dt) override

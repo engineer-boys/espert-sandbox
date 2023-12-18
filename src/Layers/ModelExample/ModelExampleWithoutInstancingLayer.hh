@@ -19,7 +19,7 @@ namespace model_example_without_instancing
   class ModelExampleWithoutInstancingLayer : public Layer
   {
    private:
-    std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspWorker> m_pipeline;
     std::array<std::unique_ptr<EspUniformManager>, 3> m_uniform_managers{};
 
     std::shared_ptr<Mesh> m_cube_mesh;
@@ -35,14 +35,15 @@ namespace model_example_without_instancing
       uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
 
-      auto builder = EspPipelineBuilder::create();
+      auto builder = EspWorkerBuilder::create();
+      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
 
       builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.vert.spv",
                            "../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.frag.spv");
       builder->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
-      m_pipeline = builder->build_pipeline();
+      m_pipeline = builder->build_worker();
 
       m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
 
@@ -109,8 +110,8 @@ namespace model_example_without_instancing
             m_uniform_managers[i]->attach();
 
             auto& model = node->get_entity()->get_component<ModelComponent>();
-            model.m_model_handle->draw();
 
+            model.m_model_handle->draw();
             i++;
           });
     }

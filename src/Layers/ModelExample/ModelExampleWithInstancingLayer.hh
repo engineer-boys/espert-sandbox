@@ -24,7 +24,7 @@ namespace model_example_with_instancing
 #define CUBES_X 3
 #define CUBES_Z 9
 
-    std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspWorker> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<Mesh> m_cube_mesh;
@@ -40,10 +40,11 @@ namespace model_example_with_instancing
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
 
-      auto builder = EspPipelineBuilder::create();
+      auto builder = EspWorkerBuilder::create();
 
       builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.vert.spv",
                            "../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.frag.spv");
+      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       builder->set_vertex_layouts({
           Mesh::Vertex::get_vertex_layout(),
           VTX_LAYOUT(sizeof(CubeInstance),
@@ -56,7 +57,7 @@ namespace model_example_with_instancing
       });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
-      m_pipeline = builder->build_pipeline();
+      m_pipeline = builder->build_worker();
 
       m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
       m_cube_model = std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, *m_pipeline);
