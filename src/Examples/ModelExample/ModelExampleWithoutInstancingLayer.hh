@@ -48,7 +48,8 @@ namespace model_example_without_instancing
       {
         cube = m_scene->create_entity();
         cube->add_component<TransformComponent>();
-        cube->add_component<ModelComponent>(std::make_shared<Model>(m_cube_mesh));
+        cube->add_component<ModelComponent>(
+            std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, m_shader));
       }
 
       m_main_cube_node = Node::create();
