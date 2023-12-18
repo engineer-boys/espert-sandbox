@@ -24,7 +24,7 @@ namespace model_example_with_instancing
 #define CUBES_X 3
 #define CUBES_Z 9
 
-    std::unique_ptr<EspWorker> m_pipeline;
+    std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<Mesh> m_cube_mesh;
@@ -40,12 +40,9 @@ namespace model_example_with_instancing
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
 
-      auto builder = EspWorkerBuilder::create();
-
-      builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.vert.spv",
-                           "../resources/Shaders/ModelExample/ModelExampleWithInstancing/shader.frag.spv");
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      builder->set_vertex_layouts({
+      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithInstancing/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts({
           Mesh::Vertex::get_vertex_layout(),
           VTX_LAYOUT(sizeof(CubeInstance),
                      1,
@@ -55,12 +52,11 @@ namespace model_example_with_instancing
                      ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
                      ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
       });
-      builder->set_pipeline_layout(std::move(uniform_meta_data));
-
-      m_pipeline = builder->build_worker();
+      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
+      m_shader->build_pipeline();
 
       m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
-      m_cube_model = std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, *m_pipeline);
+      m_cube_model = std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, m_shader);
 
       std::array<std::shared_ptr<Entity>, CUBES_X * CUBES_Z> cubes{};
       for (auto& cube : cubes)
@@ -116,14 +112,14 @@ namespace model_example_with_instancing
           });
       m_cube_model->add_instance_buffer(instances);
 
-      m_uniform_manager = m_pipeline->create_uniform_manager();
+      m_uniform_manager = m_shader->create_uniform_manager();
       m_uniform_manager->build();
     }
 
    private:
     virtual void update(float dt) override
     {
-      m_pipeline->attach();
+      m_shader->attach();
 
       m_main_cube_node->act(TransformAction::reset);
       m_main_cube_node->act(TransformAction::translate, ABSOLUTE);

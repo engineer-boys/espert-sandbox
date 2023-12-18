@@ -40,8 +40,8 @@ namespace my_game
 
   class TextureExampleLayer : public Layer
   {
-    std::unique_ptr<EspWorker> m_pipeline;
-    std::unique_ptr<EspUniformManager> m_uniform_manager;
+    std::shared_ptr<EspShader> m_shader;
+    std::shared_ptr<Material> m_material;
 
     std::vector<TextureExampleVertex> m_vertices = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
                                                      { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
@@ -69,27 +69,20 @@ namespace my_game
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(TextureExampleUniform));
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
-      auto builder = EspWorkerBuilder::create();
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      builder->set_shaders("../resources/Shaders/TextureExample/shader.vert.spv",
-                           "../resources/Shaders/TextureExample/shader.frag.spv");
-      builder->set_vertex_layouts(
+      m_shader = ShaderSystem::acquire("Shaders/TextureExample/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts(
           { VTX_LAYOUT(sizeof(TextureExampleVertex),
                        0,
                        ESP_VERTEX_INPUT_RATE_VERTEX,
                        ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureExampleVertex, position)),
                        ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(TextureExampleVertex, color)),
                        ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureExampleVertex, tex_coord))) });
-      builder->set_pipeline_layout(std::move(uniform_meta_data));
-      m_pipeline = builder->build_worker();
-
-      m_uniform_manager = m_pipeline->create_uniform_manager();
+      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
+      m_shader->build_pipeline();
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg");
-
-      m_uniform_manager->load_texture(0, 1, texture);
-
-      m_uniform_manager->build();
+      m_material   = MaterialSystem::acquire("david_material", { texture }, m_shader);
 
       m_vertex_buffer = EspVertexBuffer::create(m_vertices.data(), sizeof(TextureExampleVertex), m_vertices.size());
 
@@ -103,13 +96,13 @@ namespace my_game
     {
       m_final_product_plan->begin_plan();
       {
-        m_pipeline->attach();
+        m_shader->attach();
         m_vertex_buffer->attach();
         m_index_buffer->attach();
 
         auto ubo = get_new_texture_example_uniform();
-        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
-        m_uniform_manager->attach();
+        m_material->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
+        m_material->attach();
 
         EspJob::draw_indexed(m_indices.size());
       }

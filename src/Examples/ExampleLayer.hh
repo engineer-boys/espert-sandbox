@@ -65,7 +65,7 @@ namespace my_game
 
   class ExampleLayer : public esp::Layer
   {
-    std::unique_ptr<EspWorker> m_pipeline;
+    std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager_1;
     std::unique_ptr<EspUniformManager> m_uniform_manager_2;
 
@@ -103,11 +103,8 @@ namespace my_game
                                   offsetof(ExamplePush, m_color),
                                   sizeof(glm::vec3));
 
-      auto builder = EspWorkerBuilder::create();
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      builder->set_shaders("../resources/Shaders/Example/shader.vert.spv",
-                           "../resources/Shaders/Example/shader.frag.spv");
-      builder->set_vertex_layouts({
+      m_shader = ShaderSystem::acquire("Shaders/Example/shader");
+      m_shader->set_vertex_layouts({
           VTX_LAYOUT(
               sizeof(ExampleVertex),
               0,
@@ -116,11 +113,12 @@ namespace my_game
               ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
       }                                                                                            /* VTX_LAYOUTS */
       );
-      builder->set_pipeline_layout(std::move(pp_layout));
-      m_pipeline          = builder->build_worker();
-      m_uniform_manager_1 = m_pipeline->create_uniform_manager();
+      m_shader->set_pipeline_layout(std::move(pp_layout));
+      m_shader->build_pipeline();
+
+      m_uniform_manager_1 = m_shader->create_uniform_manager();
       m_uniform_manager_1->build();
-      m_uniform_manager_2 = m_pipeline->create_uniform_manager();
+      m_uniform_manager_2 = m_shader->create_uniform_manager();
       m_uniform_manager_2->build();
 
       m_vertex_buffer = EspVertexBuffer::create(m_square.data(), sizeof(ExampleVertex), m_square.size());
@@ -139,7 +137,7 @@ namespace my_game
     {
       m_final_product_plan->begin_plan();
       {
-        m_pipeline->attach();
+        m_shader->attach();
         m_vertex_buffer->attach();
 
         m_push_pos.x += dt / 4;

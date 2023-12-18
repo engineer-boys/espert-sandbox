@@ -41,7 +41,7 @@ namespace my_game
 
   class InstancingExampleLayer : public esp::Layer
   {
-    std::unique_ptr<EspWorker> m_pipeline;
+    std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::vector<InstancingExampleVertex> m_square = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f } },
@@ -78,12 +78,9 @@ namespace my_game
       pp_layout->establish_descriptor_set();
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(InstancingExampleUniform));
 
-      auto builder = EspWorkerBuilder::create();
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      builder->set_shaders("../resources/Shaders/InstancingExample/shader.vert.spv",
-                           "../resources/Shaders/InstancingExample/shader.frag.spv");
-      builder->set_vertex_layouts({
-          VTX_LAYOUT(sizeof(InstancingExampleVertex),
+      m_shader = ShaderSystem::acquire("Shaders/InstancingExample/shader");
+      m_shader->set_vertex_layouts({
+          VTX_LAYOUT(sizeof(ExampleVertex),
                      0,
                      ESP_VERTEX_INPUT_RATE_VERTEX,
                      ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(InstancingExampleVertex, position)),
@@ -94,9 +91,10 @@ namespace my_game
                      ATTR(2, ESP_FORMAT_R32G32_SFLOAT, 0)) /* VTX_LAYOUT*/
       }                                                    /* VTX_LAYOUTS */
       );
-      builder->set_pipeline_layout(std::move(pp_layout));
-      m_pipeline        = builder->build_worker();
-      m_uniform_manager = m_pipeline->create_uniform_manager();
+      m_shader->set_pipeline_layout(std::move(pp_layout));
+      m_shader->build_pipeline();
+
+      m_uniform_manager = m_shader->create_uniform_manager();
       m_uniform_manager->build();
 
       m_vertex_buffer = EspVertexBuffer::create(m_square.data(), sizeof(ExampleVertex), m_square.size());
@@ -117,7 +115,7 @@ namespace my_game
     {
       m_final_product_plan->begin_plan();
       {
-        m_pipeline->attach();
+        m_shader->attach();
         m_vertex_buffer->attach_instanced(*m_instance_buffer);
         m_square_index_buffer->attach();
 
