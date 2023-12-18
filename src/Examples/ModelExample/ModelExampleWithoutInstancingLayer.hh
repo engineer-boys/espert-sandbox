@@ -19,7 +19,7 @@ namespace model_example_without_instancing
   class ModelExampleWithoutInstancingLayer : public Layer
   {
    private:
-    std::unique_ptr<EspWorker> m_pipeline;
+    std::shared_ptr<EspShader> m_shader;
     std::array<std::unique_ptr<EspUniformManager>, 3> m_uniform_managers{};
 
     std::shared_ptr<Mesh> m_cube_mesh;
@@ -35,15 +35,11 @@ namespace model_example_without_instancing
       uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
 
-      auto builder = EspWorkerBuilder::create();
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-
-      builder->set_shaders("../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.vert.spv",
-                           "../resources/Shaders/ModelExample/ModelExampleWithoutInstancing/shader.frag.spv");
-      builder->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      builder->set_pipeline_layout(std::move(uniform_meta_data));
-
-      m_pipeline = builder->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithoutInstancing/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
+      m_shader->build_pipeline();
 
       m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
 
@@ -53,7 +49,7 @@ namespace model_example_without_instancing
         cube = m_scene->create_entity();
         cube->add_component<TransformComponent>();
         cube->add_component<ModelComponent>(
-            std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, *m_pipeline));
+            std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, m_shader));
       }
 
       m_main_cube_node = Node::create();
@@ -76,7 +72,7 @@ namespace model_example_without_instancing
 
       for (auto& manager : m_uniform_managers)
       {
-        manager = m_pipeline->create_uniform_manager();
+        manager = m_shader->create_uniform_manager();
         manager->build();
       }
     }
@@ -84,7 +80,7 @@ namespace model_example_without_instancing
    private:
     virtual void update(float dt) override
     {
-      m_pipeline->attach();
+      m_shader->attach();
 
       m_main_cube_node->act(
           [dt](Node* node)
