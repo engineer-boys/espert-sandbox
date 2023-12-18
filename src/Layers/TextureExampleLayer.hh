@@ -33,14 +33,14 @@ namespace my_game
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj =
-        glm::perspective(glm::radians(45.0f), EspFrameManager::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
+        glm::perspective(glm::radians(45.0f), EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
     return ubo;
   }
 
   class TextureExampleLayer : public Layer
   {
-    std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspWorker> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::vector<TextureExampleVertex> m_vertices = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
@@ -52,15 +52,25 @@ namespace my_game
     std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
     std::unique_ptr<EspIndexBuffer> m_index_buffer;
 
+    std::shared_ptr<EspDepthBlock> m_depth_block;
+    std::unique_ptr<EspProductPlan> m_final_product_plan;
+
    public:
     TextureExampleLayer()
     {
+      m_depth_block =
+          EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
+
+      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(TextureExampleUniform));
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
-      auto builder = EspPipelineBuilder::create();
+      auto builder = EspWorkerBuilder::create();
+      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       builder->set_shaders("../resources/Shaders/TextureExample/shader.vert.spv",
                            "../resources/Shaders/TextureExample/shader.frag.spv");
       builder->set_vertex_layouts(
@@ -71,7 +81,7 @@ namespace my_game
                        ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(TextureExampleVertex, color)),
                        ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureExampleVertex, tex_coord))) });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
-      m_pipeline = builder->build_pipeline();
+      m_pipeline = builder->build_worker();
 
       m_uniform_manager = m_pipeline->create_uniform_manager();
 
@@ -91,16 +101,19 @@ namespace my_game
 
     virtual void update(float dt) override
     {
-      m_pipeline->attach();
-      m_vertex_buffer->attach();
-      m_index_buffer->attach();
+      m_final_product_plan->begin_plan();
+      {
+        m_pipeline->attach();
+        m_vertex_buffer->attach();
+        m_index_buffer->attach();
 
-      auto ubo = get_new_texture_example_uniform();
-      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
-      m_uniform_manager->attach();
+        auto ubo = get_new_texture_example_uniform();
+        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
+        m_uniform_manager->attach();
 
-      m_index_buffer->attach();
-      EspCommandHandler::draw_indexed(m_indices.size());
+        EspJobs::draw_indexed(m_indices.size());
+      }
+      m_final_product_plan->end_plan();
     }
   };
 } // namespace my_game

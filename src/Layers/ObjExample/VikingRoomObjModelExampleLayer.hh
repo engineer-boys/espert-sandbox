@@ -18,13 +18,17 @@ namespace obj_example
   class VikingRoomObjModelExampleLayer : public Layer
   {
    private:
-    std::unique_ptr<EspPipeline> m_pipeline;
+    std::unique_ptr<EspWorker> m_pipeline;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
 
     std::shared_ptr<Node> m_viking_room_node;
+
+    std::shared_ptr<EspDepthBlock> m_depth_block;
+
+    std::unique_ptr<EspProductPlan> m_final_product_plan;
 
    public:
     VikingRoomObjModelExampleLayer()
@@ -38,6 +42,12 @@ namespace obj_example
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
 
+      m_depth_block =
+          EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+
+      m_final_product_plan = EspProductPlan::build_final(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+      m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VikingRoomUniform));
@@ -48,14 +58,16 @@ namespace obj_example
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
-      auto builder = EspPipelineBuilder::create();
+      auto builder = EspWorkerBuilder::create();
+      builder->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
 
       builder->set_shaders("../resources/Shaders/ObjExample/VikingRoomObjModelExample/shader.vert.spv",
                            "../resources/Shaders/ObjExample/VikingRoomObjModelExample/shader.frag.spv");
       builder->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
       builder->set_pipeline_layout(std::move(uniform_meta_data));
 
-      m_pipeline = builder->build_pipeline();
+      m_pipeline = builder->build_worker();
 
       m_uniform_manager = m_pipeline->create_uniform_manager(0, 0);
       m_uniform_manager->build();
@@ -77,30 +89,34 @@ namespace obj_example
    private:
     virtual void update(float dt) override
     {
-      Scene::set_current_camera(&m_camera);
+      m_final_product_plan->begin_plan();
+      {
+        Scene::set_current_camera(&m_camera);
 
-      m_pipeline->attach();
+        m_pipeline->attach();
 
-      m_viking_room_node->act(
-          [&dt](Node* node)
-          {
-            auto& transform = node->get_entity()->get_component<TransformComponent>();
-            transform.reset();
-            TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ABSOLUTE);
-          });
+        m_viking_room_node->act(
+            [&dt](Node* node)
+            {
+              auto& transform = node->get_entity()->get_component<TransformComponent>();
+              transform.reset();
+              TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ABSOLUTE);
+            });
 
-      m_camera.set_perspective(EspFrameManager::get_swap_chain_extent_aspect_ratio());
+        m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
-      auto& transform = m_viking_room_node->get_entity()->get_component<TransformComponent>();
-      VikingRoomUniform ubo{};
-      ubo.model = transform.get_model_mat();
-      ubo.view  = m_camera.get_view();
-      ubo.proj  = m_camera.get_projection();
-      m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
-      m_uniform_manager->attach();
+        auto& transform = m_viking_room_node->get_entity()->get_component<TransformComponent>();
+        VikingRoomUniform ubo{};
+        ubo.model = transform.get_model_mat();
+        ubo.view  = m_camera.get_view();
+        ubo.proj  = m_camera.get_projection();
+        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
+        m_uniform_manager->attach();
 
-      auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
-      model.m_model_handle->draw();
+        auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
+        model.m_model_handle->draw();
+      }
+      m_final_product_plan->end_plan();
     }
   };
 
