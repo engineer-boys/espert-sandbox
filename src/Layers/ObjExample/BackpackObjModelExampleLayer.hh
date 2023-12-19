@@ -28,7 +28,7 @@ namespace obj_example
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
-    std::unique_ptr<EspProductPlan> m_final_product_plan;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
    public:
     BackpackObjModelExampleLayer()
@@ -56,7 +56,7 @@ namespace obj_example
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
       auto pipeline_builder = EspWorkerBuilder::create();

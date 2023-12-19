@@ -63,8 +63,8 @@ namespace advance_rendering_example
     std::shared_ptr<EspBlock> m_block;
     std::shared_ptr<EspDepthBlock> m_depth_block;
 
-    std::unique_ptr<EspProductPlan> m_product_plan;
-    std::unique_ptr<EspProductPlan> m_final_product_plan;
+    std::unique_ptr<EspRenderPlan> m_product_plan;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
    public:
     OffscreenRenderingLayer()
@@ -78,7 +78,7 @@ namespace advance_rendering_example
         m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                              EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
 
-        m_product_plan = EspProductPlan::build();
+        m_product_plan = EspRenderPlan::build();
         m_product_plan->add_block(std::shared_ptr{ m_block });
         m_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
@@ -112,7 +112,7 @@ namespace advance_rendering_example
 
       // 2. render pass [ON-SCREEN]
       {
-        m_final_product_plan = EspProductPlan::build_final();
+        m_final_product_plan = EspRenderPlan::build_final();
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
@@ -156,7 +156,7 @@ namespace advance_rendering_example
         m_uniform_manager_off->update_buffer_uniform(0, 0, 0, sizeof(MVPExampleUniform), &ubo);
         m_uniform_manager_off->attach();
 
-        EspJobs::draw(m_vertices.size());
+        EspJob::draw(m_vertices.size());
       }
       m_product_plan->end_plan();
 
@@ -171,7 +171,7 @@ namespace advance_rendering_example
         m_uniform_manager_on->attach();
 
         m_index_buffer_quad->attach();
-        EspJobs::draw_indexed(quad_idx.size());
+        EspJob::draw_indexed(quad_idx.size());
       }
       m_final_product_plan->end_plan();
     }

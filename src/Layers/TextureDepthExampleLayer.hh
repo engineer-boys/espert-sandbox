@@ -55,7 +55,7 @@ namespace my_game
     std::unique_ptr<EspIndexBuffer> m_index_buffer;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
-    std::unique_ptr<EspProductPlan> m_final_product_plan;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
    public:
     TextureDepthExampleLayer()
@@ -63,7 +63,7 @@ namespace my_game
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
       auto uniform_meta_data = EspUniformMetaData::create();
@@ -114,7 +114,7 @@ namespace my_game
         m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureDepthExampleUniform), &ubo);
         m_uniform_manager->attach();
 
-        EspJobs::draw_indexed(m_indices.size());
+        EspJob::draw_indexed(m_indices.size());
       }
       m_final_product_plan->end_plan();
     }
