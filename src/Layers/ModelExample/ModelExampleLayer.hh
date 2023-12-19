@@ -22,7 +22,7 @@ namespace model_example
     std::unique_ptr<Layer> m_model_example_without_instancing_layer;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
-    std::unique_ptr<EspProductPlan> m_final_product_plan;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
    public:
     ModelExampleLayer()
@@ -30,7 +30,7 @@ namespace model_example
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
       m_scene = Scene::create();

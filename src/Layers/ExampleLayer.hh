@@ -82,7 +82,7 @@ namespace my_game
     glm::vec3 m_push_color{ 0.f, 0.f, 0.f };
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
-    std::unique_ptr<EspProductPlan> m_final_product_plan;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
    public:
     ExampleLayer()
@@ -90,7 +90,7 @@ namespace my_game
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspProductPlan::build_final();
+      m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
       auto pp_layout = EspUniformMetaData::create();
@@ -152,7 +152,7 @@ namespace my_game
         m_uniform_manager_1->attach();
 
         m_square_index_buffer->attach();
-        EspJobs::draw_indexed(m_square_indices.size());
+        EspJob::draw_indexed(m_square_indices.size());
 
         // m_vertex_buffer->attach();
 
@@ -161,7 +161,7 @@ namespace my_game
         m_uniform_manager_2->attach();
 
         m_square_index_buffer->attach();
-        EspJobs::draw_indexed(m_square_indices.size());
+        EspJob::draw_indexed(m_square_indices.size());
       }
       m_final_product_plan->end_plan();
     }
