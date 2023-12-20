@@ -1,13 +1,6 @@
-#ifndef LAYERS_HH
-#define LAYERS_HH
+#ifndef LAYERS_LAYERS_HH
+#define LAYERS_LAYERS_HH
 
-#include "Layers/ExampleLayer.hh"
-#include "Layers/InstancingExampleLayer.hh"
-#include "Layers/ModelExample/ModelExampleLayer.hh"
-#include "Layers/ObjExample/BackpackObjModelExampleLayer.hh"
-#include "Layers/ObjExample/VikingRoomObjModelExampleLayer.hh"
-#include "Layers/OffscreenRenderingLayer.hh"
-#include "Layers/TextureDepthExampleLayer.hh"
-#include "Layers/TextureExampleLayer.hh"
+#include "InputLayer.hh"
 
-#endif // LAYERS_HH
+#endif // LAYERS_LAYERS_HH
