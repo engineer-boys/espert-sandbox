@@ -1,14 +1,16 @@
+#include "Examples/Examples.hh"
 #include "Layers/Layers.hh"
 
-// libs
-#include <Espert.hh>
+#include "ClientPoint.hh"
 
-class SandBoxApp : public esp::Application
+class SandBoxApp : public esp::EspApplication
 {
  private:
  public:
   SandBoxApp()
   {
+    push_layer(new esp_sbx::InputLayer());
+
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
     // push_layer(new my_game::InstancingExampleLayer());
@@ -21,7 +23,7 @@ class SandBoxApp : public esp::Application
   }
 };
 
-esp::Application* esp::create_app_instance()
+esp::EspApplication* esp::create_app_instance()
 {
   const auto& app = new SandBoxApp();
   return app;
