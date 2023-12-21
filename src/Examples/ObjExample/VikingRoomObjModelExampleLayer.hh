@@ -18,8 +18,8 @@ namespace obj_example
   class VikingRoomObjModelExampleLayer : public Layer
   {
    private:
-    std::unique_ptr<EspWorker> m_pipeline;
-    std::unique_ptr<EspUniformManager> m_uniform_manager;
+    std::shared_ptr<EspShader> m_shader;
+    std::shared_ptr<Material> m_material;
 
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
@@ -58,19 +58,12 @@ namespace obj_example
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
-      auto builder = EspWorkerBuilder::create();
-      builder->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-      builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-
-      builder->set_shaders("../resources/Shaders/ObjExample/VikingRoomObjModelExample/shader.vert.spv",
-                           "../resources/Shaders/ObjExample/VikingRoomObjModelExample/shader.frag.spv");
-      builder->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      builder->set_pipeline_layout(std::move(uniform_meta_data));
-
-      m_pipeline = builder->build_worker();
-
-      m_uniform_manager = m_pipeline->create_uniform_manager(0, 0);
-      m_uniform_manager->build();
+      m_shader = ShaderSystem::acquire("Shaders/ObjExample/VikingRoomObjModelExample/shader");
+      m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
+      m_shader->build_pipeline();
 
       auto mesh =
           Model::Builder{}.load_model("Models/viking_room/viking_room.obj", Model::EspProcessFlipUVs).m_meshes[0];
@@ -93,7 +86,7 @@ namespace obj_example
       {
         Scene::set_current_camera(&m_camera);
 
-        m_pipeline->attach();
+        m_shader->attach();
 
         m_viking_room_node->act(
             [&dt](Node* node)
@@ -110,8 +103,8 @@ namespace obj_example
         ubo.model = transform.get_model_mat();
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
-        m_uniform_manager->attach();
+        m_material->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
+        m_material->attach();
 
         auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
         model.m_model_handle->draw();
