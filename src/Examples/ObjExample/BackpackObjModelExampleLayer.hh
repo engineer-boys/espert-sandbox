@@ -24,8 +24,8 @@ namespace obj_example
 
     std::shared_ptr<Model> m_backpack_model;
 
-    std::unique_ptr<EspWorker> m_pipeline;
-    std::unique_ptr<EspUniformManager> m_uniform_manager;
+    std::shared_ptr<EspShader> m_shader;
+    std::shared_ptr<Material> m_material;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
@@ -59,23 +59,16 @@ namespace obj_example
       m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      auto pipeline_builder = EspWorkerBuilder::create();
-      pipeline_builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                          EspCompareOp::ESP_COMPARE_OP_LESS);
-
-      pipeline_builder->set_shaders("../resources/Shaders/ObjExample/BackpackObjModelExample/shader.vert.spv",
-                                    "../resources/Shaders/ObjExample/BackpackObjModelExample/shader.frag.spv");
-      pipeline_builder->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      pipeline_builder->set_pipeline_layout(std::move(uniform_meta_data));
-
-      m_pipeline = pipeline_builder->build_worker();
-
-      m_uniform_manager = m_pipeline->create_uniform_manager(0, 0);
-      m_uniform_manager->build();
+      m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
+      m_shader->build_pipeline();
 
       Model::Builder model_builder{};
+      model_builder.set_shader(m_shader);
       model_builder.load_model("Models/backpack/backpack.obj");
-      m_backpack_model = std::make_shared<Model>(model_builder, *m_pipeline);
+      m_backpack_model = std::make_shared<Model>(model_builder);
 
       auto backpack = m_scene->create_entity("backpack");
       backpack->add_component<TransformComponent>();
@@ -96,10 +89,10 @@ namespace obj_example
         ubo.model = glm::mat4{ 1.f };
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(BackpackObjModelUniform), &ubo);
-        m_uniform_manager->attach();
+        m_material->update_buffer_uniform(0, 0, 0, sizeof(BackpackObjModelUniform), &ubo);
+        m_material->attach();
 
-        m_pipeline->attach();
+        m_shader->attach();
         m_backpack_model->draw();
       }
       m_final_product_plan->end_plan();
