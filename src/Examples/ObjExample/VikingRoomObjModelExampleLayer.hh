@@ -65,15 +65,16 @@ namespace obj_example
       m_shader->set_pipeline_layout(std::move(uniform_meta_data));
       m_shader->build_pipeline();
 
-      auto mesh =
-          Model::Builder{}.load_model("Models/viking_room/viking_room.obj", Model::EspProcessFlipUVs).m_meshes[0];
+      auto mesh = Model::Builder{}
+                      .set_shader(m_shader)
+                      .load_model("Models/viking_room/viking_room.obj", { .load_material = false })
+                      .m_meshes[0];
+      m_material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png") }, m_shader);
+      mesh->set_material(m_material);
 
       auto viking_room = m_scene->create_entity("viking room");
       viking_room->add_component<TransformComponent>();
-      viking_room->add_component<ModelComponent>(std::make_shared<Model>(
-          mesh,
-          std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Models/viking_room/albedo.png") },
-          *m_pipeline));
+      viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh));
 
       m_viking_room_node->attach_entity(viking_room);
       TransformAction::update_rotation(m_viking_room_node.get(), glm::radians(90.f), { 1.f, 0.f, 0.f }, ABSOLUTE);

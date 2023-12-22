@@ -82,7 +82,8 @@ namespace my_game
       m_shader->build_pipeline();
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg");
-      m_material   = MaterialSystem::acquire("david_material", { texture }, m_shader);
+      m_material =
+          MaterialSystem::acquire("david_material", { texture }, m_shader, { { 0, 1, EspTextureType::ALBEDO } });
 
       m_vertex_buffer = EspVertexBuffer::create(m_vertices.data(), sizeof(TextureExampleVertex), m_vertices.size());
 
