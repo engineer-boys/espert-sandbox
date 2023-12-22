@@ -104,6 +104,7 @@ namespace my_game
                                   sizeof(glm::vec3));
 
       m_shader = ShaderSystem::acquire("Shaders/Example/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({
           VTX_LAYOUT(
               sizeof(ExampleVertex),
