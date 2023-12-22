@@ -49,8 +49,8 @@ namespace advance_rendering_example
 
   class OffscreenRenderingLayer : public Layer
   {
-    std::unique_ptr<EspWorker> m_pipeline_off;
-    std::unique_ptr<EspWorker> m_pipeline_on;
+    std::shared_ptr<EspShader> m_shader_off;
+    std::shared_ptr<EspShader> m_shader_on;
     std::unique_ptr<EspUniformManager> m_uniform_manager_off;
     std::unique_ptr<EspUniformManager> m_uniform_manager_on;
 
@@ -86,12 +86,10 @@ namespace advance_rendering_example
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
 
-        auto builder = EspWorkerBuilder::create();
-        builder->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-        builder->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-        builder->set_shaders("../resources/Shaders/OffscreenRnd/shader.vert.spv",
-                             "../resources/Shaders/OffscreenRnd/shader.frag.spv");
-        builder->set_vertex_layouts(
+        m_shader_off = ShaderSystem::acquire("Shaders/OffscreenRnd/shader");
+        m_shader_off->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+        m_shader_off->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+        m_shader_off->set_vertex_layouts(
             { VTX_LAYOUT(sizeof(Mesh::Vertex),
                          0,
                          ESP_VERTEX_INPUT_RATE_VERTEX,
@@ -99,10 +97,10 @@ namespace advance_rendering_example
                          ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_color)),
                          ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_normal)),
                          ATTR(3, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(Mesh::Vertex, m_tex_coord))) });
-        builder->set_pipeline_layout(std::move(uniform_meta_data));
-        m_pipeline_off = builder->build_worker();
+        m_shader_off->set_pipeline_layout(std::move(uniform_meta_data));
+        m_shader_off->build_pipeline();
 
-        m_uniform_manager_off = m_pipeline_off->create_uniform_manager();
+        m_uniform_manager_off = m_shader_off->create_uniform_manager();
         m_uniform_manager_off->build();
 
         m_vertex_buffers = EspVertexBuffer::create(m_vertices.data(), sizeof(Mesh::Vertex), m_vertices.size());
@@ -119,19 +117,17 @@ namespace advance_rendering_example
         uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
         // uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
 
-        auto builder = EspWorkerBuilder::create();
-        builder->set_shaders("../resources/Shaders/OffscreenRnd/shader_on.vert.spv",
-                             "../resources/Shaders/OffscreenRnd/shader_on.frag.spv");
-        builder->set_vertex_layouts(
+        m_shader_on = ShaderSystem::acquire("Shaders/OffscreenRnd/shader_on");
+        m_shader_on->set_vertex_layouts(
             { VTX_LAYOUT(sizeof(QuatVertex),
                          0,
                          ESP_VERTEX_INPUT_RATE_VERTEX,
                          ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, pos)),
                          ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, texCoord))) });
-        builder->set_pipeline_layout(std::move(uniform_meta_data));
-        m_pipeline_on = builder->build_worker();
+        m_shader_on->set_pipeline_layout(std::move(uniform_meta_data));
+        m_shader_on->build_pipeline();
 
-        m_uniform_manager_on = m_pipeline_on->create_uniform_manager();
+        m_uniform_manager_on = m_shader_on->create_uniform_manager();
         m_uniform_manager_on->load_block(0, 0, m_block.get());
         m_uniform_manager_on->build();
 
@@ -149,7 +145,7 @@ namespace advance_rendering_example
       // 1. render pass
       m_product_plan->begin_plan();
       {
-        m_pipeline_off->attach();
+        m_shader_off->attach();
         m_vertex_buffers->attach();
 
         auto ubo = get_new_MVP();
@@ -165,7 +161,7 @@ namespace advance_rendering_example
       // 2. render pass
       m_final_product_plan->begin_plan();
       {
-        m_pipeline_on->attach();
+        m_shader_on->attach();
         m_vertex_buffers_quad->attach();
 
         m_uniform_manager_on->attach();

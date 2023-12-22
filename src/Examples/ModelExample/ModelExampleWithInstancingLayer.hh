@@ -56,7 +56,7 @@ namespace model_example_with_instancing
       m_shader->build_pipeline();
 
       m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
-      m_cube_model = std::make_shared<Model>(m_cube_mesh, std::vector<std::shared_ptr<EspTexture>>{}, m_shader);
+      m_cube_model = std::make_shared<Model>(m_cube_mesh);
 
       std::array<std::shared_ptr<Entity>, CUBES_X * CUBES_Z> cubes{};
       for (auto& cube : cubes)
