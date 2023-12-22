@@ -79,6 +79,7 @@ namespace my_game
       pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(InstancingExampleUniform));
 
       m_shader = ShaderSystem::acquire("Shaders/InstancingExample/shader");
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({
           VTX_LAYOUT(sizeof(ExampleVertex),
                      0,

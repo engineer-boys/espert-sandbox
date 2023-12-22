@@ -67,7 +67,8 @@ namespace obj_example
 
       auto mesh = Model::Builder{}
                       .set_shader(m_shader)
-                      .load_model("Models/viking_room/viking_room.obj", { .load_material = false })
+                      .load_model("Models/viking_room/viking_room.obj",
+                                  { .p_flags = EspProcessFlipUVs, .load_material = false })
                       .m_meshes[0];
       m_material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png") }, m_shader);
       mesh->set_material(m_material);
