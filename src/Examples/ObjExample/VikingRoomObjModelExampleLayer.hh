@@ -19,7 +19,7 @@ namespace obj_example
   {
    private:
     std::shared_ptr<EspShader> m_shader;
-    std::shared_ptr<Material> m_material;
+    std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
@@ -65,13 +65,16 @@ namespace obj_example
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
+      m_uniform_manager = m_shader->create_uniform_manager(0, 0);
+      m_uniform_manager->build();
+
       auto mesh = Model::Builder{}
                       .set_shader(m_shader)
                       .load_model("Models/viking_room/viking_room.obj",
                                   { .p_flags = EspProcessFlipUVs, .load_material = false })
                       .m_meshes[0];
-      m_material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png") }, m_shader);
-      mesh->set_material(m_material);
+      auto material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png") }, m_shader);
+      mesh->set_material(material);
 
       auto viking_room = m_scene->create_entity("viking room");
       viking_room->add_component<TransformComponent>();
@@ -105,8 +108,8 @@ namespace obj_example
         ubo.model = transform.get_model_mat();
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_material->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
-        m_material->attach();
+        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
+        m_uniform_manager->attach();
 
         auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
         model.m_model_handle->draw();
