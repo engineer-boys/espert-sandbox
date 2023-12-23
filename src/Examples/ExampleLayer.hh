@@ -114,8 +114,8 @@ namespace my_game
               ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
       }                                                                                            /* VTX_LAYOUTS */
       );
-      m_shader->set_pipeline_layout(std::move(pp_layout));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(pp_layout));
+      m_shader->build_worker();
 
       m_uniform_manager_1 = m_shader->create_uniform_manager();
       m_uniform_manager_1->build();

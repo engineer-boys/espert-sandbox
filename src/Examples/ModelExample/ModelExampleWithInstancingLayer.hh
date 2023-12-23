@@ -52,8 +52,8 @@ namespace model_example_with_instancing
                      ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
                      ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
       });
-      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->build_worker();
 
       m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
       m_cube_model = std::make_shared<Model>(m_cube_mesh);

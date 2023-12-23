@@ -80,8 +80,8 @@ namespace my_game
           ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(TextureDepthExampleVertex, position)),
           ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(TextureDepthExampleVertex, color)),
           ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureDepthExampleVertex, tex_coord))) });
-      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->build_worker();
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg");
       m_material =

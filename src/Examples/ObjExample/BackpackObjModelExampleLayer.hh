@@ -25,6 +25,7 @@ namespace obj_example
     std::shared_ptr<Model> m_backpack_model;
 
     std::shared_ptr<EspShader> m_shader;
+    std::unique_ptr<EspUniformManager> m_uniform_manager;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
@@ -61,8 +62,11 @@ namespace obj_example
       m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader");
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->build_worker();
+
+      m_uniform_manager = m_shader->create_uniform_manager();
+      m_uniform_manager->build();
 
       Model::Builder model_builder{};
       model_builder.set_shader(m_shader);
@@ -90,7 +94,7 @@ namespace obj_example
         ubo.proj  = m_camera.get_projection();
 
         m_shader->attach();
-        m_backpack_model->update_buffer_uniform(0, 0, 0, sizeof(BackpackObjModelUniform), &ubo);
+        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(BackpackObjModelUniform), &ubo);
         m_backpack_model->draw();
       }
       m_final_product_plan->end_plan();

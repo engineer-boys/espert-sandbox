@@ -62,8 +62,8 @@ namespace obj_example
       m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->build_worker();
 
       auto mesh = Model::Builder{}
                       .set_shader(m_shader)
