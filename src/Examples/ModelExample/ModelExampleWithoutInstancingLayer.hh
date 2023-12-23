@@ -38,8 +38,8 @@ namespace model_example_without_instancing
       m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithoutInstancing/shader");
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_pipeline_layout(std::move(uniform_meta_data));
-      m_shader->build_pipeline();
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->build_worker();
 
       m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
 

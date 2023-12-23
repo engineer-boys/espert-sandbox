@@ -97,8 +97,8 @@ namespace advance_rendering_example
                          ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_color)),
                          ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_normal)),
                          ATTR(3, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(Mesh::Vertex, m_tex_coord))) });
-        m_shader_off->set_pipeline_layout(std::move(uniform_meta_data));
-        m_shader_off->build_pipeline();
+        m_shader_off->set_worker_layout(std::move(uniform_meta_data));
+        m_shader_off->build_worker();
 
         m_uniform_manager_off = m_shader_off->create_uniform_manager();
         m_uniform_manager_off->build();
@@ -124,8 +124,8 @@ namespace advance_rendering_example
                          ESP_VERTEX_INPUT_RATE_VERTEX,
                          ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, pos)),
                          ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, texCoord))) });
-        m_shader_on->set_pipeline_layout(std::move(uniform_meta_data));
-        m_shader_on->build_pipeline();
+        m_shader_on->set_worker_layout(std::move(uniform_meta_data));
+        m_shader_on->build_worker();
 
         m_uniform_manager_on = m_shader_on->create_uniform_manager();
         m_uniform_manager_on->load_block(0, 0, m_block.get());
