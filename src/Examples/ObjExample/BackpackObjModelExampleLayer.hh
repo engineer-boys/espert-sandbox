@@ -65,7 +65,7 @@ namespace obj_example
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      m_uniform_manager = m_shader->create_uniform_manager();
+      m_uniform_manager = m_shader->create_uniform_manager(0, 0);
       m_uniform_manager->build();
 
       Model::Builder model_builder{};
@@ -95,6 +95,7 @@ namespace obj_example
 
         m_shader->attach();
         m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(BackpackObjModelUniform), &ubo);
+        m_uniform_manager->attach();
         m_backpack_model->draw();
       }
       m_final_product_plan->end_plan();
