@@ -65,7 +65,8 @@ namespace my_game
 
   class ExampleLayer : public esp::Layer
   {
-    std::shared_ptr<EspShader> m_shader;
+    std::shared_ptr<EspShader> m_shader_1;
+    std::shared_ptr<EspShader> m_shader_2;
     std::unique_ptr<EspUniformManager> m_uniform_manager_1;
     std::unique_ptr<EspUniformManager> m_uniform_manager_2;
 
@@ -104,9 +105,9 @@ namespace my_game
                                   offsetof(ExamplePush, m_color),
                                   sizeof(glm::vec3));
 
-      m_shader = ShaderSystem::acquire("Shaders/Example/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({
+      m_shader_1 = ShaderSystem::acquire("Shaders/Example/shader");
+      m_shader_1->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader_1->set_vertex_layouts({
           VTX_LAYOUT(
               sizeof(ExampleVertex),
               0,
@@ -115,12 +116,36 @@ namespace my_game
               ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
       }                                                                                            /* VTX_LAYOUTS */
       );
-      m_shader->set_worker_layout(std::move(pp_layout));
-      m_shader->build_worker();
+      m_shader_1->set_worker_layout(std::move(pp_layout));
+      m_shader_1->build_worker();
 
-      m_uniform_manager_1 = m_shader->create_uniform_manager();
+      m_uniform_manager_1 = m_shader_1->create_uniform_manager();
       m_uniform_manager_1->build();
-      m_uniform_manager_2 = m_shader->create_uniform_manager();
+
+      auto pp_layout_2 = EspUniformMetaData::create();
+      pp_layout_2->establish_descriptor_set();
+      pp_layout_2->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
+      pp_layout_2->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE,
+                                    offsetof(ExamplePush, m_pos),
+                                    sizeof(glm::vec2));
+
+      m_shader_2 = ShaderSystem::acquire(
+          "Shaders/Example/shader",
+          { { EspShaderStage::FRAGMENT, { { 0, true }, { 1, 0.5f }, { 2, 0.0f }, { 3, 1.0f } } } });
+      m_shader_2->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader_2->set_vertex_layouts({
+          VTX_LAYOUT(
+              sizeof(ExampleVertex),
+              0,
+              ESP_VERTEX_INPUT_RATE_VERTEX,
+              ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
+              ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
+      }                                                                                            /* VTX_LAYOUTS */
+      );
+      m_shader_2->set_worker_layout(std::move(pp_layout_2));
+      m_shader_2->build_worker();
+
+      m_uniform_manager_2 = m_shader_2->create_uniform_manager();
       m_uniform_manager_2->build();
 
       m_vertex_buffer = EspVertexBuffer::create(m_square.data(), sizeof(ExampleVertex), m_square.size());
@@ -139,7 +164,7 @@ namespace my_game
     {
       m_final_product_plan->begin_plan();
       {
-        m_shader->attach();
+        m_shader_1->attach();
         m_vertex_buffer->attach();
 
         m_push_pos.x += dt / 4;
@@ -154,7 +179,7 @@ namespace my_game
         m_square_index_buffer->attach();
         EspJob::draw_indexed(m_square_indices.size());
 
-        // m_vertex_buffer->attach();
+        m_shader_2->attach();
 
         mvp = get_new_mvp2();
         m_uniform_manager_2->update_buffer_uniform(0, 0, 0, sizeof(MVP), &mvp);
