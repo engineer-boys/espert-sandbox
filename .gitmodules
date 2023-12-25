@@ -1,4 +1,0 @@
-[submodule "espert-core"]
-	path = espert-core
-	url = git@github.com:engineer-boys/espert-core.git
-	branch = master
