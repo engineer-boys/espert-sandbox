@@ -73,7 +73,8 @@ namespace obj_example
                       .load_model("Models/viking_room/viking_room.obj",
                                   { .p_flags = EspProcessFlipUVs, .load_material = false })
                       .m_meshes[0];
-      auto material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png") }, m_shader);
+      auto material =
+          MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) }, m_shader);
       mesh->set_material(material);
 
       auto viking_room = m_scene->create_entity("viking room");
