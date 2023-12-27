@@ -104,8 +104,6 @@ namespace advance_rendering_example
         m_uniform_manager_off->build();
 
         m_vertex_buffers = EspVertexBuffer::create(m_vertices.data(), sizeof(Mesh::Vertex), m_vertices.size());
-
-        m_index_buffer_quad = EspIndexBuffer::create(quad_idx.data(), quad_idx.size());
       }
 
       // 2. render pass [ON-SCREEN]
@@ -132,6 +130,7 @@ namespace advance_rendering_example
         m_uniform_manager_on->build();
 
         m_vertex_buffers_quad = EspVertexBuffer::create(quad.data(), sizeof(QuatVertex), quad.size());
+        m_index_buffer_quad   = EspIndexBuffer::create(quad_idx.data(), quad_idx.size());
       }
 
       ESP_INFO("AFTER CREATE ALL IN LAYER ...");
