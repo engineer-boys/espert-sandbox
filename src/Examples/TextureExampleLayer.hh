@@ -81,7 +81,7 @@ namespace my_game
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      auto texture = TextureSystem::acquire("Textures/image.jpeg");
+      auto texture = TextureSystem::acquire("Textures/image.jpeg", {});
       m_material =
           MaterialSystem::acquire("david_material", { texture }, m_shader, { { 0, 1, EspTextureType::ALBEDO } });
 
