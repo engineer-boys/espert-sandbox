@@ -9,41 +9,6 @@ using namespace esp;
 
 namespace advance_rendering_example
 {
-  struct SkyBoxVertex
-  {
-    glm::vec3 position;
-    glm::vec2 tex_coord;
-
-    // SkyBoxVertex(glm::vec3 pos, glm::vec2 tc) : position{ pos }, tex_coord{ tc } {}
-  };
-
-  std::vector<SkyBoxVertex> vertices = {
-    // positions          // texture Coords
-    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, { { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } },
-    { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },   { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
-    { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } },  { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } },
-
-    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },
-    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f } },    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f } },
-    { { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f } },   { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },
-
-    { { -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },   { { -0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
-    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } }, { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
-
-    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },    { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
-    { { 0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },  { { 0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-    { { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },   { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
-
-    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } }, { { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
-    { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },   { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },
-    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
-
-    { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } },  { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
-    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
-    { { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f } },   { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } }
-
-  };
   std::vector<glm::vec3> skyboxVertices = {
     // positions
     { -1.0f, 1.0f, -1.0f },  { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f },
@@ -88,7 +53,8 @@ namespace advance_rendering_example
       std::shared_ptr<EspShader> m_shader;
       std::unique_ptr<EspUniformManager> m_uniform_manager;
       std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
-    } m_model;
+      std::shared_ptr<Model> m_model;
+    } m_sphere;
 
     struct
     {
@@ -151,24 +117,20 @@ namespace advance_rendering_example
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MVP_SkyBox_Uniform));
 
-        m_model.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
-        m_model.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                            EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_model.m_shader->set_vertex_layouts({
-            VTX_LAYOUT(
-                sizeof(SkyBoxVertex),
-                0,
-                ESP_VERTEX_INPUT_RATE_VERTEX,
-                ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(SkyBoxVertex, position)),
-                ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(SkyBoxVertex, tex_coord))) /* VTX_LAYOUT*/
-        });
-        m_model.m_shader->set_worker_layout(std::move(uniform_meta_data));
-        m_model.m_shader->build_worker();
+        m_sphere.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
+        m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                             EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
+        m_sphere.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+        m_sphere.m_shader->set_worker_layout(std::move(uniform_meta_data));
+        m_sphere.m_shader->build_worker();
 
-        m_model.m_uniform_manager = m_model.m_shader->create_uniform_manager();
-        m_model.m_uniform_manager->build();
+        Model::Builder model_builder{};
+        model_builder.set_shader(m_sphere.m_shader);
+        model_builder.load_model("Models/sphere/sphere.gltf", { .layouts = {} });
+        m_sphere.m_model = std::make_shared<Model>(model_builder);
 
-        m_model.m_vertex_buffer = EspVertexBuffer::create(vertices.data(), sizeof(SkyBoxVertex), vertices.size());
+        m_sphere.m_uniform_manager = m_sphere.m_shader->create_uniform_manager();
+        m_sphere.m_uniform_manager->build();
       }
     }
 
@@ -180,17 +142,16 @@ namespace advance_rendering_example
 
       m_final_pass.m_final_product_plan->begin_plan();
       {
-        m_model.m_shader->attach();
-        m_model.m_vertex_buffer->attach();
+        m_sphere.m_shader->attach();
 
         MVP_SkyBox_Uniform ubo{};
         ubo.model = glm::mat4(1);
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_model.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP_SkyBox_Uniform), &ubo);
-        m_model.m_uniform_manager->attach();
+        m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP_SkyBox_Uniform), &ubo);
+        m_sphere.m_uniform_manager->attach();
 
-        EspJob::draw(vertices.size());
+        m_sphere.m_model->draw();
 
         m_skybox.m_shader->attach();
         m_skybox.m_vertex_buffer->attach();
