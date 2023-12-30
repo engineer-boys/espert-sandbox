@@ -18,7 +18,8 @@ class SandBoxApp : public esp::EspApplication
     // push_layer(new my_game::TextureDepthExampleLayer());
     // push_layer(new model_example::ModelExampleLayer());
     // push_layer(new obj_example::VikingRoomObjModelExampleLayer());
-    push_layer(new obj_example::BackpackObjModelExampleLayer());
+    // push_layer(new obj_example::BackpackObjModelExampleLayer());
+    push_layer(new advance_rendering_example::SkyBoxLayer());
     //  push_layer(new advance_rendering_example::OffscreenRenderingLayer());
   }
 };

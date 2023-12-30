@@ -7,6 +7,7 @@
 #include "Examples/ObjExample/BackpackObjModelExampleLayer.hh"
 #include "Examples/ObjExample/VikingRoomObjModelExampleLayer.hh"
 #include "Examples/OffscreenRenderingLayer.hh"
+#include "Examples/SkyBoxLayer.hh"
 #include "Examples/TextureDepthExampleLayer.hh"
 #include "Examples/TextureExampleLayer.hh"
 
