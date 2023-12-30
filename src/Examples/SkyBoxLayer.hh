@@ -1,0 +1,213 @@
+#ifndef LAYERS_SKY_BOX_LAYER_HH
+#define LAYERS_SKY_BOX_LAYER_HH
+
+// libs
+#include "Espert.hh"
+#include "ModelExample/ModelExampleUtils.hh"
+
+using namespace esp;
+
+namespace advance_rendering_example
+{
+  struct SkyBoxVertex
+  {
+    glm::vec3 position;
+    glm::vec2 tex_coord;
+
+    // SkyBoxVertex(glm::vec3 pos, glm::vec2 tc) : position{ pos }, tex_coord{ tc } {}
+  };
+
+  std::vector<SkyBoxVertex> vertices = {
+    // positions          // texture Coords
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } }, { { 0.5f, -0.5f, -0.5f }, { 1.0f, 0.0f } },
+    { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },   { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
+    { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } },  { { -0.5f, -0.5f, -0.5f }, { 0.0f, 0.0f } },
+
+    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },
+    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f } },    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 1.0f } },
+    { { -0.5f, 0.5f, 0.5f }, { 0.0f, 1.0f } },   { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },
+
+    { { -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },   { { -0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } }, { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { -0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
+
+    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },    { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
+    { { 0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },  { { 0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+    { { 0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },   { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
+
+    { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } }, { { 0.5f, -0.5f, -0.5f }, { 1.0f, 1.0f } },
+    { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },   { { 0.5f, -0.5f, 0.5f }, { 1.0f, 0.0f } },
+    { { -0.5f, -0.5f, 0.5f }, { 0.0f, 0.0f } },  { { -0.5f, -0.5f, -0.5f }, { 0.0f, 1.0f } },
+
+    { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } },  { { 0.5f, 0.5f, -0.5f }, { 1.0f, 1.0f } },
+    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },    { { 0.5f, 0.5f, 0.5f }, { 1.0f, 0.0f } },
+    { { -0.5f, 0.5f, 0.5f }, { 0.0f, 0.0f } },   { { -0.5f, 0.5f, -0.5f }, { 0.0f, 1.0f } }
+
+  };
+  std::vector<glm::vec3> skyboxVertices = {
+    // positions
+    { -1.0f, 1.0f, -1.0f },  { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f },
+    { 1.0f, -1.0f, -1.0f },  { 1.0f, 1.0f, -1.0f },   { -1.0f, 1.0f, -1.0f },
+
+    { -1.0f, -1.0f, 1.0f },  { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },
+    { -1.0f, 1.0f, -1.0f },  { -1.0f, 1.0f, 1.0f },   { -1.0f, -1.0f, 1.0f },
+
+    { 1.0f, -1.0f, -1.0f },  { 1.0f, -1.0f, 1.0f },   { 1.0f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f },    { 1.0f, 1.0f, -1.0f },   { 1.0f, -1.0f, -1.0f },
+
+    { -1.0f, -1.0f, 1.0f },  { -1.0f, 1.0f, 1.0f },   { 1.0f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f },    { 1.0f, -1.0f, 1.0f },   { -1.0f, -1.0f, 1.0f },
+
+    { -1.0f, 1.0f, -1.0f },  { 1.0f, 1.0f, -1.0f },   { 1.0f, 1.0f, 1.0f },
+    { 1.0f, 1.0f, 1.0f },    { -1.0f, 1.0f, 1.0f },   { -1.0f, 1.0f, -1.0f },
+
+    { -1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, -1.0f },
+    { 1.0f, -1.0f, -1.0f },  { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, 1.0f }
+  };
+
+  struct MVP_SkyBox_Uniform
+  {
+    glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
+  };
+
+  struct VP_SkyBox_Uniform
+  {
+    glm::mat4 view;
+    glm::mat4 proj;
+  };
+
+  class SkyBoxLayer : public Layer
+  {
+   private:
+    Camera m_camera{};
+
+    struct
+    {
+      std::shared_ptr<EspShader> m_shader;
+      std::unique_ptr<EspUniformManager> m_uniform_manager;
+      std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
+    } m_model;
+
+    struct
+    {
+      std::shared_ptr<EspShader> m_shader;
+      std::unique_ptr<EspUniformManager> m_uniform_manager;
+      std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
+    } m_skybox;
+
+    struct
+    {
+      std::unique_ptr<EspRenderPlan> m_final_product_plan;
+      std::shared_ptr<EspDepthBlock> m_depth_block;
+    } m_final_pass;
+
+   public:
+    SkyBoxLayer()
+    {
+      m_camera.set_position(glm::vec3(0.0f, -2.0f, 3.0f));
+      m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
+      m_camera.set_move_speed(3.f);
+      m_camera.set_sensitivity(4.f);
+
+      // final pass
+      {
+        m_final_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                          EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
+
+        m_final_pass.m_final_product_plan = EspRenderPlan::build_final();
+        m_final_pass.m_final_product_plan->add_depth_block(std::shared_ptr{ m_final_pass.m_depth_block });
+      }
+
+      // skybox
+      {
+        auto uniform_meta_data = EspUniformMetaData::create();
+        uniform_meta_data->establish_descriptor_set();
+        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VP_SkyBox_Uniform));
+        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
+
+        m_skybox.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/skybox");
+        m_skybox.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                             EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
+        m_skybox.m_shader->set_vertex_layouts({ VTX_LAYOUT(sizeof(glm::vec3),
+                                                           0,
+                                                           ESP_VERTEX_INPUT_RATE_VERTEX,
+                                                           ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, 0), ) });
+        m_skybox.m_shader->set_worker_layout(std::move(uniform_meta_data));
+        m_skybox.m_shader->build_worker();
+
+        m_skybox.m_uniform_manager = m_skybox.m_shader->create_uniform_manager();
+        m_skybox.m_uniform_manager->load_texture(0, 1, TextureSystem::acquire_cubemap("Textures/skybox/sk.jpg"));
+        m_skybox.m_uniform_manager->build();
+
+        m_skybox.m_vertex_buffer =
+            EspVertexBuffer::create(skyboxVertices.data(), sizeof(glm::vec3), skyboxVertices.size());
+      }
+
+      // model
+      {
+        auto uniform_meta_data = EspUniformMetaData::create();
+        uniform_meta_data->establish_descriptor_set();
+        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MVP_SkyBox_Uniform));
+
+        m_model.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
+        m_model.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                            EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
+        m_model.m_shader->set_vertex_layouts({
+            VTX_LAYOUT(
+                sizeof(SkyBoxVertex),
+                0,
+                ESP_VERTEX_INPUT_RATE_VERTEX,
+                ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(SkyBoxVertex, position)),
+                ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(SkyBoxVertex, tex_coord))) /* VTX_LAYOUT*/
+        });
+        m_model.m_shader->set_worker_layout(std::move(uniform_meta_data));
+        m_model.m_shader->build_worker();
+
+        m_model.m_uniform_manager = m_model.m_shader->create_uniform_manager();
+        m_model.m_uniform_manager->build();
+
+        m_model.m_vertex_buffer = EspVertexBuffer::create(vertices.data(), sizeof(SkyBoxVertex), vertices.size());
+      }
+    }
+
+   private:
+    virtual void update(float dt) override
+    {
+      Scene::set_current_camera(&m_camera);
+      m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
+
+      m_final_pass.m_final_product_plan->begin_plan();
+      {
+        m_model.m_shader->attach();
+        m_model.m_vertex_buffer->attach();
+
+        MVP_SkyBox_Uniform ubo{};
+        ubo.model = glm::mat4(1);
+        ubo.view  = m_camera.get_view();
+        ubo.proj  = m_camera.get_projection();
+        m_model.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP_SkyBox_Uniform), &ubo);
+        m_model.m_uniform_manager->attach();
+
+        EspJob::draw(vertices.size());
+
+        m_skybox.m_shader->attach();
+        m_skybox.m_vertex_buffer->attach();
+
+        VP_SkyBox_Uniform vp{};
+        vp.view = glm::mat4(glm::mat3(m_camera.get_view()));
+        vp.proj = m_camera.get_projection();
+        m_skybox.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VP_SkyBox_Uniform), &vp);
+        m_skybox.m_uniform_manager->attach();
+
+        EspJob::draw(skyboxVertices.size());
+      }
+      m_final_pass.m_final_product_plan->end_plan();
+
+      m_final_pass.m_depth_block->clear();
+    }
+  };
+} // namespace advance_rendering_example
+
+#endif // LAYERS_SKY_BOX_LAYER_HH
