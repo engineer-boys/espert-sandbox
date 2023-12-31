@@ -71,7 +71,7 @@ namespace advance_rendering_example
     {
       // 1. render pass [OFF-SCREEN]
       {
-        m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_B8G8R8A8_SRGB,
+        m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_SRGB,
                                   EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                   { 0.2f, 0.3f, 0.4f });
 
