@@ -74,26 +74,13 @@ namespace my_game
       m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      auto pp_layout = EspUniformMetaData::create();
-      pp_layout->establish_descriptor_set();
-      pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(InstancingExampleUniform));
-
-      m_shader = ShaderSystem::acquire("Shaders/InstancingExample/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({
-          VTX_LAYOUT(sizeof(ExampleVertex),
-                     0,
-                     ESP_VERTEX_INPUT_RATE_VERTEX,
-                     ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(InstancingExampleVertex, position)),
-                     ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(InstancingExampleVertex, color))),
-          VTX_LAYOUT(sizeof(glm::vec2),
-                     1,
-                     ESP_VERTEX_INPUT_RATE_INSTANCE,
-                     ATTR(2, ESP_FORMAT_R32G32_SFLOAT, 0)) /* VTX_LAYOUT*/
-      }                                                    /* VTX_LAYOUTS */
-      );
-      m_shader->set_worker_layout(std::move(pp_layout));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/InstancingExample/shader",
+                                       { .depthtest_config    = { .enable     = true,
+                                                                  .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                                  .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS },
+                                         .vertex_input_config = { { 0, 0, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 0, 1, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 1, 2, ESP_VERTEX_INPUT_RATE_INSTANCE } } });
 
       m_uniform_manager = m_shader->create_uniform_manager();
       m_uniform_manager->build();

@@ -36,24 +36,18 @@ namespace model_example_with_instancing
    public:
     ModelExampleWithInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
     {
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
-
-      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithInstancing/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({
-          Mesh::Vertex::get_vertex_layout(),
-          VTX_LAYOUT(sizeof(CubeInstance),
-                     1,
-                     ESP_VERTEX_INPUT_RATE_INSTANCE,
-                     ATTR(4, ESP_FORMAT_R32G32B32A32_SFLOAT, 0 * sizeof(glm::vec4)),
-                     ATTR(5, ESP_FORMAT_R32G32B32A32_SFLOAT, 1 * sizeof(glm::vec4)),
-                     ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
-                     ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
-      });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithInstancing/shader",
+                                       { .depthtest_config    = { .enable     = true,
+                                                                  .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                                  .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS },
+                                         .vertex_input_config = { { 0, 0, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 0, 1, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 0, 2, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 0, 3, ESP_VERTEX_INPUT_RATE_VERTEX },
+                                                                  { 1, 4, ESP_VERTEX_INPUT_RATE_INSTANCE },
+                                                                  { 1, 5, ESP_VERTEX_INPUT_RATE_INSTANCE },
+                                                                  { 1, 6, ESP_VERTEX_INPUT_RATE_INSTANCE },
+                                                                  { 1, 7, ESP_VERTEX_INPUT_RATE_INSTANCE } } });
 
       m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
       m_cube_model = std::make_shared<Model>(m_cube_mesh);

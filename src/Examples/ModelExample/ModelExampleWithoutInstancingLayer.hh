@@ -30,16 +30,10 @@ namespace model_example_without_instancing
    public:
     ModelExampleWithoutInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
     {
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(model_example::CameraPush));
-      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(CubeUniform));
-
-      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithoutInstancing/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithoutInstancing/shader",
+                                       { .depthtest_config = { .enable     = true,
+                                                               .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                               .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS } });
 
       m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
 

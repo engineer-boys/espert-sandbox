@@ -88,20 +88,11 @@ namespace advance_rendering_example
 
       // skybox
       {
-        auto uniform_meta_data = EspUniformMetaData::create();
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VP_SkyBox_Uniform));
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-
-        m_skybox.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/skybox");
-        m_skybox.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                             EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_skybox.m_shader->set_vertex_layouts({ VTX_LAYOUT(sizeof(glm::vec3),
-                                                           0,
-                                                           ESP_VERTEX_INPUT_RATE_VERTEX,
-                                                           ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, 0), ) });
-        m_skybox.m_shader->set_worker_layout(std::move(uniform_meta_data));
-        m_skybox.m_shader->build_worker();
+        m_skybox.m_shader =
+            ShaderSystem::acquire("Shaders/SkyBoxExample/skybox",
+                                  { .depthtest_config = { .enable     = true,
+                                                          .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                          .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL } });
 
         m_skybox.m_uniform_manager = m_skybox.m_shader->create_uniform_manager();
         m_skybox.m_uniform_manager->load_texture(0, 1, TextureSystem::acquire_cubemap("Textures/skybox/sk.jpg"));
@@ -113,16 +104,11 @@ namespace advance_rendering_example
 
       // model
       {
-        auto uniform_meta_data = EspUniformMetaData::create();
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MVP_SkyBox_Uniform));
-
-        m_sphere.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
-        m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                             EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_sphere.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-        m_sphere.m_shader->set_worker_layout(std::move(uniform_meta_data));
-        m_sphere.m_shader->build_worker();
+        m_sphere.m_shader =
+            ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f",
+                                  { .depthtest_config = { .enable     = true,
+                                                          .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                          .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL } });
 
         Model::Builder model_builder{};
         model_builder.set_shader(m_sphere.m_shader);

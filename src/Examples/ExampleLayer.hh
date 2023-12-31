@@ -94,55 +94,21 @@ namespace my_game
       m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      auto pp_layout = EspUniformMetaData::create();
-      pp_layout->establish_descriptor_set();
-      pp_layout->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
-      pp_layout->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE,
-                                  offsetof(ExamplePush, m_pos),
-                                  sizeof(glm::vec2));
-      pp_layout->add_push_uniform(EspUniformShaderStage::ESP_FRAG_STAGE,
-                                  offsetof(ExamplePush, m_color),
-                                  sizeof(glm::vec3));
-
-      m_shader_1 = ShaderSystem::acquire("Shaders/Example/shader");
-      m_shader_1->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader_1->set_vertex_layouts({
-          VTX_LAYOUT(
-              sizeof(ExampleVertex),
-              0,
-              ESP_VERTEX_INPUT_RATE_VERTEX,
-              ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
-              ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
-      }                                                                                            /* VTX_LAYOUTS */
-      );
-      m_shader_1->set_worker_layout(std::move(pp_layout));
-      m_shader_1->build_worker();
+      m_shader_1 = ShaderSystem::acquire("Shaders/Example/shader",
+                                         { .depthtest_config = { .enable = true,
+                                                                 .format = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                                 .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS } });
 
       m_uniform_manager_1 = m_shader_1->create_uniform_manager();
       m_uniform_manager_1->build();
 
-      auto pp_layout_2 = EspUniformMetaData::create();
-      pp_layout_2->establish_descriptor_set();
-      pp_layout_2->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVP));
-      pp_layout_2->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE,
-                                    offsetof(ExamplePush, m_pos),
-                                    sizeof(glm::vec2));
-
-      m_shader_2 = ShaderSystem::acquire(
-          "Shaders/Example/shader",
-          { { EspShaderStage::FRAGMENT, { { 0, true }, { 1, 0.5f }, { 2, 0.0f }, { 3, 1.0f } } } });
-      m_shader_2->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader_2->set_vertex_layouts({
-          VTX_LAYOUT(
-              sizeof(ExampleVertex),
-              0,
-              ESP_VERTEX_INPUT_RATE_VERTEX,
-              ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(ExampleVertex, position)),
-              ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(ExampleVertex, color))) /* VTX_LAYOUT*/
-      }                                                                                            /* VTX_LAYOUTS */
-      );
-      m_shader_2->set_worker_layout(std::move(pp_layout_2));
-      m_shader_2->build_worker();
+      m_shader_2 =
+          ShaderSystem::acquire("Shaders/Example/shader",
+                                { .depthtest_config = { .enable     = true,
+                                                        .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                        .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS },
+                                  .spec_const_map   = { { EspShaderStage::FRAGMENT,
+                                                          { { 0, true }, { 1, 0.5f }, { 2, 0.0f }, { 3, 1.0f } } } } });
 
       m_uniform_manager_2 = m_shader_2->create_uniform_manager();
       m_uniform_manager_2->build();
