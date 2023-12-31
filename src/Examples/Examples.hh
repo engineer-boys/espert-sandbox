@@ -1,8 +1,8 @@
 #ifndef EXAMPLES_EXAMPLES_HH
 #define EXAMPLES_EXAMPLES_HH
 
-#include "Examples/AdvanceRendering/PBRbaseLayer.hh"
-#include "Examples/AdvanceRendering/PBRbaseLayer2.hh"
+#include "Examples/AdvanceRendering/PBRBaseLayer.hh"
+#include "Examples/AdvanceRendering/PBRTextureLayer.hh"
 #include "Examples/ExampleLayer.hh"
 #include "Examples/InstancingExampleLayer.hh"
 #include "Examples/ModelExample/ModelExampleLayer.hh"
