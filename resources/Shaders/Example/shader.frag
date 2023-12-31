@@ -8,7 +8,17 @@ layout (push_constant) uniform Push {
     layout (offset = 16) vec3 color;
 } push;
 
+layout (constant_id = 0) const bool USE_SPECIALIZED_COLOR = false;
+layout (constant_id = 1) const float SPECIALIZED_COLOR_R = 0.0;
+layout (constant_id = 2) const float SPECIALIZED_COLOR_G = 0.0;
+layout (constant_id = 3) const float SPECIALIZED_COLOR_B = 0.0;
+
 void main()
 {
-    outColor = vec4(fragColor * push.color, 1.0);
+    if (USE_SPECIALIZED_COLOR) {
+        outColor = vec4(SPECIALIZED_COLOR_R, SPECIALIZED_COLOR_G, SPECIALIZED_COLOR_B, 1.0);
+    }
+    else {
+        outColor = vec4(fragColor * push.color, 1.0);
+    }
 }
