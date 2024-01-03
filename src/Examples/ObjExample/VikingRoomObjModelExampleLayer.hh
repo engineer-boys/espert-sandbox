@@ -48,22 +48,13 @@ namespace obj_example
       m_final_product_plan = EspRenderPlan::build_final(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VikingRoomUniform));
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-
-      m_shader = ShaderSystem::acquire("Shaders/ObjExample/VikingRoomObjModelExample/shader");
-      m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire(
+          "Shaders/ObjExample/VikingRoomObjModelExample/shader",
+          { .depthtest_config     = { .enable     = true,
+                                      .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                      .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS },
+            .multisampling_config = { .enable            = true,
+                                      .sample_count_flag = EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT } });
 
       m_uniform_manager = m_shader->create_uniform_manager(0, 0);
       m_uniform_manager->build();

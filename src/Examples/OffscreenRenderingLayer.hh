@@ -82,23 +82,13 @@ namespace advance_rendering_example
         m_product_plan->add_block(std::shared_ptr{ m_block });
         m_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-        auto uniform_meta_data = EspUniformMetaData::create();
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
-
-        m_shader_off = ShaderSystem::acquire("Shaders/OffscreenRnd/shader");
-        m_shader_off->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-        m_shader_off->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-        m_shader_off->set_vertex_layouts(
-            { VTX_LAYOUT(sizeof(Mesh::Vertex),
-                         0,
-                         ESP_VERTEX_INPUT_RATE_VERTEX,
-                         ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_position)),
-                         ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_color)),
-                         ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_normal)),
-                         ATTR(3, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(Mesh::Vertex, m_tex_coord))) });
-        m_shader_off->set_worker_layout(std::move(uniform_meta_data));
-        m_shader_off->build_worker();
+        m_shader_off = ShaderSystem::acquire(
+            "Shaders/OffscreenRnd/shader",
+            { .depthtest_config     = { .enable     = true,
+                                        .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                        .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS },
+              .multisampling_config = { .enable            = true,
+                                        .sample_count_flag = EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT } });
 
         m_uniform_manager_off = m_shader_off->create_uniform_manager();
         m_uniform_manager_off->build();
@@ -112,20 +102,7 @@ namespace advance_rendering_example
       {
         m_final_product_plan = EspRenderPlan::build_final();
 
-        auto uniform_meta_data = EspUniformMetaData::create();
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-        // uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
-
         m_shader_on = ShaderSystem::acquire("Shaders/OffscreenRnd/shader_on");
-        m_shader_on->set_vertex_layouts(
-            { VTX_LAYOUT(sizeof(QuatVertex),
-                         0,
-                         ESP_VERTEX_INPUT_RATE_VERTEX,
-                         ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, pos)),
-                         ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, texCoord))) });
-        m_shader_on->set_worker_layout(std::move(uniform_meta_data));
-        m_shader_on->build_worker();
 
         m_uniform_manager_on = m_shader_on->create_uniform_manager();
         m_uniform_manager_on->load_block(0, 0, m_block.get());

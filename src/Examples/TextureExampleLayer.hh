@@ -64,22 +64,10 @@ namespace my_game
       m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(TextureExampleUniform));
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-
-      m_shader = ShaderSystem::acquire("Shaders/TextureExample/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts(
-          { VTX_LAYOUT(sizeof(TextureExampleVertex),
-                       0,
-                       ESP_VERTEX_INPUT_RATE_VERTEX,
-                       ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureExampleVertex, position)),
-                       ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(TextureExampleVertex, color)),
-                       ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(TextureExampleVertex, tex_coord))) });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/TextureExample/shader",
+                                       { .depthtest_config = { .enable     = true,
+                                                               .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                               .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS } });
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg", {});
       m_material =

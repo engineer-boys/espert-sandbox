@@ -42,28 +42,16 @@ namespace obj_example
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
 
-      auto uniform_meta_data = EspUniformMetaData::create();
-      uniform_meta_data->establish_descriptor_set();
-      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(BackpackObjModelUniform));
-      uniform_meta_data->establish_descriptor_set();
-      // uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE, 5);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
       m_final_product_plan = EspRenderPlan::build_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
 
-      m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader");
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader",
+                                       { .depthtest_config = { .enable     = true,
+                                                               .format     = EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                                               .compare_op = EspCompareOp::ESP_COMPARE_OP_LESS } });
 
       m_uniform_manager = m_shader->create_uniform_manager(0, 0);
       m_uniform_manager->build();
