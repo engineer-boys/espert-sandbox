@@ -9,7 +9,7 @@ using namespace esp;
 
 namespace advance_rendering_example
 {
-  std::vector<glm::vec3> skyboxVertices = {
+  std::vector<glm::vec3> skybox_vertices = {
     // positions
     { -1.0f, 1.0f, -1.0f },  { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f },
     { 1.0f, -1.0f, -1.0f },  { 1.0f, 1.0f, -1.0f },   { -1.0f, 1.0f, -1.0f },
@@ -30,14 +30,14 @@ namespace advance_rendering_example
     { 1.0f, -1.0f, -1.0f },  { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, 1.0f }
   };
 
-  struct MVP_SkyBox_Uniform
+  struct MvpSkyBoxUniform
   {
     glm::mat4 model;
     glm::mat4 view;
     glm::mat4 proj;
   };
 
-  struct VP_SkyBox_Uniform
+  struct VpSkyBoxUniform
   {
     glm::mat4 view;
     glm::mat4 proj;
@@ -91,7 +91,7 @@ namespace advance_rendering_example
       {
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VP_SkyBox_Uniform));
+        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VpSkyBoxUniform));
         uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
         m_skybox.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/skybox");
@@ -109,14 +109,14 @@ namespace advance_rendering_example
         m_skybox.m_uniform_manager->build();
 
         m_skybox.m_vertex_buffer =
-            EspVertexBuffer::create(skyboxVertices.data(), sizeof(glm::vec3), skyboxVertices.size());
+            EspVertexBuffer::create(skybox_vertices.data(), sizeof(glm::vec3), skybox_vertices.size());
       }
 
       // model
       {
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MVP_SkyBox_Uniform));
+        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MvpSkyBoxUniform));
 
         m_sphere.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
         m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
@@ -145,12 +145,12 @@ namespace advance_rendering_example
       {
         m_sphere.m_shader->attach();
 
-        MVP_SkyBox_Uniform ubo{};
+        MvpSkyBoxUniform ubo{};
         ubo.model = glm::mat4(1);
         ubo.model = glm::translate(ubo.model, glm::vec3{ 0, 0, -3.0f });
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP_SkyBox_Uniform), &ubo);
+        m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MvpSkyBoxUniform), &ubo);
         m_sphere.m_uniform_manager->attach();
 
         m_sphere.m_model->draw();
@@ -158,13 +158,13 @@ namespace advance_rendering_example
         m_skybox.m_shader->attach();
         m_skybox.m_vertex_buffer->attach();
 
-        VP_SkyBox_Uniform vp{};
+        VpSkyBoxUniform vp{};
         vp.view = glm::mat4(glm::mat3(m_camera.get_view()));
         vp.proj = m_camera.get_projection();
-        m_skybox.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VP_SkyBox_Uniform), &vp);
+        m_skybox.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VpSkyBoxUniform), &vp);
         m_skybox.m_uniform_manager->attach();
 
-        EspJob::draw(skyboxVertices.size());
+        EspJob::draw(skybox_vertices.size());
       }
       m_final_pass.m_final_product_plan->end_plan();
 

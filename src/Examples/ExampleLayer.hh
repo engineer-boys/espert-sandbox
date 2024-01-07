@@ -29,10 +29,10 @@ namespace my_game
 
   static MVP get_new_mvp()
   {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+    static auto start_time = std::chrono::high_resolution_clock::now();
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    auto current_time = std::chrono::high_resolution_clock::now();
+    float time        = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
 
     MVP mvp{};
     mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -46,10 +46,10 @@ namespace my_game
 
   static MVP get_new_mvp2()
   {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+    static auto start_time = std::chrono::high_resolution_clock::now();
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    auto current_time = std::chrono::high_resolution_clock::now();
+    float time        = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
 
     MVP mvp{};
     mvp.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(-45.0f), glm::vec3(0.0f, 0.0f, 1.0f));
