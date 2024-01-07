@@ -84,7 +84,7 @@ namespace obj_example
       viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh));
 
       m_viking_room_node->attach_entity(viking_room);
-      TransformAction::update_rotation(m_viking_room_node.get(), glm::radians(90.f), { 1.f, 0.f, 0.f }, ABSOLUTE);
+      TransformAction::update_rotation(m_viking_room_node.get(), glm::radians(90.f), { 1.f, 0.f, 0.f }, ESP_ABSOLUTE);
     }
 
    private:
@@ -101,7 +101,7 @@ namespace obj_example
             {
               auto& transform = node->get_entity()->get_component<TransformComponent>();
               transform.reset();
-              TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ABSOLUTE);
+              TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, ESP_ABSOLUTE);
             });
 
         m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());

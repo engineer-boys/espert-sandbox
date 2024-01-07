@@ -65,8 +65,6 @@ class CmakeConfigureCommand(CmakeCommand):
         super().__init__()
         self._command += f" -B {build_dir}"
         self._command += f" -S {source_dir}"
-        if is_platform_windows():
-            self._command += ' -G "MinGW Makefiles"'
 
 
 class CmakeBuildCommand(CmakeCommand):
