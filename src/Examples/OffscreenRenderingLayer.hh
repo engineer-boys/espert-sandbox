@@ -14,7 +14,7 @@ namespace advance_rendering_example
     glm::vec2 pos;
     glm::vec2 texCoord;
 
-    QuatVertex(glm::vec2 pos, glm::vec2 texCoord) : pos{ pos }, texCoord{ texCoord } {}
+    QuatVertex(glm::vec2 pos, glm::vec2 tex_coord) : pos{ pos }, texCoord{ tex_coord } {}
   };
 
   static std::vector<QuatVertex> quad{ { { -1, -1 }, { 0, 0 } },
@@ -31,12 +31,12 @@ namespace advance_rendering_example
     glm::mat4 proj;
   };
 
-  static MVPExampleUniform get_new_MVP()
+  static MVPExampleUniform get_new_mvp()
   {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+    static auto start_time = std::chrono::high_resolution_clock::now();
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    auto current_time = std::chrono::high_resolution_clock::now();
+    float time        = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
 
     MVPExampleUniform ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
@@ -150,7 +150,7 @@ namespace advance_rendering_example
         m_shader_off->attach();
         m_vertex_buffers->attach();
 
-        auto ubo = get_new_MVP();
+        auto ubo = get_new_mvp();
         m_uniform_manager_off->update_buffer_uniform(0, 0, 0, sizeof(MVPExampleUniform), &ubo);
         m_uniform_manager_off->attach();
 
