@@ -23,10 +23,10 @@ namespace my_game
 
   static InstancingExampleUniform get_new_instancing_example_uniform()
   {
-    static auto startTime = std::chrono::high_resolution_clock::now();
+    static auto start_time = std::chrono::high_resolution_clock::now();
 
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time       = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+    auto current_time = std::chrono::high_resolution_clock::now();
+    float time        = std::chrono::duration<float, std::chrono::seconds::period>(current_time - start_time).count();
 
     InstancingExampleUniform mvp{};
     mvp.model = glm::scale(glm::mat4(1.0f), { 0.05f, 0.05f, 0.05f });

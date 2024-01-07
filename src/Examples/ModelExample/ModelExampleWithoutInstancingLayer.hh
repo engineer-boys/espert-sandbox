@@ -54,8 +54,8 @@ namespace model_example_without_instancing
       m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
-      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, -.5f, 2.f }, RELATIVE);
-      TransformAction::set_scale(m_main_cube_node.get(), .5f, RELATIVE);
+      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, -.5f, 2.f }, ESP_RELATIVE);
+      TransformAction::set_scale(m_main_cube_node.get(), .5f, ESP_RELATIVE);
 
       for (int i = 1; i < cubes.size(); i++)
       {
@@ -65,8 +65,8 @@ namespace model_example_without_instancing
         small_cube_node->attach_entity(cubes[i]);
         TransformAction::set_translation(small_cube_node.get(),
                                          glm::vec3{ i % 2 == 0 ? -1.f : 1.f, 0.f, 0.f },
-                                         RELATIVE);
-        TransformAction::set_scale(small_cube_node.get(), .5f, RELATIVE);
+                                         ESP_RELATIVE);
+        TransformAction::set_scale(small_cube_node.get(), .5f, ESP_RELATIVE);
       }
 
       for (auto& manager : m_uniform_managers)
@@ -87,9 +87,9 @@ namespace model_example_without_instancing
             auto& transform = node->get_entity()->get_component<TransformComponent>();
             transform.reset();
 
-            TransformAction::update_rotation(node, -dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ABSOLUTE);
-            TransformAction::translate(node, ABSOLUTE);
-            TransformAction::scale(node, ABSOLUTE);
+            TransformAction::update_rotation(node, -dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ESP_ABSOLUTE);
+            TransformAction::translate(node, ESP_ABSOLUTE);
+            TransformAction::scale(node, ESP_ABSOLUTE);
           });
 
       int i = 0;

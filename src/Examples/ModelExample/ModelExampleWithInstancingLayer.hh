@@ -69,8 +69,8 @@ namespace model_example_with_instancing
       m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
-      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, .5f, 2.f }, RELATIVE);
-      TransformAction::set_scale(m_main_cube_node.get(), .5f, RELATIVE);
+      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, .5f, 2.f }, ESP_RELATIVE);
+      TransformAction::set_scale(m_main_cube_node.get(), .5f, ESP_RELATIVE);
 
       std::array<std::shared_ptr<Node>, CUBES_Z> temp_parents;
       for (int i = 0; i < CUBES_X; i++)
@@ -96,8 +96,8 @@ namespace model_example_with_instancing
           if (i != 0) { translation.x = (i % 2 == 0) ? -1.f : 1.f; }
           if (j != 0) { translation.z = (j % 2 == 0) ? -1.f : 1.f; }
 
-          TransformAction::set_translation(cube_node.get(), translation, RELATIVE);
-          TransformAction::set_scale(cube_node.get(), .8f, RELATIVE);
+          TransformAction::set_translation(cube_node.get(), translation, ESP_RELATIVE);
+          TransformAction::set_scale(cube_node.get(), .8f, ESP_RELATIVE);
 
           if ((i != 0 && j > 2) || j != 0) { temp_parents[j] = cube_node; }
         }
@@ -122,9 +122,9 @@ namespace model_example_with_instancing
       m_shader->attach();
 
       m_main_cube_node->act(TransformAction::reset);
-      m_main_cube_node->act(TransformAction::translate, ABSOLUTE);
-      m_main_cube_node->act(TransformAction::update_rotation, dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ABSOLUTE);
-      m_main_cube_node->act(TransformAction::scale, ABSOLUTE);
+      m_main_cube_node->act(TransformAction::translate, ESP_ABSOLUTE);
+      m_main_cube_node->act(TransformAction::update_rotation, dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ESP_ABSOLUTE);
+      m_main_cube_node->act(TransformAction::scale, ESP_ABSOLUTE);
 
       std::vector<CubeInstance> instances{};                                           //
       m_main_cube_node->act(                                                           //

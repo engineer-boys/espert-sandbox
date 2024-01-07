@@ -10,6 +10,11 @@ add_executable(${PROJECT_NAME}
     ${SOURCES}
 )
 
+if(WIN32)
+    add_compile_definitions(_SILENCE_ALL_MS_EXT_DEPRECATION_WARNINGS)
+    set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "/ignore:4099")
+endif()
+
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${PROJECT_SOURCE_DIR}/src
     ${PROJECT_SOURCE_DIR}/espert-core/src
