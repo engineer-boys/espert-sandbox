@@ -31,8 +31,8 @@ import sys
 GET_WSI_COMMAND = "loginctl show-session $(loginctl | grep $(whoami) | awk '{print $1}') -p Type | cut -d'=' -f2"
 NAME = "espert-sandbox"
 BIN_NAME = f'{NAME}{".exe" if sys.platform.startswith("win32") else ""}'
-LD_LIBRARY_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "lib"
-VK_LAYER_PATH = BUILD_DIR / "espert-core" / "validation_layers" / "layers"
+LD_LIBRARY_PATH = BUILD_DIR / "espert-core" / "validation_layers"
+VK_LAYER_PATH = BUILD_DIR / "espert-core" / "validation_layers"
 
 
 class BuildType(Enum):
@@ -87,9 +87,9 @@ def get_build_command(args) -> str:
     return str(CMD)
 
 
-def run_command_detached(command: str, cwd: str) -> None:
+def run_command_detached(command: str, cwd: str, env: dict = None) -> None:
     print(command)
-    proc = subprocess.Popen(command, cwd=cwd, shell=True)
+    proc = subprocess.Popen(command, cwd=cwd, shell=True, env=env)
     proc.wait()
     if proc.returncode != 0:
         sys.exit(proc.returncode)
@@ -118,16 +118,17 @@ def run_espert(args: Namespace) -> None:
     if args.clean or not os.path.exists(BUILD_DIR / BIN_NAME):
         run_build(args)
 
-    CMD = ""
-    if args.build_type == BuildType.DEBUG and args.vvl and not is_platform_windows():
-        CMD += f"LD_LIBRARY_PATH={LD_LIBRARY_PATH} VK_LAYER_PATH={VK_LAYER_PATH} "
+    my_env = os.environ.copy()
+    if args.build_type == BuildType.DEBUG and args.vvl:
+        my_env["LD_LIBRARY_PATH"] = str(LD_LIBRARY_PATH)
+        my_env["VK_LAYER_PATH"] = str(VK_LAYER_PATH)
 
     if is_platform_windows():
-        CMD += f".\{BIN_NAME}"
+        CMD = f".\Debug\{BIN_NAME}"
     else:
-        CMD += f"./{BIN_NAME}"
+        CMD = f"./{BIN_NAME}"
 
-    run_command_detached(CMD, BUILD_DIR)
+    run_command_detached(CMD, BUILD_DIR, my_env)
 
 
 def get_parser() -> ArgumentParser:
