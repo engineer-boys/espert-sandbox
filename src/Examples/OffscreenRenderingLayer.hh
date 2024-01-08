@@ -71,22 +71,24 @@ namespace advance_rendering_example
     {
       // 1. render pass [OFF-SCREEN]
       {
-        m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_SRGB,
+        m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM,
                                   EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                   { 0.2f, 0.3f, 0.4f });
 
         m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                              EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
 
-        m_product_plan = EspRenderPlan::build();
+        m_product_plan = EspRenderPlan::create();
         m_product_plan->add_block(std::shared_ptr{ m_block });
         m_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+        m_product_plan->build();
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
 
         m_shader_off = ShaderSystem::acquire("Shaders/OffscreenRnd/shader");
+        m_shader_off->set_attachment_formats({ EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM });
         m_shader_off->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
         m_shader_off->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
         m_shader_off->set_vertex_layouts(
@@ -108,7 +110,8 @@ namespace advance_rendering_example
 
       // 2. render pass [ON-SCREEN]
       {
-        m_final_product_plan = EspRenderPlan::build_final();
+        m_final_product_plan = EspRenderPlan::create_final();
+        m_final_product_plan->build();
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();

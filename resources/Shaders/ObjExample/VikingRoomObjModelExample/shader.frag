@@ -19,5 +19,6 @@ void main() {
     ao = texture(ao_texture, frag_tex_coord).rgb;
 
     //    out_color = vec4(ao + albedo + normal + roughness + metallic, 1.0);
-    out_color = vec4(albedo, 1.0);
+    vec3 color = pow(albedo, vec3(1.0/2.2)); 
+    out_color = vec4(color, 1.0);
 }

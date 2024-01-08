@@ -30,8 +30,9 @@ namespace model_example
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspRenderPlan::build_final();
+      m_final_product_plan = EspRenderPlan::create_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+      m_final_product_plan->build();
 
       m_scene = Scene::create();
       m_scene->add_camera(std::make_shared<Camera>());

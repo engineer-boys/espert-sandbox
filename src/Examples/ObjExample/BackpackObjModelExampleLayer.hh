@@ -56,8 +56,9 @@ namespace obj_example
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-      m_final_product_plan = EspRenderPlan::build_final();
+      m_final_product_plan = EspRenderPlan::create_final();
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+      m_final_product_plan->build();
 
       m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader");
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);

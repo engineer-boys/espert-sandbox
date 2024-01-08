@@ -10,5 +10,6 @@ layout (push_constant) uniform Push {
 
 void main()
 {
-    outColor = vec4(fragColor * push.color, 1.0);
+    vec3 g_color = pow(fragColor * push.color, vec3(1.0/2.2)); 
+    outColor = vec4(g_color, 1.0);
 }
