@@ -7,7 +7,7 @@ class SandBoxApp : public esp::EspApplication
 {
  private:
  public:
-  SandBoxApp() : EspApplication("Espert Example", 1280, 720, false)
+  SandBoxApp() : EspApplication("Espert Example", 1280, 720, true)
   {
     push_layer(new esp_sbx::InputLayer());
 
@@ -20,9 +20,11 @@ class SandBoxApp : public esp::EspApplication
     // push_layer(new obj_example::VikingRoomObjModelExampleLayer());
     // push_layer(new obj_example::BackpackObjModelExampleLayer());
     // push_layer(new advance_rendering_example::SkyBoxLayer());
-    // push_layer(new advance_rendering_example::PBRBaseLayer());
-    push_layer(new advance_rendering_example::PBRTextureLayer());
-    //  push_layer(new advance_rendering_example::OffscreenRenderingLayer());
+    // push_layer(new advance_rendering_example::OffscreenRenderingLayer());
+
+    // push_layer(new advance_rendering2_example::PBRBasicLayer());
+    // push_layer(new advance_rendering2_example::PBRIBLLayer());
+    push_layer(new advance_rendering2_example::PBRTexturedLayer());
   }
 
   void virtual update(float dt) override
