@@ -45,8 +45,10 @@ namespace obj_example
       m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
 
-      m_final_product_plan = EspRenderPlan::build_final(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+      m_final_product_plan =
+          EspRenderPlan::create_final({ 0.1f, 0.1f, 0.1f }, EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
+      m_final_product_plan->build();
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();

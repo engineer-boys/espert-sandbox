@@ -47,10 +47,10 @@ namespace model_example_with_instancing
           VTX_LAYOUT(sizeof(CubeInstance),
                      1,
                      ESP_VERTEX_INPUT_RATE_INSTANCE,
-                     ATTR(4, ESP_FORMAT_R32G32B32A32_SFLOAT, 0 * sizeof(glm::vec4)),
-                     ATTR(5, ESP_FORMAT_R32G32B32A32_SFLOAT, 1 * sizeof(glm::vec4)),
-                     ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
-                     ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
+                     ATTR(5, ESP_FORMAT_R32G32B32A32_SFLOAT, 0 * sizeof(glm::vec4)),
+                     ATTR(6, ESP_FORMAT_R32G32B32A32_SFLOAT, 1 * sizeof(glm::vec4)),
+                     ATTR(7, ESP_FORMAT_R32G32B32A32_SFLOAT, 2 * sizeof(glm::vec4)),
+                     ATTR(8, ESP_FORMAT_R32G32B32A32_SFLOAT, 3 * sizeof(glm::vec4))),
       });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();

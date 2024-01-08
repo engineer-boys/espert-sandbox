@@ -72,7 +72,7 @@ namespace advance_rendering_example
    public:
     SkyBoxLayer()
     {
-      m_camera.set_position(glm::vec3(0.0f, -2.0f, 3.0f));
+      m_camera.set_position(glm::vec3(0.0f, 0.0f, 3.0f));
       m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
@@ -82,8 +82,9 @@ namespace advance_rendering_example
         m_final_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                                           EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
 
-        m_final_pass.m_final_product_plan = EspRenderPlan::build_final();
+        m_final_pass.m_final_product_plan = EspRenderPlan::create_final();
         m_final_pass.m_final_product_plan->add_depth_block(std::shared_ptr{ m_final_pass.m_depth_block });
+        m_final_pass.m_final_product_plan->build();
       }
 
       // skybox
@@ -146,6 +147,7 @@ namespace advance_rendering_example
 
         MVP_SkyBox_Uniform ubo{};
         ubo.model = glm::mat4(1);
+        ubo.model = glm::translate(ubo.model, glm::vec3{ 0, 0, -3.0f });
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
         m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MVP_SkyBox_Uniform), &ubo);
