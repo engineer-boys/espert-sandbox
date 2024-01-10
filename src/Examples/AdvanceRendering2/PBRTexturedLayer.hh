@@ -193,10 +193,6 @@ namespace advance_rendering2_example
       shader->set_worker_layout(std::move(uniform_meta_data));
       shader->build_worker();
 
-      float quadVertices[] = {
-
-      };
-
       auto block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R16G16_SFLOAT,
                                    EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
                                    width,
