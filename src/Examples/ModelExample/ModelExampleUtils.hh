@@ -69,6 +69,62 @@ namespace model_example
 
     return vertices;
   }
+
+  static std::vector<Mesh::Vertex> create_cube_vertices(glm::vec3 color)
+  {
+    std::vector<Mesh::Vertex> vertices{
+
+      // left face (white)
+      { { -.5f, -.5f, -.5f }, color },
+      { { -.5f, -.5f, .5f }, color },
+      { { -.5f, .5f, .5f }, color },
+      { { -.5f, -.5f, -.5f }, color },
+      { { -.5f, .5f, .5f }, color },
+      { { -.5f, .5f, -.5f }, color },
+
+      // right face (yellow)
+      { { .5f, -.5f, -.5f }, color },
+      { { .5f, .5f, .5f }, color },
+      { { .5f, -.5f, .5f }, color },
+      { { .5f, -.5f, -.5f }, color },
+      { { .5f, .5f, -.5f }, color },
+      { { .5f, .5f, .5f }, color },
+
+      // top face (orange, remember y axis points down)
+      { { -.5f, -.5f, -.5f }, color },
+      { { .5f, -.5f, .5f }, color },
+      { { -.5f, -.5f, .5f }, color },
+      { { -.5f, -.5f, -.5f }, color },
+      { { .5f, -.5f, -.5f }, color },
+      { { .5f, -.5f, .5f }, color },
+
+      // bottom face (red)
+      { { -.5f, .5f, -.5f }, color },
+      { { -.5f, .5f, .5f }, color },
+      { { .5f, .5f, .5f }, color },
+      { { -.5f, .5f, -.5f }, color },
+      { { .5f, .5f, .5f }, color },
+      { { .5f, .5f, -.5f }, color },
+
+      // nose face (blue)
+      { { -.5f, -.5f, 0.5f }, color },
+      { { .5f, .5f, 0.5f }, color },
+      { { -.5f, .5f, 0.5f }, color },
+      { { -.5f, -.5f, 0.5f }, color },
+      { { .5f, -.5f, 0.5f }, color },
+      { { .5f, .5f, 0.5f }, color },
+
+      // tail face (green)
+      { { -.5f, -.5f, -0.5f }, color },
+      { { -.5f, .5f, -0.5f }, color },
+      { { .5f, .5f, -0.5f }, color },
+      { { -.5f, -.5f, -0.5f }, color },
+      { { .5f, .5f, -0.5f }, color },
+      { { .5f, -.5f, -0.5f }, color },
+    };
+
+    return vertices;
+  }
 } // namespace model_example
 
 #endif // LAYERS_MODEL_EXAMPLE_UTILS_HH
