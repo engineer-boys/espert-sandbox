@@ -8,6 +8,21 @@ using namespace esp;
 
 namespace obj_example
 {
+  //  struct QuatVertex
+  //  {
+  //    glm::vec2 pos;
+  //    glm::vec2 texCoord;
+  //
+  //    QuatVertex(glm::vec2 pos, glm::vec2 texCoord) : pos{ pos }, texCoord{ texCoord } {}
+  //  };
+  //
+  //  static std::vector<QuatVertex> quad{ { { -1, -1 }, { 0, 0 } },
+  //                                       { { 1, -1 }, { 1, 0 } },
+  //                                       { { 1, 1 }, { 1, 1 } },
+  //                                       { { -1, 1 }, { 0, 1 } } };
+  //
+  //  static std::vector<uint32_t> quad_idx{ 0, 1, 2, 2, 3, 0 };
+
   std::vector<glm::vec3> skybox_vertices = {
     // positions
     { -1.0f, 1.0f, -1.0f },  { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f },
@@ -71,17 +86,21 @@ namespace obj_example
    private:
     struct
     {
-      std::unique_ptr<EspRenderPlan> m_final_render_plan;
-      std::shared_ptr<EspDepthBlock> m_depth_block;
-    } m_final_pass;
-
-    struct
-    {
       std::shared_ptr<EspShader> m_shader;
       std::unique_ptr<EspRenderPlan> m_render_plan;
       std::shared_ptr<EspBlock> m_block; // TODO: remove this block and render only to depth block
       std::shared_ptr<EspDepthBlock> m_depth_block;
     } m_depth_pass;
+
+    struct
+    {
+      //      std::shared_ptr<EspShader> m_shader;
+      //      std::unique_ptr<EspUniformManager> m_uniform_manager;
+      //      std::unique_ptr<EspVertexBuffer> m_vertex_buffers_quad;
+      //      std::unique_ptr<EspIndexBuffer> m_index_buffer_quad;
+      std::unique_ptr<EspRenderPlan> m_final_render_plan;
+      std::shared_ptr<EspDepthBlock> m_depth_block;
+    } m_final_pass;
 
     struct
     {
@@ -122,16 +141,6 @@ namespace obj_example
    public:
     BackpackObjModelExampleLayer()
     {
-      // final pass
-      {
-        m_final_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                                          EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
-
-        m_final_pass.m_final_render_plan = EspRenderPlan::create_final();
-        m_final_pass.m_final_render_plan->add_depth_block(std::shared_ptr{ m_final_pass.m_depth_block });
-        m_final_pass.m_final_render_plan->build();
-      }
-
       // depth pass
       {
         auto uniform_meta_data = EspUniformMetaData::create();
@@ -149,13 +158,51 @@ namespace obj_example
         m_depth_pass.m_block       = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM,
                                                EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
                                                      { 0, 0, 0 });
-        m_depth_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                                          EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
+        m_depth_pass.m_depth_block = EspDepthBlock::build(
+            EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+            EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+            EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
+                EspImageUsageFlag::ESP_IMAGE_USAGE_SAMPLED_BIT); // TODO: lower depth map resolution, add custom
+                                                                 // viewport to match depth map resolution
 
         m_depth_pass.m_render_plan = EspRenderPlan::create();
         m_depth_pass.m_render_plan->add_block(m_depth_pass.m_block);
         m_depth_pass.m_render_plan->add_depth_block(m_depth_pass.m_depth_block);
         m_depth_pass.m_render_plan->build();
+      }
+
+      // final pass
+      {
+        auto uniform_meta_data = EspUniformMetaData::create();
+        uniform_meta_data->establish_descriptor_set();
+        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
+
+        //        m_final_pass.m_shader = ShaderSystem::acquire("Shaders/OffscreenRnd/shader_on");
+        //        m_final_pass.m_shader->set_vertex_layouts(
+        //            { VTX_LAYOUT(sizeof(QuatVertex),
+        //                         0,
+        //                         ESP_VERTEX_INPUT_RATE_VERTEX,
+        //                         ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, pos)),
+        //                         ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(QuatVertex, texCoord))) });
+        //        m_final_pass.m_shader->set_worker_layout(std::move(uniform_meta_data));
+        //        m_final_pass.m_shader->build_worker();
+        //
+        //        m_final_pass.m_uniform_manager = m_final_pass.m_shader->create_uniform_manager();
+        //        m_final_pass.m_uniform_manager->load_depth_block(0, 0, m_depth_pass.m_depth_block.get());
+        //        m_final_pass.m_uniform_manager->build();
+        //
+        //        m_final_pass.m_vertex_buffers_quad = EspVertexBuffer::create(quad.data(), sizeof(QuatVertex),
+        //        quad.size()); m_final_pass.m_index_buffer_quad   = EspIndexBuffer::create(quad_idx.data(),
+        //        quad_idx.size());
+
+        m_final_pass.m_depth_block =
+            EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                 EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                                 EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+        m_final_pass.m_final_render_plan = EspRenderPlan::create_final();
+        m_final_pass.m_final_render_plan->add_depth_block(std::shared_ptr{ m_final_pass.m_depth_block });
+        m_final_pass.m_final_render_plan->build();
       }
 
       // skybox
@@ -444,6 +491,13 @@ namespace obj_example
         m_skybox.m_vertex_buffer->attach();
         EspJob::draw(skybox_vertices.size());
       }
+      //      m_final_pass.m_shader->attach();
+      //      m_final_pass.m_vertex_buffers_quad->attach();
+      //
+      //      m_final_pass.m_uniform_manager->attach();
+      //
+      //      m_final_pass.m_index_buffer_quad->attach();
+      //      EspJob::draw_indexed(quad_idx.size());
     }
   };
 } // namespace obj_example

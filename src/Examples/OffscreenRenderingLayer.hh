@@ -76,7 +76,8 @@ namespace advance_rendering_example
                                   { 0.2f, 0.3f, 0.4f });
 
         m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                             EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+                                             EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
+                                             EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
         m_product_plan = EspRenderPlan::create();
         m_product_plan->add_block(std::shared_ptr{ m_block });
