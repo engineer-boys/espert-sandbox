@@ -79,8 +79,10 @@ namespace advance_rendering_example
 
       // final pass
       {
-        m_final_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                                          EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT);
+        m_final_pass.m_depth_block =
+            EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
+                                 EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                                 EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
 
         m_final_pass.m_final_product_plan = EspRenderPlan::create_final();
         m_final_pass.m_final_product_plan->add_depth_block(std::shared_ptr{ m_final_pass.m_depth_block });
