@@ -14,5 +14,6 @@ layout (set = 0, binding = 0) uniform BufferObject {
 
 void main()
 {
-    gl_Position = bo.light_space_mat * bo.model * vec4(position, 1.0);
+    vec3 flipped_position = vec3(position.x, -position.y, position.z); // TODO: don't flip position inside shader
+    gl_Position = bo.light_space_mat * bo.model * vec4(flipped_position, 1.0);
 }
