@@ -201,18 +201,19 @@ namespace obj_example
         m_depth_pass.m_shader->set_attachment_formats({ EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM });
         m_depth_pass.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                                  EspCompareOp::ESP_COMPARE_OP_LESS);
+        m_depth_pass.m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
         m_depth_pass.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
         m_depth_pass.m_shader->set_worker_layout(std::move(uniform_meta_data));
         m_depth_pass.m_shader->build_worker();
 
         m_depth_pass.m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM,
-                                               EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                                               EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                                DEPTH_MAP_SIZE,
                                                DEPTH_MAP_SIZE,
                                                { 0, 0, 0 });
         m_depth_pass.m_depth_block =
             EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                 EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                                 EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                  EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |
                                      EspImageUsageFlag::ESP_IMAGE_USAGE_SAMPLED_BIT,
                                  DEPTH_MAP_SIZE,
