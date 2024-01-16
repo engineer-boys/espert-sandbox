@@ -7,6 +7,7 @@
 #include "Espert.hh"
 
 using namespace esp;
+using namespace esp::action;
 
 namespace model_example_with_instancing
 {
