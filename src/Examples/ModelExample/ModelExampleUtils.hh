@@ -125,6 +125,25 @@ namespace model_example
 
     return vertices;
   }
+
+  static glm::vec3 move_in_circle(glm::vec3 current_position, glm::vec3 circle_center, float dt)
+  {
+    // Calculate the angle based on time, assuming a constant angular velocity
+    float period           = 1.f;
+    float angular_velocity = glm::radians(360.f) * period; // 360 degrees per second
+    float angle            = angular_velocity * dt;
+
+    // Calculate the position relative to the center of the circle
+    glm::vec3 relative_position = current_position - circle_center;
+
+    // Create a rotation matrix around the circle center
+    glm::mat4 rotation_mat = glm::rotate(glm::mat4(1.0f), angle, circle_center);
+
+    // Rotate the relative position using the rotation matrix
+    glm::vec4 rotated_relative_position = rotation_mat * glm::vec4(relative_position, 1.0f);
+
+    return glm::vec3(rotated_relative_position) + circle_center;
+  }
 } // namespace model_example
 
 #endif // LAYERS_MODEL_EXAMPLE_UTILS_HH

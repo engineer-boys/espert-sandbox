@@ -363,12 +363,10 @@ namespace obj_example
         m_camera.set_sensitivity(4.f);
 
         auto backpack = m_scene->create_entity("backpack");
-        backpack->add_component<TransformComponent>();
         backpack->add_component<ModelComponent>(m_backpack.m_model);
         m_backpack_node->attach_entity(backpack);
 
         auto light = m_scene->create_entity("light");
-        light->add_component<TransformComponent>();
         light->add_component<ModelComponent>(m_light.m_model);
         light->add_component<LightComponent>();
         m_light_node->attach_entity(light);
@@ -378,16 +376,15 @@ namespace obj_example
         light_component.m_specular             = 1.f;
         light_component.m_attenuation_strength = { 1.f, .09f, .032f };
 
-        action::TransformAction::set_translation(m_light_node.get(), { 0.f, 3.f, 3.f }, action::ESP_ABSOLUTE);
-        action::TransformAction::set_scale(m_light_node.get(), .5f, action::ESP_ABSOLUTE);
+        m_light_node->translate({ 0, 3, 3 });
+        m_light_node->scale(.5f);
 
         auto floor = m_scene->create_entity("floor");
-        floor->add_component<TransformComponent>();
         floor->add_component<ModelComponent>(m_floor.m_model);
         m_floor_node->attach_entity(floor);
 
-        action::TransformAction::set_translation(m_floor_node.get(), { 0.f, -2.f, 0.f }, action::ESP_ABSOLUTE);
-        action::TransformAction::set_scale(m_floor_node.get(), SCENE_SIZE, action::ESP_ABSOLUTE);
+        m_floor_node->translate({ 0, -2, 0 });
+        m_floor_node->scale(SCENE_SIZE);
       }
     }
 
@@ -397,11 +394,9 @@ namespace obj_example
       Scene::set_current_camera(&m_camera);
       m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
-      auto& light_transform = m_light_node->get_entity()->get_component<TransformComponent>();
-      light_transform.reset();
-      TransformAction::update_rotation(m_light_node.get(), -dt / 4, glm::vec3{ 0.f, 1.f, 0.f }, ESP_ABSOLUTE);
-      TransformAction::translate(m_light_node.get(), ESP_ABSOLUTE);
-      TransformAction::scale(m_light_node.get(), ESP_ABSOLUTE);
+      m_light_node->set_translation(model_example::move_in_circle(m_light_node->get_translation(ActionType::ABSOLUTE),
+                                                                  { 0, 1, 0 },
+                                                                  glm::radians(dt) * 2));
 
       m_depth_pass.m_render_plan->begin_plan();
       render_depth_map();
@@ -416,13 +411,11 @@ namespace obj_example
 
     void render_depth_map()
     {
-      auto& light_transform    = m_light_node->get_entity()->get_component<TransformComponent>();
-      glm::vec3 scene_position = light_transform.get_model_mat() * glm::vec4(light_transform.get_translation(), 1.f);
-
       //      glm::mat4 light_projection = glm::perspective(m_camera.get_fov(), 1.f, .1f, SCENE_SIZE);
       glm::mat4 light_projection =
           glm::ortho(-SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE);
-      glm::mat4 light_view      = glm::lookAt(scene_position, { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f });
+      glm::mat4 light_view =
+          glm::lookAt(m_light_node->get_translation(ActionType::ABSOLUTE), { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f });
       m_light.m_light_space_mat = light_projection * light_view;
 
       auto viewport        = EspViewport();
@@ -441,8 +434,7 @@ namespace obj_example
 
       // render backpack
       {
-        auto transform = m_backpack_node->get_entity()->get_component<TransformComponent>();
-        auto model_mat = transform.get_model_mat();
+        glm::mat4 model_mat = m_backpack_node->get_model_mat(ActionType::ABSOLUTE);
 
         m_backpack.m_depth_pass_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &model_mat);
         m_backpack.m_depth_pass_uniform_manager->update_buffer_uniform(0,
@@ -457,11 +449,9 @@ namespace obj_example
 
     void render_scene()
     {
-      auto& light_transform    = m_light_node->get_entity()->get_component<TransformComponent>();
       auto& light              = m_light_node->get_entity()->get_component<LightComponent>();
-      glm::vec3 scene_position = light_transform.get_model_mat() * glm::vec4(light_transform.get_translation(), 1.f);
       LightUniform l_ubo{};
-      l_ubo.m_position             = scene_position;
+      l_ubo.m_position             = m_light_node->get_translation(ActionType::ABSOLUTE);
       l_ubo.m_diffuse              = glm::vec3(light.m_diffuse);
       l_ubo.m_specular             = glm::vec3(light.m_specular);
       l_ubo.m_attenuation_strength = light.m_attenuation_strength;
@@ -470,9 +460,8 @@ namespace obj_example
 
       // render backpack
       {
-        auto backpack_transform = m_backpack_node->get_entity()->get_component<TransformComponent>();
         ModelUniform ubo{};
-        ubo.model               = backpack_transform.get_model_mat();
+        ubo.model               = m_backpack_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view                = m_camera.get_view();
         ubo.projection          = m_camera.get_projection();
         ubo.calculate_lightning = 1;
@@ -489,7 +478,7 @@ namespace obj_example
       // render light
       {
         ModelUniform ubo{};
-        ubo.model      = light_transform.get_model_mat();
+        ubo.model      = m_light_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view       = m_camera.get_view();
         ubo.projection = m_camera.get_projection();
 
@@ -504,10 +493,8 @@ namespace obj_example
 
       // render floor
       {
-        auto transform = m_floor_node->get_entity()->get_component<TransformComponent>();
-
         ModelUniform ubo{};
-        ubo.model               = transform.get_model_mat();
+        ubo.model               = m_floor_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view                = m_camera.get_view();
         ubo.projection          = m_camera.get_projection();
         ubo.sample_offset       = SCENE_SIZE;
