@@ -7,7 +7,6 @@
 #include "Espert.hh"
 
 using namespace esp;
-using namespace esp::action;
 
 namespace model_example_without_instancing
 {
@@ -18,9 +17,10 @@ namespace model_example_without_instancing
 
   class ModelExampleWithoutInstancingLayer : public Layer
   {
+#define CUBES 5
    private:
     std::shared_ptr<EspShader> m_shader;
-    std::array<std::unique_ptr<EspUniformManager>, 3> m_uniform_managers{};
+    std::array<std::unique_ptr<EspUniformManager>, CUBES> m_uniform_managers{};
 
     std::shared_ptr<Mesh> m_cube_mesh;
     std::shared_ptr<Node> m_main_cube_node;
@@ -43,30 +43,27 @@ namespace model_example_without_instancing
 
       m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
 
-      std::array<std::shared_ptr<Entity>, 3> cubes{};
+      std::array<std::shared_ptr<Entity>, CUBES> cubes{};
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<TransformComponent>();
         cube->add_component<ModelComponent>(std::make_shared<Model>(m_cube_mesh));
       }
 
       m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
-      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, -.5f, 2.f }, ESP_RELATIVE);
-      TransformAction::set_scale(m_main_cube_node.get(), .5f, ESP_RELATIVE);
+      m_main_cube_node->translate({ 0.f, .5f, -4.f });
 
-      for (int i = 1; i < cubes.size(); i++)
+      std::array<std::shared_ptr<Node>, CUBES> nodes{};
+      nodes[0] = m_main_cube_node;
+      for (int i = 1; i < CUBES; i++)
       {
-        auto small_cube_node = Node::create();
-        m_main_cube_node->add_child(small_cube_node);
-        small_cube_node->set_parent(m_main_cube_node);
-        small_cube_node->attach_entity(cubes[i]);
-        TransformAction::set_translation(small_cube_node.get(),
-                                         glm::vec3{ i % 2 == 0 ? -1.f : 1.f, 0.f, 0.f },
-                                         ESP_RELATIVE);
-        TransformAction::set_scale(small_cube_node.get(), .5f, ESP_RELATIVE);
+        nodes[i] = Node::create();
+        nodes[i - 1]->add_child(nodes[i]);
+        nodes[i]->attach_entity(cubes[i]);
+        nodes[i]->translate({ 1.5f / i, 0.f, 0.f });
+        nodes[i]->scale(.5f);
       }
 
       for (auto& manager : m_uniform_managers)
@@ -81,25 +78,16 @@ namespace model_example_without_instancing
     {
       m_shader->attach();
 
-      m_main_cube_node->act(
-          [dt](Node* node)
-          {
-            auto& transform = node->get_entity()->get_component<TransformComponent>();
-            transform.reset();
-
-            TransformAction::update_rotation(node, -dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ESP_ABSOLUTE);
-            TransformAction::translate(node, ESP_ABSOLUTE);
-            TransformAction::scale(node, ESP_ABSOLUTE);
-          });
+      m_main_cube_node->rotate(-dt, { 0, 1, 0 });
+      m_main_cube_node->set_translation(
+          model_example::move_in_circle(m_main_cube_node->get_translation(), { 0, 1, 0 }, glm::radians(dt * 2)));
 
       int i = 0;
       m_main_cube_node->act(
           [this, &i](Node* node)
           {
-            auto& transform = node->get_entity()->get_component<TransformComponent>();
-
             CubeUniform ubo{};
-            ubo.model = transform.get_model_mat();
+            ubo.model = node->get_model_mat(ActionType::ABSOLUTE);
 
             m_uniform_managers[i]->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
             m_uniform_managers[i]->attach();

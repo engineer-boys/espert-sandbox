@@ -37,7 +37,7 @@ namespace obj_example
       m_viking_room_node = Node::create();
       m_scene->get_root().add_child(m_viking_room_node);
 
-      m_camera.set_position(glm::vec3(0.0f, -2.0f, 3.0f));
+      m_camera.set_position(glm::vec3(0.0f, 2.0f, 3.0f));
       m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
@@ -81,14 +81,11 @@ namespace obj_example
       mesh->set_material(material);
 
       auto viking_room = m_scene->create_entity("viking room");
-      viking_room->add_component<TransformComponent>();
       viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh));
 
       m_viking_room_node->attach_entity(viking_room);
-      esp::action::TransformAction::update_rotation(m_viking_room_node.get(),
-                                                    glm::radians(90.f),
-                                                    { 1.f, 0.f, 0.f },
-                                                    esp::action::ESP_ABSOLUTE);
+      m_viking_room_node->rotate(glm::radians(180.f), { 0, 1, 0 });
+      m_viking_room_node->rotate(glm::radians(-90.f), { 1, 0, 0 });
     }
 
    private:
@@ -100,13 +97,7 @@ namespace obj_example
 
         m_shader->attach();
 
-        m_viking_room_node->act(
-            [&dt](Node* node)
-            {
-              auto& transform = node->get_entity()->get_component<TransformComponent>();
-              transform.reset();
-              esp::action::TransformAction::update_rotation(node, dt / 5, { 0.f, 0.f, 1.f }, esp::action::ESP_ABSOLUTE);
-            });
+        m_viking_room_node->rotate(glm::radians(dt * 3), { 0, 0, 1 });
 
         m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 

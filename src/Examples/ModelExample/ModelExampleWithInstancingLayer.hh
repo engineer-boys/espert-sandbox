@@ -7,7 +7,6 @@
 #include "Espert.hh"
 
 using namespace esp;
-using namespace esp::action;
 
 namespace model_example_with_instancing
 {
@@ -62,15 +61,14 @@ namespace model_example_with_instancing
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<TransformComponent>();
         cube->add_component<ModelComponent>(m_cube_model);
       }
 
       m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
-      TransformAction::set_translation(m_main_cube_node.get(), glm::vec3{ 0.f, .5f, 2.f }, ESP_RELATIVE);
-      TransformAction::set_scale(m_main_cube_node.get(), .5f, ESP_RELATIVE);
+      m_main_cube_node->translate({ 0.f, -.5f, 0.f });
+      m_main_cube_node->scale(.5f);
 
       std::array<std::shared_ptr<Node>, CUBES_Z> temp_parents;
       for (int i = 0; i < CUBES_X; i++)
@@ -89,27 +87,22 @@ namespace model_example_with_instancing
           parent_j = std::max(j - 2, 0);
 
           temp_parents[parent_j]->add_child(cube_node);
-          cube_node->set_parent(temp_parents[parent_j]);
           cube_node->attach_entity(cubes[i * CUBES_Z + j]);
 
           glm::vec3 translation = { 0.f, 0.f, 0.f };
           if (i != 0) { translation.x = (i % 2 == 0) ? -1.f : 1.f; }
           if (j != 0) { translation.z = (j % 2 == 0) ? -1.f : 1.f; }
 
-          TransformAction::set_translation(cube_node.get(), translation, ESP_RELATIVE);
-          TransformAction::set_scale(cube_node.get(), .8f, ESP_RELATIVE);
+          cube_node->translate(translation);
+          cube_node->scale(.8f);
 
           if ((i != 0 && j > 2) || j != 0) { temp_parents[j] = cube_node; }
         }
       }
 
       std::vector<CubeInstance> instances{};
-      m_main_cube_node->act(
-          [&instances](Node* node)
-          {
-            auto& transform = node->get_entity()->get_component<TransformComponent>();
-            instances.emplace_back(transform.get_model_mat());
-          });
+      m_main_cube_node->act([&instances](Node* node)
+                            { instances.emplace_back(node->get_model_mat(ActionType::ABSOLUTE)); });
       m_cube_model->add_instance_buffer(instances);
 
       m_uniform_manager = m_shader->create_uniform_manager();
@@ -121,19 +114,12 @@ namespace model_example_with_instancing
     {
       m_shader->attach();
 
-      m_main_cube_node->act(TransformAction::reset);
-      m_main_cube_node->act(TransformAction::translate, ESP_ABSOLUTE);
-      m_main_cube_node->act(TransformAction::update_rotation, dt / 2, glm::vec3{ 0.f, 1.f, 0.f }, ESP_ABSOLUTE);
-      m_main_cube_node->act(TransformAction::scale, ESP_ABSOLUTE);
+      m_main_cube_node->rotate(dt / 2, { 0, 1, 0 });
 
-      std::vector<CubeInstance> instances{};                                           //
-      m_main_cube_node->act(                                                           //
-          [&instances](Node* node)                                                     //
-          {                                                                            // TODO: This part is likely
-            auto& transform = node->get_entity()->get_component<TransformComponent>(); // going to end up in renderer
-            instances.emplace_back(transform.get_model_mat());                         //
-          });                                                                          //
-      m_cube_model->update_instance_buffer(instances, 0);                              //
+      std::vector<CubeInstance> instances{};
+      m_main_cube_node->act([&instances](Node* node)
+                            { instances.emplace_back(node->get_model_mat(ActionType::ABSOLUTE)); });
+      m_cube_model->update_instance_buffer(instances, 0);
 
       auto camera = Scene::get_current_camera();
 
