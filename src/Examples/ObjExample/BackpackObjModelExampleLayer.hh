@@ -449,7 +449,7 @@ namespace obj_example
 
     void render_scene()
     {
-      auto& light              = m_light_node->get_entity()->get_component<LightComponent>();
+      auto& light = m_light_node->get_entity()->get_component<LightComponent>();
       LightUniform l_ubo{};
       l_ubo.m_position             = m_light_node->get_translation(ActionType::ABSOLUTE);
       l_ubo.m_diffuse              = glm::vec3(light.m_diffuse);
