@@ -20,12 +20,9 @@ namespace model_example_without_instancing
 #define CUBES 5
    private:
     std::shared_ptr<EspShader> m_shader;
-    std::array<std::unique_ptr<EspUniformManager>, CUBES> m_uniform_managers{};
-
-    std::shared_ptr<Mesh> m_cube_mesh;
-    std::shared_ptr<Node> m_main_cube_node;
 
     std::shared_ptr<Scene> m_scene;
+    std::shared_ptr<Node> m_main_cube_node;
 
    public:
     ModelExampleWithoutInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
@@ -41,13 +38,14 @@ namespace model_example_without_instancing
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      m_cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
+      auto cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
+      auto cube_model = std::make_shared<Model>(cube_mesh);
 
       std::array<std::shared_ptr<Entity>, CUBES> cubes{};
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<ModelComponent>(std::make_shared<Model>(m_cube_mesh));
+        cube->add_component<ModelComponent>(cube_model, m_shader);
       }
 
       m_main_cube_node = Node::create();
@@ -65,12 +63,6 @@ namespace model_example_without_instancing
         nodes[i]->translate({ 1.5f / i, 0.f, 0.f });
         nodes[i]->scale(.5f);
       }
-
-      for (auto& manager : m_uniform_managers)
-      {
-        manager = m_shader->create_uniform_manager();
-        manager->build();
-      }
     }
 
    private:
@@ -82,21 +74,17 @@ namespace model_example_without_instancing
       m_main_cube_node->set_translation(
           model_example::move_in_circle(m_main_cube_node->get_translation(), { 0, 1, 0 }, glm::radians(dt * 2)));
 
-      int i = 0;
       m_main_cube_node->act(
-          [this, &i](Node* node)
+          [](Node* node)
           {
             CubeUniform ubo{};
             ubo.model = node->get_model_mat(ActionType::ABSOLUTE);
 
-            m_uniform_managers[i]->update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
-            m_uniform_managers[i]->attach();
-
-            auto& model = node->get_entity()->get_component<ModelComponent>();
-
-            model.m_model_handle->draw();
-            i++;
+            auto& uniform_manager = node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+            uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
           });
+
+      m_scene->render();
     }
   };
 } // namespace model_example_without_instancing

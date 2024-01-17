@@ -155,6 +155,9 @@ namespace obj_example
       std::unique_ptr<EspRenderPlan> m_final_render_plan;
     } m_final_pass;
 
+    std::shared_ptr<Scene> m_scene;
+    Camera m_camera{};
+
     struct
     {
       std::shared_ptr<EspShader> m_shader;
@@ -164,29 +167,20 @@ namespace obj_example
 
     struct
     {
-      std::unique_ptr<EspUniformManager> m_uniform_manager;
+      std::shared_ptr<Node> m_node;
       std::unique_ptr<EspUniformManager> m_depth_pass_uniform_manager;
-      std::shared_ptr<Model> m_model;
     } m_backpack;
 
     struct
     {
-      std::unique_ptr<EspUniformManager> m_uniform_manager;
-      std::shared_ptr<Model> m_model;
+      std::shared_ptr<Node> m_node;
       glm::mat4 m_light_space_mat{};
     } m_light;
 
     struct
     {
-      std::unique_ptr<EspUniformManager> m_uniform_manager;
-      std::shared_ptr<Model> m_model;
+      std::shared_ptr<Node> m_node;
     } m_floor;
-
-    std::shared_ptr<Scene> m_scene;
-    std::shared_ptr<Node> m_backpack_node;
-    std::shared_ptr<Node> m_light_node;
-    std::shared_ptr<Node> m_floor_node;
-    Camera m_camera{};
 
    public:
     BackpackObjModelExampleLayer()
@@ -286,6 +280,16 @@ namespace obj_example
         m_final_pass.m_final_render_plan->build();
       }
 
+      // scene initialization
+      {
+        m_scene = Scene::create();
+
+        m_camera.set_position(glm::vec3(0.0f, 10.0f, 10.0f));
+        m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_camera.set_move_speed(3.f);
+        m_camera.set_sensitivity(4.f);
+      }
+
       // skybox
       {
         auto uniform_meta_data = EspUniformMetaData::create();
@@ -313,78 +317,65 @@ namespace obj_example
 
       // backpack
       {
-        m_backpack.m_uniform_manager = m_final_pass.m_shader->create_uniform_manager(0, 0);
-        m_backpack.m_uniform_manager->build();
-
-        m_backpack.m_depth_pass_uniform_manager = m_depth_pass.m_shader->create_uniform_manager(0, 0);
-        m_backpack.m_depth_pass_uniform_manager->build();
-
         Model::Builder model_builder{};
         model_builder.set_shader(m_final_pass.m_shader);
         model_builder.load_model("Models/backpack/backpack.obj");
-        m_backpack.m_model = std::make_shared<Model>(model_builder);
+
+        auto backpack = m_scene->create_entity("backpack");
+        backpack->add_component<ModelComponent>(model_builder);
+
+        m_backpack.m_node = Node::create();
+        m_backpack.m_node->attach_entity(backpack);
+
+        m_backpack.m_depth_pass_uniform_manager = m_depth_pass.m_shader->create_uniform_manager(0, 0);
+        m_backpack.m_depth_pass_uniform_manager->build();
       }
 
       // light
       {
-        m_light.m_uniform_manager = m_final_pass.m_shader->create_uniform_manager(0, 0);
-        m_light.m_uniform_manager->build();
-
         auto albedo_texture = TextureSystem::acquire("Textures/white.png", {});
         auto material       = MaterialSystem::acquire("light_material", { albedo_texture }, m_final_pass.m_shader);
         auto cube_mesh      = std::make_shared<Mesh>(cube, cube_idx, material);
-        m_light.m_model     = std::make_shared<Model>(cube_mesh);
-      }
-
-      // floor
-      {
-        m_floor.m_uniform_manager = m_final_pass.m_shader->create_uniform_manager(0, 0);
-        m_floor.m_uniform_manager->build();
-
-        auto albedo_texture = TextureSystem::acquire("Textures/floor.jpeg", {});
-        auto material       = MaterialSystem::acquire("floor_material", { albedo_texture }, m_final_pass.m_shader);
-        auto floor_mesh     = std::make_shared<Mesh>(floor_vertices, floor_indices, material);
-        m_floor.m_model     = std::make_shared<Model>(floor_mesh);
-      }
-
-      // scene
-      {
-        m_scene         = Scene::create();
-        m_backpack_node = Node::create();
-        m_light_node    = Node::create();
-        m_floor_node    = Node::create();
-        m_scene->get_root().add_child(m_backpack_node);
-        m_scene->get_root().add_child(m_light_node);
-        m_scene->get_root().add_child(m_floor_node);
-
-        m_camera.set_position(glm::vec3(0.0f, 10.0f, 10.0f));
-        m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
-        m_camera.set_move_speed(3.f);
-        m_camera.set_sensitivity(4.f);
-
-        auto backpack = m_scene->create_entity("backpack");
-        backpack->add_component<ModelComponent>(m_backpack.m_model);
-        m_backpack_node->attach_entity(backpack);
+        auto cube_model     = std::make_shared<Model>(cube_mesh);
 
         auto light = m_scene->create_entity("light");
-        light->add_component<ModelComponent>(m_light.m_model);
+        light->add_component<ModelComponent>(cube_model, m_final_pass.m_shader);
         light->add_component<LightComponent>();
-        m_light_node->attach_entity(light);
+
+        m_light.m_node = Node::create();
+        m_light.m_node->attach_entity(light);
 
         auto& light_component                  = light->get_component<LightComponent>();
         light_component.m_diffuse              = 1.f;
         light_component.m_specular             = 1.f;
         light_component.m_attenuation_strength = { 1.f, .09f, .032f };
 
-        m_light_node->translate({ 0, 3, 3 });
-        m_light_node->scale(.5f);
+        m_light.m_node->translate({ 0, 3, 3 });
+        m_light.m_node->scale(.5f);
+      }
+
+      // floor
+      {
+        auto albedo_texture = TextureSystem::acquire("Textures/floor.jpeg", {});
+        auto material       = MaterialSystem::acquire("floor_material", { albedo_texture }, m_final_pass.m_shader);
+        auto floor_mesh     = std::make_shared<Mesh>(floor_vertices, floor_indices, material);
+        auto floor_model    = std::make_shared<Model>(floor_mesh);
 
         auto floor = m_scene->create_entity("floor");
-        floor->add_component<ModelComponent>(m_floor.m_model);
-        m_floor_node->attach_entity(floor);
+        floor->add_component<ModelComponent>(floor_model, m_final_pass.m_shader);
 
-        m_floor_node->translate({ 0, -2, 0 });
-        m_floor_node->scale(SCENE_SIZE);
+        m_floor.m_node = Node::create();
+        m_floor.m_node->attach_entity(floor);
+
+        m_floor.m_node->translate({ 0, -2, 0 });
+        m_floor.m_node->scale(SCENE_SIZE);
+      }
+
+      // attach nodes to scene
+      {
+        m_scene->get_root().add_child(m_backpack.m_node);
+        m_scene->get_root().add_child(m_light.m_node);
+        m_scene->get_root().add_child(m_floor.m_node);
       }
     }
 
@@ -394,9 +385,9 @@ namespace obj_example
       Scene::set_current_camera(&m_camera);
       m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
-      m_light_node->set_translation(model_example::move_in_circle(m_light_node->get_translation(ActionType::ABSOLUTE),
-                                                                  { 0, 1, 0 },
-                                                                  glm::radians(dt) * 2));
+      glm::vec3 light_current_pos = m_light.m_node->get_translation(ActionType::ABSOLUTE);
+      glm::vec3 light_next_pos    = model_example::move_in_circle(light_current_pos, { 0, 1, 0 }, glm::radians(dt) * 2);
+      m_light.m_node->set_translation(light_next_pos);
 
       m_depth_pass.m_render_plan->begin_plan();
       render_depth_map();
@@ -404,6 +395,7 @@ namespace obj_example
 
       m_final_pass.m_final_render_plan->begin_plan();
       m_final_pass.m_uniform_manager->attach();
+      update_scene();
       render_scene();
       m_final_pass.m_final_render_plan->end_plan();
       m_final_pass.m_depth_block->clear();
@@ -411,11 +403,14 @@ namespace obj_example
 
     void render_depth_map()
     {
+      // ---------- PERSPECTIVE PROJECTION ----------
       //      glm::mat4 light_projection = glm::perspective(m_camera.get_fov(), 1.f, .1f, SCENE_SIZE);
+      // ---------- ORTHOGONAL PROJECTION -----------
       glm::mat4 light_projection =
           glm::ortho(-SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE);
+      // -------------------------------------------
       glm::mat4 light_view =
-          glm::lookAt(m_light_node->get_translation(ActionType::ABSOLUTE), { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f });
+          glm::lookAt(m_light.m_node->get_translation(ActionType::ABSOLUTE), { 0.f, 0.f, 0.f }, { 0.f, 1.f, 0.f });
       m_light.m_light_space_mat = light_projection * light_view;
 
       auto viewport        = EspViewport();
@@ -434,7 +429,7 @@ namespace obj_example
 
       // render backpack
       {
-        glm::mat4 model_mat = m_backpack_node->get_model_mat(ActionType::ABSOLUTE);
+        glm::mat4 model_mat = m_backpack.m_node->get_model_mat(ActionType::ABSOLUTE);
 
         m_backpack.m_depth_pass_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &model_mat);
         m_backpack.m_depth_pass_uniform_manager->update_buffer_uniform(0,
@@ -443,86 +438,86 @@ namespace obj_example
                                                                        sizeof(glm::mat4),
                                                                        &m_light.m_light_space_mat);
         m_backpack.m_depth_pass_uniform_manager->attach();
-        m_backpack.m_model->draw_raw();
+        auto& model = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_model();
+        model.draw_raw();
       }
     }
 
-    void render_scene()
+    void update_scene()
     {
-      auto& light = m_light_node->get_entity()->get_component<LightComponent>();
+      auto& light = m_light.m_node->get_entity()->get_component<LightComponent>();
       LightUniform l_ubo{};
-      l_ubo.m_position             = m_light_node->get_translation(ActionType::ABSOLUTE);
+      l_ubo.m_position             = m_light.m_node->get_translation(ActionType::ABSOLUTE);
       l_ubo.m_diffuse              = glm::vec3(light.m_diffuse);
       l_ubo.m_specular             = glm::vec3(light.m_specular);
       l_ubo.m_attenuation_strength = light.m_attenuation_strength;
 
       auto camera_pos = m_camera.get_positiion();
 
-      // render backpack
+      // update backpack
       {
         ModelUniform ubo{};
-        ubo.model               = m_backpack_node->get_model_mat(ActionType::ABSOLUTE);
+        ubo.model               = m_backpack.m_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view                = m_camera.get_view();
         ubo.projection          = m_camera.get_projection();
         ubo.calculate_lightning = 1;
 
-        m_final_pass.m_shader->attach();
-        m_backpack.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
-        m_backpack.m_uniform_manager->update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
-        m_backpack.m_uniform_manager->update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
-        m_backpack.m_uniform_manager->update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
-        m_backpack.m_uniform_manager->attach();
-        m_backpack.m_model->draw();
+        auto& uniform_manager = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
+        uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
+        uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
+        uniform_manager.update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
       }
 
-      // render light
+      // update light
       {
         ModelUniform ubo{};
-        ubo.model      = m_light_node->get_model_mat(ActionType::ABSOLUTE);
+        ubo.model      = m_light.m_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view       = m_camera.get_view();
         ubo.projection = m_camera.get_projection();
 
-        m_final_pass.m_shader->attach();
-        m_light.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
-        m_light.m_uniform_manager->update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
-        m_light.m_uniform_manager->update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
-        m_light.m_uniform_manager->update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
-        m_light.m_uniform_manager->attach();
-        m_light.m_model->draw();
+        auto& uniform_manager = m_light.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
+        uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
+        uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
+        uniform_manager.update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
       }
 
-      // render floor
+      // update floor
       {
         ModelUniform ubo{};
-        ubo.model               = m_floor_node->get_model_mat(ActionType::ABSOLUTE);
+        ubo.model               = m_floor.m_node->get_model_mat(ActionType::ABSOLUTE);
         ubo.view                = m_camera.get_view();
         ubo.projection          = m_camera.get_projection();
         ubo.sample_offset       = SCENE_SIZE;
         ubo.calculate_lightning = 1;
         ubo.calculate_shadows   = 1;
 
-        m_final_pass.m_shader->attach();
-        m_floor.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
-        m_floor.m_uniform_manager->update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
-        m_floor.m_uniform_manager->update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
-        m_floor.m_uniform_manager->update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
-        m_floor.m_uniform_manager->attach();
-        m_floor.m_model->draw();
+        auto& uniform_manager = m_floor.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
+        uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
+        uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
+        uniform_manager.update_buffer_uniform(0, 3, 0, sizeof(glm::mat4), &m_light.m_light_space_mat);
       }
+    }
+
+    void render_scene()
+    {
+      // render scene
+      m_scene->render();
 
       // render skybox
-      {
-        SkyboxUniform ubo{};
-        ubo.view       = glm::mat4(glm::mat3(m_camera.get_view()));
-        ubo.projection = m_camera.get_projection();
+      SkyboxUniform ubo{};
+      ubo.view       = glm::mat4(glm::mat3(m_camera.get_view()));
+      ubo.projection = m_camera.get_projection();
 
-        m_skybox.m_shader->attach();
-        m_skybox.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(SkyboxUniform), &ubo);
-        m_skybox.m_uniform_manager->attach();
+      m_skybox.m_shader->attach();
+      m_skybox.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(SkyboxUniform), &ubo);
+      m_skybox.m_uniform_manager->attach();
 
-        m_skybox.m_vertex_buffer->attach();
-        EspJob::draw(skybox_vertices.size());
-      }
+      m_skybox.m_vertex_buffer->attach();
+      EspJob::draw(skybox_vertices.size());
+
       // ---------- DEPTH MAP VISUALIZATION ----------
       //      m_final_pass.m_shader->attach();
       //      m_final_pass.m_vertex_buffers_quad->attach();

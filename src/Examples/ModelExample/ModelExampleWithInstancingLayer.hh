@@ -27,11 +27,9 @@ namespace model_example_with_instancing
     std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
-    std::shared_ptr<Mesh> m_cube_mesh;
+    std::shared_ptr<Scene> m_scene;
     std::shared_ptr<Model> m_cube_model;
     std::shared_ptr<Node> m_main_cube_node;
-
-    std::shared_ptr<Scene> m_scene;
 
    public:
     ModelExampleWithInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
@@ -55,14 +53,14 @@ namespace model_example_with_instancing
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      m_cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
-      m_cube_model = std::make_shared<Model>(m_cube_mesh);
+      auto cube_mesh = std::make_shared<Mesh>(model_example::create_cube_vertices());
+      m_cube_model   = std::make_shared<Model>(cube_mesh);
 
       std::array<std::shared_ptr<Entity>, CUBES_X * CUBES_Z> cubes{};
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<ModelComponent>(m_cube_model);
+        cube->add_component<ModelComponent>(m_cube_model, m_shader);
       }
 
       m_main_cube_node = Node::create();

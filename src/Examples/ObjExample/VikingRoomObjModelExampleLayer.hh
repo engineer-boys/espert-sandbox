@@ -18,30 +18,18 @@ namespace obj_example
   class VikingRoomObjModelExampleLayer : public Layer
   {
    private:
-    std::shared_ptr<EspShader> m_shader;
-    std::unique_ptr<EspUniformManager> m_uniform_manager;
+    std::shared_ptr<EspDepthBlock> m_depth_block;
+    std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
 
     std::shared_ptr<Node> m_viking_room_node;
 
-    std::shared_ptr<EspDepthBlock> m_depth_block;
-
-    std::unique_ptr<EspRenderPlan> m_final_product_plan;
-
    public:
     VikingRoomObjModelExampleLayer()
     {
-      m_scene            = Scene::create();
-      m_viking_room_node = Node::create();
-      m_scene->get_root().add_child(m_viking_room_node);
-
-      m_camera.set_position(glm::vec3(0.0f, 2.0f, 3.0f));
-      m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
-      m_camera.set_move_speed(3.f);
-      m_camera.set_sensitivity(4.f);
-
+      // Create render plan
       m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                            EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                            EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -61,27 +49,33 @@ namespace obj_example
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
-      m_shader = ShaderSystem::acquire("Shaders/ObjExample/VikingRoomObjModelExample/shader");
-      m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
-      m_shader->set_worker_layout(std::move(uniform_meta_data));
-      m_shader->build_worker();
+      auto shader = ShaderSystem::acquire("Shaders/ObjExample/VikingRoomObjModelExample/shader");
+      shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
+      shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      shader->set_worker_layout(std::move(uniform_meta_data));
+      shader->build_worker();
 
-      m_uniform_manager = m_shader->create_uniform_manager(0, 0);
-      m_uniform_manager->build();
+      // Create scene
+      m_scene            = Scene::create();
+      m_viking_room_node = Node::create();
+      m_scene->get_root().add_child(m_viking_room_node);
 
-      auto mesh = Model::Builder{}
-                      .set_shader(m_shader)
-                      .load_model("Models/viking_room/viking_room.obj",
-                                  { .p_flags = EspProcessFlipUVs, .load_material = false })
-                      .m_meshes[0];
-      auto material =
-          MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) }, m_shader);
-      mesh->set_material(material);
+      m_camera.set_position(glm::vec3(0.0f, 2.0f, 3.0f));
+      m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
+      m_camera.set_move_speed(3.f);
+      m_camera.set_sensitivity(4.f);
+
+      auto model_builder = Model::Builder{};
+      model_builder.set_shader(shader);
+      model_builder.load_model("Models/viking_room/viking_room.obj",
+                               { .p_flags = EspProcessFlipUVs, .load_material = false });
+
+      auto material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) }, shader);
+      model_builder.m_meshes[0]->set_material(material);
 
       auto viking_room = m_scene->create_entity("viking room");
-      viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh));
+      viking_room->add_component<ModelComponent>(model_builder);
 
       m_viking_room_node->attach_entity(viking_room);
       m_viking_room_node->rotate(glm::radians(180.f), { 0, 1, 0 });
@@ -94,23 +88,22 @@ namespace obj_example
       m_final_product_plan->begin_plan();
       {
         Scene::set_current_camera(&m_camera);
-
-        m_shader->attach();
-
-        m_viking_room_node->rotate(glm::radians(dt * 3), { 0, 0, 1 });
-
         m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
-        auto& transform = m_viking_room_node->get_entity()->get_component<TransformComponent>();
+        // Update scene
+        m_viking_room_node->rotate(glm::radians(dt * 3), { 0, 0, 1 });
+
+        // Update uniform manager
         VikingRoomUniform ubo{};
-        ubo.model = transform.get_model_mat();
+        ubo.model = m_viking_room_node->get_model_mat();
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
-        m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
-        m_uniform_manager->attach();
 
-        auto& model = m_viking_room_node->get_entity()->get_component<ModelComponent>();
-        model.m_model_handle->draw();
+        auto& uniform_manager = m_viking_room_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
+
+        // Render scene
+        m_scene->render();
       }
       m_final_product_plan->end_plan();
     }
