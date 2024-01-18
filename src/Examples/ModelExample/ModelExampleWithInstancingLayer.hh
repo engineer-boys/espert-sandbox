@@ -101,7 +101,7 @@ namespace model_example_with_instancing
 
       std::vector<CubeInstance> instances{};
       m_main_cube_node->act([&instances](Node* node)
-                            { instances.emplace_back(node->get_model_mat(ActionType::ABSOLUTE)); });
+                            { instances.emplace_back(node->get_model_mat(ActionType::ESP_ABSOLUTE)); });
       m_cube_model->add_instance_buffer(instances);
 
       m_uniform_manager = m_shader->create_uniform_manager();
@@ -117,7 +117,7 @@ namespace model_example_with_instancing
 
       std::vector<CubeInstance> instances{};
       m_main_cube_node->act([&instances](Node* node)
-                            { instances.emplace_back(node->get_model_mat(ActionType::ABSOLUTE)); });
+                            { instances.emplace_back(node->get_model_mat(ActionType::ESP_ABSOLUTE)); });
       m_cube_model->update_instance_buffer(instances, 0);
 
       auto camera = Scene::get_current_camera();

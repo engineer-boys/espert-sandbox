@@ -78,7 +78,7 @@ namespace model_example_without_instancing
           [](Node* node)
           {
             CubeUniform ubo{};
-            ubo.model = node->get_model_mat(ActionType::ABSOLUTE);
+            ubo.model = node->get_model_mat(ActionType::ESP_ABSOLUTE);
 
             auto& uniform_manager = node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
             uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
