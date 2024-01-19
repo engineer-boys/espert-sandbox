@@ -84,7 +84,7 @@ namespace model_example_without_instancing
             uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
           });
 
-      m_scene->render();
+      m_scene->draw();
     }
   };
 } // namespace model_example_without_instancing
