@@ -103,7 +103,7 @@ namespace obj_example
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
 
         // Render scene
-        m_scene->render();
+        m_scene->draw();
       }
       m_final_product_plan->end_plan();
     }

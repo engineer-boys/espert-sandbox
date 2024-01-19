@@ -405,7 +405,7 @@ namespace obj_example
     {
       // ---------- PERSPECTIVE PROJECTION ----------
       //      glm::mat4 light_projection = glm::perspective(m_camera.get_fov(), 1.f, .1f, SCENE_SIZE);
-      // ---------- ORTHOGONAL PROJECTION -----------
+      // ---------- ORTHOGRAPHIC PROJECTION -----------
       glm::mat4 light_projection =
           glm::ortho(-SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE, -SCENE_SIZE, SCENE_SIZE);
       // -------------------------------------------
@@ -504,7 +504,7 @@ namespace obj_example
     void render_scene()
     {
       // render scene
-      m_scene->render();
+      m_scene->draw();
 
       // render skybox
       SkyboxUniform ubo{};
