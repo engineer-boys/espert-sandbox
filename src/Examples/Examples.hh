@@ -5,6 +5,9 @@
 #include "Examples/AdvanceRendering2/PBRTexturedLayer.hh"
 #include "Examples/AdvanceRendering2/PBRiblLayer.hh"
 
+#include "Examples/AdvanceModel/AdvanceModelLayer.hh"
+#include "Examples/AdvanceModel/AnimatedModelLayer.hh"
+
 #include "Examples/ExampleLayer.hh"
 #include "Examples/InstancingExampleLayer.hh"
 #include "Examples/ModelExample/ModelExampleLayer.hh"
