@@ -27,6 +27,7 @@ namespace advance_model
     {
       std::shared_ptr<EspShader> m_shader;
       std::unique_ptr<EspUniformManager> m_uniform_managers;
+      std::vector<std::unique_ptr<EspUniformManager>> m_uniform_managers_materials;
       std::unique_ptr<NModel> m_model;
     } m_sphere;
 
@@ -39,7 +40,7 @@ namespace advance_model
    public:
     AdvanceModelLayer()
     {
-      m_camera.set_position(glm::vec3(0.0f, 0.0f, -6.0f));
+      m_camera.set_position(glm::vec3(0.0f, 0.0f, 2.0f));
       m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
@@ -56,20 +57,21 @@ namespace advance_model
 
       // model
       {
-        m_params = { .m_position  = true,
-                     .m_color     = true,
-                     .m_normal    = true,
-                     .m_tex_coord = true,
-                     .m_bone_ids  = false,
-                     .m_weights   = false,
-                     .m_tangent   = false };
+        m_params = { .m_position        = true,
+                     .m_color           = true,
+                     .m_normal          = true,
+                     .m_tex_coord       = true,
+                     .m_bone_ids        = false,
+                     .m_weights         = false,
+                     .m_tangent         = false,
+                     .m_material_params = { .m_albedo = true } };
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(PMVLV));
         uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(glm::mat4));
-        // uniform_meta_data->establish_descriptor_set();
-        // uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
+        uniform_meta_data->establish_descriptor_set();
+        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
         m_sphere.m_shader = ShaderSystem::acquire("Shaders/LoadAdvanceModel/shader");
         m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
@@ -80,17 +82,18 @@ namespace advance_model
         m_sphere.m_uniform_managers = m_sphere.m_shader->create_uniform_manager(0, 0);
         m_sphere.m_uniform_managers->build();
 
-        // auto test = std::make_shared<TFModel>("AdvanceModels/Lantern/Lantern.gltf");
-        // m_sphere.m_model = std::make_shared<TFModel>("AdvanceModels/HipHopDancer/Boss.gltf");
-        // for (auto& image : m_sphere.m_model->images)
-        // {
-        //   auto u_manager = m_sphere.m_shader->create_uniform_manager(1, 1);
-        //   u_manager->load_texture(1, 0, image.texture);
-        //   u_manager->build();
-        //   m_sphere.m_uniform_managers.push_back(std::unique_ptr<EspUniformManager>{ u_manager.release() });
-        // }
-
         m_sphere.m_model = std::make_unique<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", m_params);
+        for (auto& material : m_sphere.m_model->m_materials)
+        {
+          auto u_manager = m_sphere.m_shader->create_uniform_manager(1, 1);
+          u_manager->load_texture(1, 0, m_sphere.m_model->m_textures[material.m_albedo.value()]);
+          u_manager->build();
+          m_sphere.m_uniform_managers_materials.push_back(std::unique_ptr<EspUniformManager>{ u_manager.release() });
+        }
+
+        // Example of changing position of model
+        // auto rotation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+        // m_sphere.m_model->set_localisation(rotation);
       }
     }
 
@@ -118,9 +121,10 @@ namespace advance_model
 
           for (auto& mesh_idx : node.m_current_node->m_meshes)
           {
-            EspJob::draw_indexed(m_sphere.m_model->m_meshes[mesh_idx].m_index_count,
-                                 1,
-                                 m_sphere.m_model->m_meshes[mesh_idx].m_first_index);
+            auto& mesh = m_sphere.m_model->m_meshes[mesh_idx];
+
+            m_sphere.m_uniform_managers_materials[mesh.m_material_index]->attach();
+            EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
           }
         }
       }
