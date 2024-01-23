@@ -13,6 +13,8 @@ namespace model_example_without_instancing
   struct CubeUniform
   {
     glm::mat4 model;
+    glm::mat4 view;
+    glm::mat4 proj;
   };
 
   class ModelExampleWithoutInstancingLayer : public Layer
@@ -24,6 +26,8 @@ namespace model_example_without_instancing
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<Node> m_main_cube_node;
 
+    NModelParams m_model_params = { .m_position = true, .m_color = true };
+
    public:
     ModelExampleWithoutInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
     {
@@ -34,24 +38,27 @@ namespace model_example_without_instancing
 
       m_shader = ShaderSystem::acquire("Shaders/ModelExample/ModelExampleWithoutInstancing/shader");
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      m_shader->set_vertex_layouts({ m_model_params.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      auto cube_mesh  = std::make_shared<Mesh>(model_example::create_cube_vertices());
-      auto cube_model = std::make_shared<Model>(cube_mesh);
+      auto cube_model = std::make_shared<NModel>(model_example::colored_cube,
+                                                 model_example::cube_idx,
+                                                 std::vector<std::shared_ptr<EspTexture>>{},
+                                                 m_model_params);
 
       std::array<std::shared_ptr<Entity>, CUBES> cubes{};
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<ModelComponent>(cube_model, m_shader);
+        cube->add_component<NModelComponent>(cube_model, m_shader);
       }
 
       m_main_cube_node = Node::create();
       m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
       m_main_cube_node->translate({ 0.f, .5f, -4.f });
+      m_main_cube_node->scale(.5f);
 
       std::array<std::shared_ptr<Node>, CUBES> nodes{};
       nodes[0] = m_main_cube_node;
@@ -74,13 +81,17 @@ namespace model_example_without_instancing
       m_main_cube_node->set_translation(
           model_example::move_in_circle(m_main_cube_node->get_translation(), { 0, 1, 0 }, glm::radians(dt * 2)));
 
+      auto camera = m_scene->get_camera(0);
+
       m_main_cube_node->act(
-          [](Node* node)
+          [&camera](Node* node)
           {
             CubeUniform ubo{};
             ubo.model = node->get_model_mat(ActionType::ESP_ABSOLUTE);
+            ubo.view  = camera->get_view();
+            ubo.proj  = camera->get_projection();
 
-            auto& uniform_manager = node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+            auto& uniform_manager = node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
             uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
           });
 
