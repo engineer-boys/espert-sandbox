@@ -331,9 +331,9 @@ namespace obj_example
         m_light.m_uniform_manager->build();
 
         auto albedo_texture = TextureSystem::acquire("Textures/white.png", {});
-        auto material       = MaterialSystem::acquire("light_material", { albedo_texture }, m_final_pass.m_shader);
+        auto material       = MaterialSystem::acquire("light_material", { albedo_texture });
         auto cube_mesh      = std::make_shared<Mesh>(cube, cube_idx, material);
-        m_light.m_model     = std::make_shared<Model>(cube_mesh);
+        m_light.m_model     = std::make_shared<Model>(cube_mesh, m_final_pass.m_shader);
       }
 
       // floor
@@ -342,9 +342,9 @@ namespace obj_example
         m_floor.m_uniform_manager->build();
 
         auto albedo_texture = TextureSystem::acquire("Textures/floor.jpeg", {});
-        auto material       = MaterialSystem::acquire("floor_material", { albedo_texture }, m_final_pass.m_shader);
+        auto material       = MaterialSystem::acquire("floor_material", { albedo_texture });
         auto floor_mesh     = std::make_shared<Mesh>(floor_vertices, floor_indices, material);
-        m_floor.m_model     = std::make_shared<Model>(floor_mesh);
+        m_floor.m_model     = std::make_shared<Model>(floor_mesh, m_final_pass.m_shader);
       }
 
       // scene

@@ -77,12 +77,12 @@ namespace obj_example
                                   { .p_flags = EspProcessFlipUVs, .load_material = false })
                       .m_meshes[0];
       auto material =
-          MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) }, m_shader);
+          MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) });
       mesh->set_material(material);
 
       auto viking_room = m_scene->create_entity("viking room");
       viking_room->add_component<TransformComponent>();
-      viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh));
+      viking_room->add_component<ModelComponent>(std::make_shared<Model>(mesh, m_shader));
 
       m_viking_room_node->attach_entity(viking_room);
       esp::action::TransformAction::update_rotation(m_viking_room_node.get(),

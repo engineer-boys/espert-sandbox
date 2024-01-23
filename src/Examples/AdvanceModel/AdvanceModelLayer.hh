@@ -27,7 +27,7 @@ namespace advance_model
     {
       std::shared_ptr<EspShader> m_shader;
       std::unique_ptr<EspUniformManager> m_uniform_managers;
-      std::vector<std::unique_ptr<EspUniformManager>> m_uniform_managers_materials;
+      std::unordered_map<std::shared_ptr<Material>, std::unique_ptr<EspUniformManager>> m_material_uniform_managers;
       std::unique_ptr<NModel> m_model;
     } m_sphere;
 
@@ -64,7 +64,7 @@ namespace advance_model
                      .m_bone_ids        = false,
                      .m_weights         = false,
                      .m_tangent         = false,
-                     .m_material_params = { .m_albedo = true } };
+                     .m_material_texture_layout = {{1, 1, EspTextureType::ALBEDO}} };
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
@@ -83,12 +83,8 @@ namespace advance_model
         m_sphere.m_uniform_managers->build();
 
         m_sphere.m_model = std::make_unique<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", m_params);
-        for (auto& material : m_sphere.m_model->m_materials)
-        {
-          auto u_manager = m_sphere.m_shader->create_uniform_manager(1, 1);
-          u_manager->load_texture(1, 0, m_sphere.m_model->m_textures[material.m_albedo.value()]);
-          u_manager->build();
-          m_sphere.m_uniform_managers_materials.push_back(std::unique_ptr<EspUniformManager>{ u_manager.release() });
+        for (const auto& mesh : m_sphere.m_model->m_meshes) {
+          if (!m_sphere.m_material_uniform_managers.contains(mesh.m_material)) m_sphere.m_material_uniform_managers.insert({mesh.m_material, mesh.m_material->create_uniform_manager(m_sphere.m_shader)});
         }
 
         // Example of changing position of model
@@ -123,7 +119,7 @@ namespace advance_model
           {
             auto& mesh = m_sphere.m_model->m_meshes[mesh_idx];
 
-            m_sphere.m_uniform_managers_materials[mesh.m_material_index]->attach();
+            m_sphere.m_material_uniform_managers.at(mesh.m_material)->attach();
             EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
           }
         }
