@@ -21,15 +21,20 @@ namespace obj_example
     std::shared_ptr<EspDepthBlock> m_depth_block;
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
+    NModelParams m_model_params = { .m_position                = true,
+                                    .m_normal                  = true,
+                                    .m_tex_coord               = true,
+                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } },
+                                    .m_load_process_flags      = EspProcessFlipUVs };
+
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};
-
     std::shared_ptr<Node> m_viking_room_node;
 
    public:
     VikingRoomObjModelExampleLayer()
     {
-      // Create render plan
+      // create render plan
       m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                            EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                            EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
@@ -39,24 +44,21 @@ namespace obj_example
       m_final_product_plan->add_depth_block(std::shared_ptr{ m_depth_block });
       m_final_product_plan->build();
 
+      // create shader
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(VikingRoomUniform));
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
 
       auto shader = ShaderSystem::acquire("Shaders/ObjExample/VikingRoomObjModelExample/shader");
       shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+      shader->set_vertex_layouts({ m_model_params.get_vertex_layouts() });
       shader->set_worker_layout(std::move(uniform_meta_data));
       shader->build_worker();
 
-      // Create scene
+      // create scene
       m_scene            = Scene::create();
       m_viking_room_node = Node::create();
       m_scene->get_root().add_child(m_viking_room_node);
@@ -66,16 +68,12 @@ namespace obj_example
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
 
-      auto model_builder = Model::Builder{};
-      model_builder.set_shader(shader);
-      model_builder.load_model("Models/viking_room/viking_room.obj",
-                               { .p_flags = EspProcessFlipUVs, .load_material = false });
-
-      auto material = MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) }, shader);
-      model_builder.m_meshes[0]->set_material(material);
+      auto model = std::make_shared<NModel>("Models/viking_room/viking_room.obj", m_model_params);
+      model->m_meshes[0].m_material =
+          MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) });
 
       auto viking_room = m_scene->create_entity("viking room");
-      viking_room->add_component<ModelComponent>(model_builder);
+      viking_room->add_component<NModelComponent>(model, shader);
 
       m_viking_room_node->attach_entity(viking_room);
       m_viking_room_node->rotate(glm::radians(180.f), { 0, 1, 0 });
@@ -99,7 +97,8 @@ namespace obj_example
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
 
-        auto& uniform_manager = m_viking_room_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        auto& uniform_manager =
+            m_viking_room_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
 
         // Render scene
