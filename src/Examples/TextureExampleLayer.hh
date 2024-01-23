@@ -85,7 +85,8 @@ namespace my_game
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg", {});
       m_material_uniform_manager =
-          MaterialSystem::acquire("david_material", { texture }, { { 0, 1, EspTextureType::ALBEDO } })->create_uniform_manager(m_shader);
+          MaterialSystem::acquire("david_material", { texture }, { { 0, 1, EspTextureType::ALBEDO } })
+              ->create_uniform_manager(m_shader);
 
       m_vertex_buffer = EspVertexBuffer::create(m_vertices.data(), sizeof(TextureExampleVertex), m_vertices.size());
 
