@@ -41,7 +41,7 @@ namespace my_game
   class TextureExampleLayer : public Layer
   {
     std::shared_ptr<EspShader> m_shader;
-    std::shared_ptr<Material> m_material;
+    std::unique_ptr<EspUniformManager> m_material_uniform_manager;
 
     std::vector<TextureExampleVertex> m_vertices = { { { -0.5f, -0.5f }, { 1.0f, 0.0f, 0.0f }, { 1.0f, 0.0f } },
                                                      { { 0.5f, -0.5f }, { 0.0f, 1.0f, 0.0f }, { 0.0f, 0.0f } },
@@ -84,8 +84,8 @@ namespace my_game
       m_shader->build_worker();
 
       auto texture = TextureSystem::acquire("Textures/image.jpeg", {});
-      m_material =
-          MaterialSystem::acquire("david_material", { texture }, m_shader, { { 0, 1, EspTextureType::ALBEDO } });
+      m_material_uniform_manager =
+          MaterialSystem::acquire("david_material", { texture }, { { 0, 1, EspTextureType::ALBEDO } })->create_uniform_manager(m_shader);
 
       m_vertex_buffer = EspVertexBuffer::create(m_vertices.data(), sizeof(TextureExampleVertex), m_vertices.size());
 
@@ -104,8 +104,8 @@ namespace my_game
         m_index_buffer->attach();
 
         auto ubo = get_new_texture_example_uniform();
-        m_material->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
-        m_material->attach();
+        m_material_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(TextureExampleUniform), &ubo);
+        m_material_uniform_manager->attach();
 
         EspJob::draw_indexed(m_indices.size());
       }

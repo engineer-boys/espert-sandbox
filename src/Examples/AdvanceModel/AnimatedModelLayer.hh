@@ -64,7 +64,7 @@ namespace advance_model
                      .m_bone_ids        = true,
                      .m_weights         = true,
                      .m_tangent         = false,
-                     .m_material_params = { .m_albedo = true } };
+                     .m_material_texture_layout = {{1, 0, EspTextureType::ALBEDO}} };
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
@@ -86,15 +86,7 @@ namespace advance_model
         }
 
         m_sphere.m_model = std::make_unique<NModel>("AdvanceModels/CesiumMan/CesiumMan.gltf", m_params);
-        {
-          m_sphere.m_uniform_managers_material = m_sphere.m_shader->create_uniform_manager(1, 1);
-
-          auto& material = m_sphere.m_model->m_materials[0];
-          auto& texture  = m_sphere.m_model->m_textures[material.m_albedo.value()];
-
-          m_sphere.m_uniform_managers_material->load_texture(1, 0, texture);
-          m_sphere.m_uniform_managers_material->build();
-        }
+        m_sphere.m_uniform_managers_material = m_sphere.m_model->m_meshes[0].m_material->create_uniform_manager(m_sphere.m_shader);
 
         m_animator = std::shared_ptr<Animator>{ new Animator() };
         m_animator->play_animation(m_sphere.m_model.get(), 0, AnimationPeriodType::MANY_TIMES, 3);
