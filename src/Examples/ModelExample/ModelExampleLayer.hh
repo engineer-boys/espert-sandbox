@@ -15,10 +15,11 @@ namespace model_example
 {
   class ModelExampleLayer : public Layer
   {
-   private:
+   protected:
     std::shared_ptr<Scene> m_scene;
 
-    std::unique_ptr<Layer> m_model_example_with_instancing_layer;
+   private:
+    //     std::unique_ptr<Layer> m_model_example_with_instancing_layer;
     std::unique_ptr<Layer> m_model_example_without_instancing_layer;
 
     std::shared_ptr<EspDepthBlock> m_depth_block;
@@ -44,8 +45,8 @@ namespace model_example
       camera->set_sensitivity(4.f);
       m_scene->set_current_camera(camera.get());
 
-      m_model_example_with_instancing_layer =
-          std::make_unique<model_example_with_instancing::ModelExampleWithInstancingLayer>(m_scene);
+      //      m_model_example_with_instancing_layer =
+      //          std::make_unique<model_example_with_instancing::ModelExampleWithInstancingLayer>(m_scene);
       m_model_example_without_instancing_layer =
           std::make_unique<model_example_without_instancing::ModelExampleWithoutInstancingLayer>(m_scene);
     }
@@ -58,7 +59,7 @@ namespace model_example
         auto camera = Scene::get_current_camera();
         camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
-        m_model_example_with_instancing_layer->update(dt);
+        //        m_model_example_with_instancing_layer->update(dt);
         m_model_example_without_instancing_layer->update(dt);
       }
       m_final_product_plan->end_plan();
