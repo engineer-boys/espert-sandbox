@@ -57,14 +57,14 @@ namespace advance_model
 
       // model
       {
-        m_params = { .m_position        = true,
-                     .m_color           = true,
-                     .m_normal          = true,
-                     .m_tex_coord       = true,
-                     .m_bone_ids        = false,
-                     .m_weights         = false,
-                     .m_tangent         = false,
-                     .m_material_texture_layout = {{1, 0, EspTextureType::ALBEDO}} };
+        m_params = { .m_position                = true,
+                     .m_color                   = true,
+                     .m_normal                  = true,
+                     .m_tex_coord               = true,
+                     .m_bone_ids                = false,
+                     .m_weights                 = false,
+                     .m_tangent                 = false,
+                     .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
@@ -83,8 +83,11 @@ namespace advance_model
         m_sphere.m_uniform_managers->build();
 
         m_sphere.m_model = std::make_unique<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", m_params);
-        for (const auto& mesh : m_sphere.m_model->m_meshes) {
-          if (!m_sphere.m_material_uniform_managers.contains(mesh.m_material)) m_sphere.m_material_uniform_managers.insert({mesh.m_material, mesh.m_material->create_uniform_manager(m_sphere.m_shader)});
+        for (const auto& mesh : m_sphere.m_model->m_meshes)
+        {
+          if (!m_sphere.m_material_uniform_managers.contains(mesh.m_material))
+            m_sphere.m_material_uniform_managers.insert(
+                { mesh.m_material, mesh.m_material->create_uniform_manager(m_sphere.m_shader) });
         }
 
         // Example of changing position of model
