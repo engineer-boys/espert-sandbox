@@ -30,10 +30,6 @@ layout (set = 0, binding = 2) uniform CameraBufferObject {
 } cbo;
 
 layout (set = 1, binding = 0) uniform sampler2D albedo_texture;
-layout (set = 1, binding = 1) uniform sampler2D normal_texture;
-layout (set = 1, binding = 2) uniform sampler2D metallic_texture;
-layout (set = 1, binding = 3) uniform sampler2D roughness_texture;
-layout (set = 1, binding = 4) uniform sampler2D ao_texture;
 
 layout (set = 2, binding = 0) uniform sampler2D depth_map;
 

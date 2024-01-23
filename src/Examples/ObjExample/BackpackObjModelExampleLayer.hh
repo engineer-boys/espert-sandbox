@@ -24,7 +24,7 @@ namespace obj_example
   //
   //  static std::vector<uint32_t> quad_idx{ 0, 1, 2, 2, 3, 0 };
 
-  static std::vector<Mesh::Vertex> cube{
+  static std::vector<NVertex> cube{
     // left face
     { { -1, -1, -1 }, {}, {}, { 0, 0 }, {} },
     { { -1, 1, -1 }, {}, {}, { 1, 0 }, {} },
@@ -85,11 +85,11 @@ namespace obj_example
     { 1.0f, -1.0f, -1.0f },  { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, 1.0f }
   };
 
-  std::vector<Mesh::Vertex> floor_vertices = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
-                                               { { 1, 0, -1 }, {}, {}, { 1, 0 }, {} },
-                                               { { 1, 0, 1 }, {}, {}, { 1, 1 }, {} },
-                                               { { -1, 0, 1 }, {}, {}, { 0, 1 }, {} } };
-  std::vector<uint32_t> floor_indices      = { 0, 2, 1, 2, 0, 3 };
+  std::vector<NVertex> floor_vertices = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
+                                          { { 1, 0, -1 }, {}, {}, { 1, 0 }, {} },
+                                          { { 1, 0, 1 }, {}, {}, { 1, 1 }, {} },
+                                          { { -1, 0, 1 }, {}, {}, { 0, 1 }, {} } };
+  std::vector<uint32_t> floor_indices = { 0, 2, 1, 2, 0, 3 };
 
   struct SkyboxUniform
   {
@@ -143,10 +143,10 @@ namespace obj_example
     struct
     {
       // ---------- DEPTH MAP VISUALIZATION ----------
-      //      std::shared_ptr<EspShader> m_shader;
-      //      std::unique_ptr<EspUniformManager> m_uniform_manager;
-      //      std::unique_ptr<EspVertexBuffer> m_vertex_buffers_quad;
-      //      std::unique_ptr<EspIndexBuffer> m_index_buffer_quad;
+      // std::shared_ptr<EspShader> m_shader;
+      // std::unique_ptr<EspUniformManager> m_uniform_manager;
+      // std::unique_ptr<EspVertexBuffer> m_vertex_buffers_quad;
+      // std::unique_ptr<EspIndexBuffer> m_index_buffer_quad;
       //
 
       std::shared_ptr<EspShader> m_shader;
@@ -164,6 +164,11 @@ namespace obj_example
       std::unique_ptr<EspUniformManager> m_uniform_manager;
       std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
     } m_skybox;
+
+    NModelParams m_model_params = { .m_position                = true,
+                                    .m_normal                  = true,
+                                    .m_tex_coord               = true,
+                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
 
     struct
     {
@@ -196,7 +201,7 @@ namespace obj_example
         m_depth_pass.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                                  EspCompareOp::ESP_COMPARE_OP_LESS);
         m_depth_pass.m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
-        m_depth_pass.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+        m_depth_pass.m_shader->set_vertex_layouts({ m_model_params.get_vertex_layouts() });
         m_depth_pass.m_shader->set_worker_layout(std::move(uniform_meta_data));
         m_depth_pass.m_shader->build_worker();
 
@@ -246,15 +251,12 @@ namespace obj_example
 
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
+        uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(glm::mat4));
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(ModelUniform));
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_FRAG_STAGE, sizeof(LightUniform));
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_FRAG_STAGE, sizeof(glm::vec3)); // camera pos
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));  // light space
         uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
         uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE); // depth map
@@ -262,7 +264,7 @@ namespace obj_example
         m_final_pass.m_shader = ShaderSystem::acquire("Shaders/ObjExample/BackpackObjModelExample/shader_model");
         m_final_pass.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                                  EspCompareOp::ESP_COMPARE_OP_LESS);
-        m_final_pass.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+        m_final_pass.m_shader->set_vertex_layouts({ m_model_params.get_vertex_layouts() });
         m_final_pass.m_shader->set_worker_layout(std::move(uniform_meta_data));
         m_final_pass.m_shader->build_worker();
 
@@ -317,12 +319,9 @@ namespace obj_example
 
       // backpack
       {
-        Model::Builder model_builder{};
-        model_builder.set_shader(m_final_pass.m_shader);
-        model_builder.load_model("Models/backpack/backpack.obj");
-
+        auto model    = std::make_shared<NModel>("Models/backpack/backpack.obj", m_model_params);
         auto backpack = m_scene->create_entity("backpack");
-        backpack->add_component<ModelComponent>(model_builder);
+        backpack->add_component<NModelComponent>(model, m_final_pass.m_shader);
 
         m_backpack.m_node = Node::create();
         m_backpack.m_node->attach_entity(backpack);
@@ -333,13 +332,10 @@ namespace obj_example
 
       // light
       {
-        auto albedo_texture = TextureSystem::acquire("Textures/white.png", {});
-        auto material       = MaterialSystem::acquire("light_material", { albedo_texture }, m_final_pass.m_shader);
-        auto cube_mesh      = std::make_shared<Mesh>(cube, cube_idx, material);
-        auto cube_model     = std::make_shared<Model>(cube_mesh);
-
-        auto light = m_scene->create_entity("light");
-        light->add_component<ModelComponent>(cube_model, m_final_pass.m_shader);
+        auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/white.png", {}) };
+        auto model    = std::make_shared<NModel>(cube, cube_idx, textures, m_model_params);
+        auto light    = m_scene->create_entity("light");
+        light->add_component<NModelComponent>(model, m_final_pass.m_shader);
         light->add_component<LightComponent>();
 
         m_light.m_node = Node::create();
@@ -356,13 +352,10 @@ namespace obj_example
 
       // floor
       {
-        auto albedo_texture = TextureSystem::acquire("Textures/floor.jpeg", {});
-        auto material       = MaterialSystem::acquire("floor_material", { albedo_texture }, m_final_pass.m_shader);
-        auto floor_mesh     = std::make_shared<Mesh>(floor_vertices, floor_indices, material);
-        auto floor_model    = std::make_shared<Model>(floor_mesh);
-
-        auto floor = m_scene->create_entity("floor");
-        floor->add_component<ModelComponent>(floor_model, m_final_pass.m_shader);
+        auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/floor.jpeg", {}) };
+        auto model    = std::make_shared<NModel>(floor_vertices, floor_indices, textures, m_model_params);
+        auto floor    = m_scene->create_entity("floor");
+        floor->add_component<NModelComponent>(model, m_final_pass.m_shader);
 
         m_floor.m_node = Node::create();
         m_floor.m_node->attach_entity(floor);
@@ -438,8 +431,16 @@ namespace obj_example
                                                                        sizeof(glm::mat4),
                                                                        &m_light.m_light_space_mat);
         m_backpack.m_depth_pass_uniform_manager->attach();
-        auto& model = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_model();
-        model.draw_raw();
+
+        auto& model = m_backpack.m_node->get_entity()->get_component<NModelComponent>().get_model();
+        for (auto model_node : model)
+        {
+          for (auto& mesh_idx : model_node.m_current_node->m_meshes)
+          {
+            auto& mesh = model.m_meshes[mesh_idx];
+            esp::EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
+          }
+        }
       }
     }
 
@@ -452,7 +453,7 @@ namespace obj_example
       l_ubo.m_specular             = glm::vec3(light.m_specular);
       l_ubo.m_attenuation_strength = light.m_attenuation_strength;
 
-      auto camera_pos = m_camera.get_positiion();
+      auto camera_pos = m_camera.get_position();
 
       // update backpack
       {
@@ -462,7 +463,7 @@ namespace obj_example
         ubo.projection          = m_camera.get_projection();
         ubo.calculate_lightning = 1;
 
-        auto& uniform_manager = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_backpack.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
@@ -476,7 +477,7 @@ namespace obj_example
         ubo.view       = m_camera.get_view();
         ubo.projection = m_camera.get_projection();
 
-        auto& uniform_manager = m_light.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_light.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
@@ -493,7 +494,7 @@ namespace obj_example
         ubo.calculate_lightning = 1;
         ubo.calculate_shadows   = 1;
 
-        auto& uniform_manager = m_floor.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_floor.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
