@@ -80,7 +80,7 @@ namespace advance_model
 
         auto model         = std::make_shared<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", model_params);
         auto flight_helmet = m_scene->create_entity("flight helmet");
-        flight_helmet->add_component<NModelComponent>(model, shader);
+        flight_helmet->add_component<ModelComponent>(model, shader);
         m_flight_helmet_node->attach_entity(flight_helmet);
       }
     }
@@ -103,7 +103,7 @@ namespace advance_model
         pmvlv.viewPos    = glm::vec4(m_camera.get_position(), 1.0);
 
         auto& uniform_manager =
-            m_flight_helmet_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+            m_flight_helmet_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(PMVLV), &pmvlv);
 
         // render

@@ -51,7 +51,7 @@ namespace model_example_without_instancing
       for (auto& cube : cubes)
       {
         cube = m_scene->create_entity();
-        cube->add_component<NModelComponent>(cube_model, m_shader);
+        cube->add_component<ModelComponent>(cube_model, m_shader);
       }
 
       m_main_cube_node = Node::create();
@@ -91,7 +91,7 @@ namespace model_example_without_instancing
             ubo.view  = camera->get_view();
             ubo.proj  = camera->get_projection();
 
-            auto& uniform_manager = node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+            auto& uniform_manager = node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
             uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(CubeUniform), &ubo);
           });
 

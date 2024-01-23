@@ -321,7 +321,7 @@ namespace obj_example
       {
         auto model    = std::make_shared<NModel>("Models/backpack/backpack.obj", m_model_params);
         auto backpack = m_scene->create_entity("backpack");
-        backpack->add_component<NModelComponent>(model, m_final_pass.m_shader);
+        backpack->add_component<ModelComponent>(model, m_final_pass.m_shader);
 
         m_backpack.m_node = Node::create();
         m_backpack.m_node->attach_entity(backpack);
@@ -335,7 +335,7 @@ namespace obj_example
         auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/white.png", {}) };
         auto model    = std::make_shared<NModel>(cube, cube_idx, textures, m_model_params);
         auto light    = m_scene->create_entity("light");
-        light->add_component<NModelComponent>(model, m_final_pass.m_shader);
+        light->add_component<ModelComponent>(model, m_final_pass.m_shader);
         light->add_component<LightComponent>();
 
         m_light.m_node = Node::create();
@@ -355,7 +355,7 @@ namespace obj_example
         auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/floor.jpeg", {}) };
         auto model    = std::make_shared<NModel>(floor_vertices, floor_indices, textures, m_model_params);
         auto floor    = m_scene->create_entity("floor");
-        floor->add_component<NModelComponent>(model, m_final_pass.m_shader);
+        floor->add_component<ModelComponent>(model, m_final_pass.m_shader);
 
         m_floor.m_node = Node::create();
         m_floor.m_node->attach_entity(floor);
@@ -432,7 +432,7 @@ namespace obj_example
                                                                        &m_light.m_light_space_mat);
         m_backpack.m_depth_pass_uniform_manager->attach();
 
-        auto& model = m_backpack.m_node->get_entity()->get_component<NModelComponent>().get_model();
+        auto& model = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_model();
         for (auto model_node : model)
         {
           for (auto& mesh_idx : model_node.m_current_node->m_meshes)
@@ -463,7 +463,7 @@ namespace obj_example
         ubo.projection          = m_camera.get_projection();
         ubo.calculate_lightning = 1;
 
-        auto& uniform_manager = m_backpack.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_backpack.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
@@ -477,7 +477,7 @@ namespace obj_example
         ubo.view       = m_camera.get_view();
         ubo.projection = m_camera.get_projection();
 
-        auto& uniform_manager = m_light.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_light.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
@@ -494,7 +494,7 @@ namespace obj_example
         ubo.calculate_lightning = 1;
         ubo.calculate_shadows   = 1;
 
-        auto& uniform_manager = m_floor.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_floor.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(ModelUniform), &ubo);
         uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(LightUniform), &l_ubo);
         uniform_manager.update_buffer_uniform(0, 2, 0, sizeof(glm::vec3), &camera_pos);
