@@ -551,7 +551,7 @@ namespace advance_rendering2_example
           // mvpc.model       = glm::rotate(mvpc.model, glm::radians(90.0f), glm::vec3(1, 0, 0));
           mvpc.view       = m_camera.get_view();
           mvpc.projection = m_camera.get_projection();
-          mvpc.camPos     = m_camera.get_positiion();
+          mvpc.camPos     = m_camera.get_position();
           m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(UBOMatrices), &mvpc);
           m_sphere.m_uniform_manager->attach();
 

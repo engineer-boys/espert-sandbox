@@ -11,6 +11,7 @@ namespace advance_model
 
   struct PMVLV
   {
+    glm::mat4 model;
     glm::mat4 projection;
     glm::mat4 view;
     glm::vec4 lightPos = glm::vec4(5.0f, 5.0f, -5.0f, 1.0f);
@@ -21,15 +22,8 @@ namespace advance_model
   {
    private:
     Camera m_camera{};
-    NModelParams m_params;
-
-    struct
-    {
-      std::shared_ptr<EspShader> m_shader;
-      std::unique_ptr<EspUniformManager> m_uniform_managers;
-      std::unordered_map<std::shared_ptr<Material>, std::unique_ptr<EspUniformManager>> m_material_uniform_managers;
-      std::unique_ptr<NModel> m_model;
-    } m_sphere;
+    std::shared_ptr<Scene> m_scene;
+    std::shared_ptr<Node> m_flight_helmet_node;
 
     struct
     {
@@ -40,11 +34,6 @@ namespace advance_model
    public:
     AdvanceModelLayer()
     {
-      m_camera.set_position(glm::vec3(0.0f, 0.0f, 2.0f));
-      m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
-      m_camera.set_move_speed(3.f);
-      m_camera.set_sensitivity(4.f);
-
       // final pass
       {
         m_final_pass.m_depth_block = EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
@@ -55,44 +44,44 @@ namespace advance_model
         m_final_pass.m_final_product_plan->build();
       }
 
-      // model
+      // create shader
+      NModelParams model_params = { .m_position                = true,
+                                    .m_color                   = true,
+                                    .m_normal                  = true,
+                                    .m_tex_coord               = true,
+                                    .m_bone_ids                = false,
+                                    .m_weights                 = false,
+                                    .m_tangent                 = false,
+                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
+
+      auto uniform_meta_data = EspUniformMetaData::create();
+      uniform_meta_data->establish_descriptor_set();
+      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(PMVLV));
+      uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(glm::mat4));
+      uniform_meta_data->establish_descriptor_set();
+      uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
+
+      auto shader = ShaderSystem::acquire("Shaders/LoadAdvanceModel/shader");
+      shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
+      shader->set_vertex_layouts({ model_params.get_vertex_layouts() });
+      shader->set_worker_layout(std::move(uniform_meta_data));
+      shader->build_worker();
+
+      // create scene
       {
-        m_params = { .m_position                = true,
-                     .m_color                   = true,
-                     .m_normal                  = true,
-                     .m_tex_coord               = true,
-                     .m_bone_ids                = false,
-                     .m_weights                 = false,
-                     .m_tangent                 = false,
-                     .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
+        m_scene              = Scene::create();
+        m_flight_helmet_node = Node::create();
+        m_scene->get_root().add_child(m_flight_helmet_node);
 
-        auto uniform_meta_data = EspUniformMetaData::create();
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(PMVLV));
-        uniform_meta_data->add_push_uniform(EspUniformShaderStage::ESP_VTX_STAGE, 0, sizeof(glm::mat4));
-        uniform_meta_data->establish_descriptor_set();
-        uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
+        m_camera.set_position(glm::vec3(0.0f, 0.0f, 1.0f));
+        m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));
+        m_camera.set_move_speed(3.f);
+        m_camera.set_sensitivity(4.f);
 
-        m_sphere.m_shader = ShaderSystem::acquire("Shaders/LoadAdvanceModel/shader");
-        m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                                             EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_sphere.m_shader->set_vertex_layouts({ m_params.get_vertex_layouts() });
-        m_sphere.m_shader->set_worker_layout(std::move(uniform_meta_data));
-        m_sphere.m_shader->build_worker();
-        m_sphere.m_uniform_managers = m_sphere.m_shader->create_uniform_manager(0, 0);
-        m_sphere.m_uniform_managers->build();
-
-        m_sphere.m_model = std::make_unique<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", m_params);
-        for (const auto& mesh : m_sphere.m_model->m_meshes)
-        {
-          if (!m_sphere.m_material_uniform_managers.contains(mesh.m_material))
-            m_sphere.m_material_uniform_managers.insert(
-                { mesh.m_material, mesh.m_material->create_uniform_manager(m_sphere.m_shader) });
-        }
-
-        // Example of changing position of model
-        // auto rotation = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-        // m_sphere.m_model->set_localisation(rotation);
+        auto model         = std::make_shared<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", model_params);
+        auto flight_helmet = m_scene->create_entity("flight helmet");
+        flight_helmet->add_component<NModelComponent>(model, shader);
+        m_flight_helmet_node->attach_entity(flight_helmet);
       }
     }
 
@@ -104,28 +93,21 @@ namespace advance_model
 
       m_final_pass.m_final_product_plan->begin_plan();
       {
-        m_sphere.m_shader->attach();
+        // update
+        m_flight_helmet_node->rotate(glm::radians(dt * 3), { 0, 1, 0 });
 
         PMVLV pmvlv{};
+        pmvlv.model      = m_flight_helmet_node->get_model_mat();
         pmvlv.projection = m_camera.get_projection();
         pmvlv.view       = m_camera.get_view();
+        pmvlv.viewPos    = glm::vec4(m_camera.get_position(), 1.0);
 
-        pmvlv.viewPos = glm::vec4(m_camera.get_positiion(), 1.0);
-        m_sphere.m_uniform_managers->update_buffer_uniform(0, 0, 0, sizeof(PMVLV), &pmvlv);
-        m_sphere.m_uniform_managers->attach();
+        auto& uniform_manager =
+            m_flight_helmet_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+        uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(PMVLV), &pmvlv);
 
-        for (auto node : *(m_sphere.m_model))
-        {
-          m_sphere.m_uniform_managers->update_push_uniform(0, &(node.m_current_node->m_precomputed_transformation));
-
-          for (auto& mesh_idx : node.m_current_node->m_meshes)
-          {
-            auto& mesh = m_sphere.m_model->m_meshes[mesh_idx];
-
-            m_sphere.m_material_uniform_managers.at(mesh.m_material)->attach();
-            EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
-          }
-        }
+        // render
+        m_scene->draw();
       }
       m_final_pass.m_final_product_plan->end_plan();
 
