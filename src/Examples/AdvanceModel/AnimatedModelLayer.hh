@@ -84,7 +84,7 @@ namespace advance_model
 
         m_cesium_man.m_model = std::make_shared<NModel>("AdvanceModels/CesiumMan/CesiumMan.gltf", model_params);
         auto cesium_man      = m_scene->create_entity("cesium man");
-        cesium_man->add_component<NModelComponent>(m_cesium_man.m_model, shader);
+        cesium_man->add_component<ModelComponent>(m_cesium_man.m_model, shader);
         m_cesium_man.m_node->attach_entity(cesium_man);
 
         m_animator = std::make_shared<Animator>();
@@ -108,7 +108,7 @@ namespace advance_model
         pmvlv.view       = m_camera.get_view();
 
         auto& uniform_manager =
-            m_cesium_man.m_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+            m_cesium_man.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(PMVLV2), &pmvlv);
 
         auto matrices = m_animator->get_final_bone_matrices();

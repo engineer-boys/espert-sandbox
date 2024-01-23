@@ -73,7 +73,7 @@ namespace obj_example
           MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) });
 
       auto viking_room = m_scene->create_entity("viking room");
-      viking_room->add_component<NModelComponent>(model, shader);
+      viking_room->add_component<ModelComponent>(model, shader);
 
       m_viking_room_node->attach_entity(viking_room);
       m_viking_room_node->rotate(glm::radians(180.f), { 0, 1, 0 });
@@ -97,8 +97,7 @@ namespace obj_example
         ubo.view  = m_camera.get_view();
         ubo.proj  = m_camera.get_projection();
 
-        auto& uniform_manager =
-            m_viking_room_node->get_entity()->get_component<NModelComponent>().get_uniform_manager();
+        auto& uniform_manager = m_viking_room_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
         uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(VikingRoomUniform), &ubo);
 
         // Render scene
