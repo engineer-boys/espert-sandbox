@@ -7,7 +7,7 @@ class SandBoxApp : public esp::EspApplication
 {
  private:
  public:
-  SandBoxApp() : EspApplication("Espert Example", 1280, 720, true)
+  SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = true })
   {
     push_layer(new esp_sbx::InputLayer());
 
