@@ -38,6 +38,13 @@ namespace advance_rendering2_example
 
     struct
     {
+      ModelParams m_model_params = { .m_position  = true,
+                                     .m_color     = false,
+                                     .m_normal    = true,
+                                     .m_tex_coord = true,
+                                     .m_bone_ids  = false,
+                                     .m_weights   = false,
+                                     .m_tangent   = true };
       std::shared_ptr<Model> m_model;
       std::shared_ptr<EspShader> m_shader;
       std::unique_ptr<EspUniformManager> m_uniform_manager;
@@ -114,7 +121,7 @@ namespace advance_rendering2_example
         m_sphere.m_shader = ShaderSystem::acquire("Shaders/AdvanceRendering2/PBRTexturedExample/shader_pbr_textured");
         m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                              EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_sphere.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+        m_sphere.m_shader->set_vertex_layouts({ m_sphere.m_model_params.get_vertex_layouts() });
         m_sphere.m_shader->set_worker_layout(std::move(uniform_meta_data));
         m_sphere.m_shader->build_worker();
 
@@ -136,14 +143,9 @@ namespace advance_rendering2_example
           m_sphere.m_uniform_manager->load_texture(0, 8, texture_metalic);
           m_sphere.m_uniform_manager->load_texture(0, 9, texture_roughness);
         }
-
         m_sphere.m_uniform_manager->build();
 
-        Model::Builder model_builder{};
-        model_builder.set_shader(m_sphere.m_shader);
-        model_builder.load_model("Models/torhammer/TorHammer.obj",
-                                 { .p_flags = EspPostProcessSteps::EspCaclTangentSpace, .layouts = {} });
-        m_sphere.m_model = std::make_shared<Model>(model_builder);
+        m_sphere.m_model = std::make_shared<Model>("Models/torhammer/TorHammer.obj", m_sphere.m_model_params);
       }
 
       // skybox
@@ -224,7 +226,7 @@ namespace advance_rendering2_example
       render_plan->begin_plan();
       shader->only_attach(cb_id.get());
 
-      EspJob::draw(cb_id.get(), 4);
+      EspJob::draw(cb_id.get(), 3);
 
       render_plan->end_plan();
 
@@ -548,14 +550,20 @@ namespace advance_rendering2_example
           UBOMatrices mvpc = {};
           mvpc.model       = glm::rotate(glm::mat4(1), glm::radians(-90.0f), glm::vec3(1, 0, 0));
           mvpc.model       = glm::scale(mvpc.model, glm::vec3(10.0f, 10.0f, 10.0f));
-          // mvpc.model       = glm::rotate(mvpc.model, glm::radians(90.0f), glm::vec3(1, 0, 0));
-          mvpc.view       = m_camera.get_view();
-          mvpc.projection = m_camera.get_projection();
-          mvpc.camPos     = m_camera.get_position();
+          mvpc.view        = m_camera.get_view();
+          mvpc.projection  = m_camera.get_projection();
+          mvpc.camPos      = m_camera.get_position();
           m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(UBOMatrices), &mvpc);
           m_sphere.m_uniform_manager->attach();
 
-          m_sphere.m_model->draw();
+          for (auto node_info : *(m_sphere.m_model))
+          {
+            for (const auto& mesh_idx : node_info.m_current_node->m_meshes)
+            {
+              auto& mesh = m_sphere.m_model->m_meshes[mesh_idx];
+              EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
+            }
+          }
         }
 
         /* Rendering skybox */
