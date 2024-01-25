@@ -14,7 +14,7 @@ namespace model_example
     glm::mat4 proj;
   };
 
-  static std::vector<NVertex> colored_cube{
+  static std::vector<Vertex> colored_cube{
     // left face
     { { -1, -1, -1 }, { .9f, .9f, .9f } },
     { { -1, 1, -1 }, { .9f, .9f, .9f } },
@@ -53,62 +53,6 @@ namespace model_example
   };
   static std::vector<uint32_t> cube_idx{ 0,  2,  1,  2,  0,  3,  4,  5,  6,  4,  6,  7,  8,  9,  10, 8,  10, 11,
                                          12, 14, 13, 14, 12, 15, 16, 18, 17, 18, 16, 19, 20, 21, 22, 20, 22, 23 };
-
-  static std::vector<Mesh::Vertex> create_cube_vertices()
-  {
-    std::vector<Mesh::Vertex> vertices{
-
-      // left face (white)
-      { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
-      { { -.5f, -.5f, .5f }, { .9f, .9f, .9f } },
-      { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
-      { { -.5f, -.5f, -.5f }, { .9f, .9f, .9f } },
-      { { -.5f, .5f, .5f }, { .9f, .9f, .9f } },
-      { { -.5f, .5f, -.5f }, { .9f, .9f, .9f } },
-
-      // right face (yellow)
-      { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
-      { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
-      { { .5f, -.5f, .5f }, { .8f, .8f, .1f } },
-      { { .5f, -.5f, -.5f }, { .8f, .8f, .1f } },
-      { { .5f, .5f, -.5f }, { .8f, .8f, .1f } },
-      { { .5f, .5f, .5f }, { .8f, .8f, .1f } },
-
-      // top face (orange, remember y axis points down)
-      { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-      { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
-      { { -.5f, -.5f, .5f }, { .9f, .6f, .1f } },
-      { { -.5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-      { { .5f, -.5f, -.5f }, { .9f, .6f, .1f } },
-      { { .5f, -.5f, .5f }, { .9f, .6f, .1f } },
-
-      // bottom face (red)
-      { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
-      { { -.5f, .5f, .5f }, { .8f, .1f, .1f } },
-      { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
-      { { -.5f, .5f, -.5f }, { .8f, .1f, .1f } },
-      { { .5f, .5f, .5f }, { .8f, .1f, .1f } },
-      { { .5f, .5f, -.5f }, { .8f, .1f, .1f } },
-
-      // nose face (blue)
-      { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-      { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
-      { { -.5f, .5f, 0.5f }, { .1f, .1f, .8f } },
-      { { -.5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-      { { .5f, -.5f, 0.5f }, { .1f, .1f, .8f } },
-      { { .5f, .5f, 0.5f }, { .1f, .1f, .8f } },
-
-      // tail face (green)
-      { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-      { { -.5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-      { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-      { { -.5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-      { { .5f, .5f, -0.5f }, { .1f, .8f, .1f } },
-      { { .5f, -.5f, -0.5f }, { .1f, .8f, .1f } },
-    };
-
-    return vertices;
-  }
 
   static glm::vec3 move_in_circle(glm::vec3 current_position, glm::vec3 circle_center, float dt)
   {

@@ -54,6 +54,7 @@ namespace advance_rendering_example
       std::unique_ptr<EspUniformManager> m_uniform_manager;
       std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
       std::shared_ptr<Model> m_model;
+      ModelParams m_params;
     } m_sphere;
 
     struct
@@ -116,6 +117,8 @@ namespace advance_rendering_example
 
       // model
       {
+        m_sphere.m_params = { .m_position = true };
+
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_ALL_STAGES, sizeof(MvpSkyBoxUniform));
@@ -123,14 +126,11 @@ namespace advance_rendering_example
         m_sphere.m_shader = ShaderSystem::acquire("Shaders/SkyBoxExample/shader_f");
         m_sphere.m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
                                              EspCompareOp::ESP_COMPARE_OP_LESS_OR_EQUAL);
-        m_sphere.m_shader->set_vertex_layouts({ Mesh::Vertex::get_vertex_layout() });
+        m_sphere.m_shader->set_vertex_layouts({ m_sphere.m_params.get_vertex_layouts() });
         m_sphere.m_shader->set_worker_layout(std::move(uniform_meta_data));
         m_sphere.m_shader->build_worker();
 
-        Model::Builder model_builder{};
-        model_builder.set_shader(m_sphere.m_shader);
-        model_builder.load_model("Models/sphere/sphere.gltf", { .layouts = {} });
-        m_sphere.m_model = std::make_shared<Model>(model_builder);
+        m_sphere.m_model = std::make_shared<Model>("Models/sphere/sphere.gltf", m_sphere.m_params);
 
         m_sphere.m_uniform_manager = m_sphere.m_shader->create_uniform_manager();
         m_sphere.m_uniform_manager->build();
@@ -155,7 +155,14 @@ namespace advance_rendering_example
         m_sphere.m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(MvpSkyBoxUniform), &ubo);
         m_sphere.m_uniform_manager->attach();
 
-        m_sphere.m_model->draw();
+        for (auto node_info : *(m_sphere.m_model))
+        {
+          for (const auto& mesh_idx : node_info.m_current_node->m_meshes)
+          {
+            auto& mesh = m_sphere.m_model->m_meshes[mesh_idx];
+            EspJob::draw_indexed(mesh.m_index_count, 1, mesh.m_first_index);
+          }
+        }
 
         m_skybox.m_shader->attach();
         m_skybox.m_vertex_buffer->attach();

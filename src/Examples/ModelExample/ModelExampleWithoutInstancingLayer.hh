@@ -26,7 +26,7 @@ namespace model_example_without_instancing
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<Node> m_main_cube_node;
 
-    NModelParams m_model_params = { .m_position = true, .m_color = true };
+    ModelParams m_model_params = { .m_position = true, .m_color = true };
 
    public:
     ModelExampleWithoutInstancingLayer(std::shared_ptr<Scene> scene) : m_scene{ std::move(scene) }
@@ -42,7 +42,7 @@ namespace model_example_without_instancing
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
-      auto cube_model = std::make_shared<NModel>(model_example::colored_cube,
+      auto cube_model = std::make_shared<Model>(model_example::colored_cube,
                                                  model_example::cube_idx,
                                                  std::vector<std::shared_ptr<EspTexture>>{},
                                                  m_model_params);

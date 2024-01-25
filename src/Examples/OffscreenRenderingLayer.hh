@@ -40,7 +40,7 @@ namespace advance_rendering_example
 
     MVPExampleUniform ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.view  = glm::lookAt(glm::vec3(2.0f, 2.0f, 4.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
     ubo.proj =
         glm::perspective(glm::radians(45.0f), EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio(), 0.1f, 10.0f);
 
@@ -54,8 +54,8 @@ namespace advance_rendering_example
     std::unique_ptr<EspUniformManager> m_uniform_manager_off;
     std::unique_ptr<EspUniformManager> m_uniform_manager_on;
 
-    std::vector<Mesh::Vertex> m_vertices = model_example::create_cube_vertices();
     std::unique_ptr<EspVertexBuffer> m_vertex_buffers;
+    std::unique_ptr<EspIndexBuffer> m_index_buffe;
 
     std::unique_ptr<EspVertexBuffer> m_vertex_buffers_quad;
     std::unique_ptr<EspIndexBuffer> m_index_buffer_quad;
@@ -65,6 +65,8 @@ namespace advance_rendering_example
 
     std::unique_ptr<EspRenderPlan> m_product_plan;
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
+
+    ModelParams m_model_params = { .m_position = true, .m_color = true };
 
    public:
     OffscreenRenderingLayer()
@@ -92,21 +94,19 @@ namespace advance_rendering_example
         m_shader_off->set_attachment_formats({ EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM });
         m_shader_off->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
         m_shader_off->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-        m_shader_off->set_vertex_layouts(
-            { VTX_LAYOUT(sizeof(Mesh::Vertex),
-                         0,
-                         ESP_VERTEX_INPUT_RATE_VERTEX,
-                         ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_position)),
-                         ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_color)),
-                         ATTR(2, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Mesh::Vertex, m_normal)),
-                         ATTR(3, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(Mesh::Vertex, m_tex_coord))) });
+        m_shader_off->set_vertex_layouts({ m_model_params.get_vertex_layouts() });
         m_shader_off->set_worker_layout(std::move(uniform_meta_data));
         m_shader_off->build_worker();
 
         m_uniform_manager_off = m_shader_off->create_uniform_manager();
         m_uniform_manager_off->build();
 
-        m_vertex_buffers = EspVertexBuffer::create(m_vertices.data(), sizeof(Mesh::Vertex), m_vertices.size());
+        std::vector<uint8_t> vertices_data;
+        m_model_params.parse_to_vertex_byte_buffer(model_example::colored_cube, vertices_data);
+        m_vertex_buffers = EspVertexBuffer::create(vertices_data.data(),
+                                                   Vertex::size_of_position() + Vertex::size_of_color(),
+                                                   vertices_data.size());
+        m_index_buffe    = EspIndexBuffer::create(model_example::cube_idx.data(), model_example::cube_idx.size());
       }
 
       // 2. render pass [ON-SCREEN]
@@ -117,7 +117,6 @@ namespace advance_rendering_example
         auto uniform_meta_data = EspUniformMetaData::create();
         uniform_meta_data->establish_descriptor_set();
         uniform_meta_data->add_texture_uniform(EspUniformShaderStage::ESP_FRAG_STAGE);
-        // uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(MVPExampleUniform));
 
         m_shader_on = ShaderSystem::acquire("Shaders/OffscreenRnd/shader_on");
         m_shader_on->set_vertex_layouts(
@@ -150,12 +149,13 @@ namespace advance_rendering_example
       {
         m_shader_off->attach();
         m_vertex_buffers->attach();
+        m_index_buffe->attach();
 
         auto ubo = get_new_mvp();
         m_uniform_manager_off->update_buffer_uniform(0, 0, 0, sizeof(MVPExampleUniform), &ubo);
         m_uniform_manager_off->attach();
 
-        EspJob::draw(m_vertices.size());
+        EspJob::draw_indexed(model_example::cube_idx.size());
       }
       m_product_plan->end_plan();
 

@@ -24,7 +24,7 @@ namespace obj_example
   //
   //  static std::vector<uint32_t> quad_idx{ 0, 1, 2, 2, 3, 0 };
 
-  static std::vector<NVertex> cube{
+  static std::vector<Vertex> cube{
     // left face
     { { -1, -1, -1 }, {}, {}, { 0, 0 }, {} },
     { { -1, 1, -1 }, {}, {}, { 1, 0 }, {} },
@@ -85,7 +85,7 @@ namespace obj_example
     { 1.0f, -1.0f, -1.0f },  { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, 1.0f }
   };
 
-  std::vector<NVertex> floor_vertices = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
+  std::vector<Vertex> floor_vertices = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
                                           { { 1, 0, -1 }, {}, {}, { 1, 0 }, {} },
                                           { { 1, 0, 1 }, {}, {}, { 1, 1 }, {} },
                                           { { -1, 0, 1 }, {}, {}, { 0, 1 }, {} } };
@@ -165,7 +165,7 @@ namespace obj_example
       std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
     } m_skybox;
 
-    NModelParams m_model_params = { .m_position                = true,
+    ModelParams m_model_params = { .m_position                = true,
                                     .m_normal                  = true,
                                     .m_tex_coord               = true,
                                     .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
@@ -319,7 +319,7 @@ namespace obj_example
 
       // backpack
       {
-        auto model    = std::make_shared<NModel>("Models/backpack/backpack.obj", m_model_params);
+        auto model    = std::make_shared<Model>("Models/backpack/backpack.obj", m_model_params);
         auto backpack = m_scene->create_entity("backpack");
         backpack->add_component<ModelComponent>(model, m_final_pass.m_shader);
 
@@ -333,7 +333,7 @@ namespace obj_example
       // light
       {
         auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/white.png", {}) };
-        auto model    = std::make_shared<NModel>(cube, cube_idx, textures, m_model_params);
+        auto model    = std::make_shared<Model>(cube, cube_idx, textures, m_model_params);
         auto light    = m_scene->create_entity("light");
         light->add_component<ModelComponent>(model, m_final_pass.m_shader);
         light->add_component<LightComponent>();
@@ -353,7 +353,7 @@ namespace obj_example
       // floor
       {
         auto textures = std::vector<std::shared_ptr<EspTexture>>{ TextureSystem::acquire("Textures/floor.jpeg", {}) };
-        auto model    = std::make_shared<NModel>(floor_vertices, floor_indices, textures, m_model_params);
+        auto model    = std::make_shared<Model>(floor_vertices, floor_indices, textures, m_model_params);
         auto floor    = m_scene->create_entity("floor");
         floor->add_component<ModelComponent>(model, m_final_pass.m_shader);
 

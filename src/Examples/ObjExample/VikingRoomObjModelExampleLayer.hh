@@ -21,7 +21,7 @@ namespace obj_example
     std::shared_ptr<EspDepthBlock> m_depth_block;
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
-    NModelParams m_model_params = { .m_position                = true,
+    ModelParams m_model_params = { .m_position                = true,
                                     .m_normal                  = true,
                                     .m_tex_coord               = true,
                                     .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } },
@@ -68,7 +68,7 @@ namespace obj_example
       m_camera.set_move_speed(3.f);
       m_camera.set_sensitivity(4.f);
 
-      auto model = std::make_shared<NModel>("Models/viking_room/viking_room.obj", m_model_params);
+      auto model = std::make_shared<Model>("Models/viking_room/viking_room.obj", m_model_params);
       model->m_meshes[0].m_material =
           MaterialSystem::acquire({ TextureSystem::acquire("Models/viking_room/albedo.png", {}) });
 

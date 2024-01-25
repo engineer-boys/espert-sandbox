@@ -25,7 +25,7 @@ namespace advance_model
     struct
     {
       std::shared_ptr<Node> m_node;
-      std::shared_ptr<NModel> m_model;
+      std::shared_ptr<Model> m_model;
     } m_cesium_man;
 
     struct
@@ -33,7 +33,6 @@ namespace advance_model
       std::unique_ptr<EspRenderPlan> m_final_product_plan;
       std::shared_ptr<EspDepthBlock> m_depth_block;
     } m_final_pass;
-
 
    public:
     AnimatedModelLayer()
@@ -49,14 +48,14 @@ namespace advance_model
       }
 
       // create shader
-      NModelParams model_params = { .m_position                = true,
-                                    .m_color                   = true,
-                                    .m_normal                  = true,
-                                    .m_tex_coord               = true,
-                                    .m_bone_ids                = true,
-                                    .m_weights                 = true,
-                                    .m_tangent                 = false,
-                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
+      ModelParams model_params = { .m_position                = true,
+                                   .m_color                   = true,
+                                   .m_normal                  = true,
+                                   .m_tex_coord               = true,
+                                   .m_bone_ids                = true,
+                                   .m_weights                 = true,
+                                   .m_tangent                 = false,
+                                   .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
@@ -82,13 +81,13 @@ namespace advance_model
         m_camera.set_move_speed(3.f);
         m_camera.set_sensitivity(4.f);
 
-        m_cesium_man.m_model = std::make_shared<NModel>("AdvanceModels/CesiumMan/CesiumMan.gltf", model_params);
+        m_cesium_man.m_model = std::make_shared<Model>("AdvanceModels/CesiumMan/CesiumMan.gltf", model_params);
         auto cesium_man      = m_scene->create_entity("cesium man");
         cesium_man->add_component<ModelComponent>(m_cesium_man.m_model, shader);
         m_cesium_man.m_node->attach_entity(cesium_man);
 
         m_animator = std::make_shared<Animator>();
-        m_animator->play_animation(m_cesium_man.m_model.get(), 0, AnimationPeriodType::MANY_TIMES, 3);
+        m_animator->play_animation(m_cesium_man.m_model.get(), 0, AnimationPeriodType::NON_STOP);
       }
     }
 

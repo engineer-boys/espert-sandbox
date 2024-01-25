@@ -45,14 +45,14 @@ namespace advance_model
       }
 
       // create shader
-      NModelParams model_params = { .m_position                = true,
-                                    .m_color                   = true,
-                                    .m_normal                  = true,
-                                    .m_tex_coord               = true,
-                                    .m_bone_ids                = false,
-                                    .m_weights                 = false,
-                                    .m_tangent                 = false,
-                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
+      ModelParams model_params = { .m_position                = true,
+                                   .m_color                   = true,
+                                   .m_normal                  = true,
+                                   .m_tex_coord               = true,
+                                   .m_bone_ids                = false,
+                                   .m_weights                 = false,
+                                   .m_tangent                 = false,
+                                   .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
 
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
@@ -78,7 +78,7 @@ namespace advance_model
         m_camera.set_move_speed(3.f);
         m_camera.set_sensitivity(4.f);
 
-        auto model         = std::make_shared<NModel>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", model_params);
+        auto model         = std::make_shared<Model>("AdvanceModels/FlightHelmet/FlightHelmet.gltf", model_params);
         auto flight_helmet = m_scene->create_entity("flight helmet");
         flight_helmet->add_component<ModelComponent>(model, shader);
         m_flight_helmet_node->attach_entity(flight_helmet);
