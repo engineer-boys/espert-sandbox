@@ -22,10 +22,10 @@ namespace obj_example
     std::unique_ptr<EspRenderPlan> m_final_product_plan;
 
     ModelParams m_model_params = { .m_position                = true,
-                                    .m_normal                  = true,
-                                    .m_tex_coord               = true,
-                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } },
-                                    .m_load_process_flags      = EspProcessFlipUVs };
+                                   .m_normal                  = true,
+                                   .m_tex_coord               = true,
+                                   .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } },
+                                   .m_load_process_flags      = EspProcessFlipUVs };
 
     std::shared_ptr<Scene> m_scene;
     Camera m_camera{};

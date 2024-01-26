@@ -86,7 +86,7 @@ namespace obj_example
     { 1.0f, -1.0f, -1.0f },  { -1.0f, -1.0f, 1.0f },  { 1.0f, -1.0f, 1.0f }
   };
 
-  std::vector<Vertex> floor_vertices = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
+  std::vector<Vertex> floor_vertices  = { { { -1, 0, -1 }, {}, {}, { 0, 0 }, {} },
                                           { { 1, 0, -1 }, {}, {}, { 1, 0 }, {} },
                                           { { 1, 0, 1 }, {}, {}, { 1, 1 }, {} },
                                           { { -1, 0, 1 }, {}, {}, { 0, 1 }, {} } };
@@ -167,9 +167,9 @@ namespace obj_example
     } m_skybox;
 
     ModelParams m_model_params = { .m_position                = true,
-                                    .m_normal                  = true,
-                                    .m_tex_coord               = true,
-                                    .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
+                                   .m_normal                  = true,
+                                   .m_tex_coord               = true,
+                                   .m_material_texture_layout = { { 1, 0, EspTextureType::ALBEDO } } };
 
     struct
     {
