@@ -5,6 +5,7 @@
 #include "Espert.hh"
 
 using namespace esp;
+using namespace esp::action;
 
 namespace obj_example
 {

@@ -16,7 +16,7 @@ class SandBoxApp : public esp::EspApplication
     // push_layer(new my_game::InstancingExampleLayer());
     // push_layer(new my_game::TextureExampleLayer());
     // push_layer(new my_game::TextureDepthExampleLayer());
-    // push_layer(new model_example::ModelExampleLayer());
+    push_layer(new model_example::ModelExampleLayer());
     // push_layer(new obj_example::VikingRoomObjModelExampleLayer());
     // push_layer(new obj_example::BackpackObjModelExampleLayer());
     // push_layer(new advance_rendering_example::SkyBoxLayer());
@@ -27,7 +27,7 @@ class SandBoxApp : public esp::EspApplication
     // push_layer(new advance_rendering2_example::PBRTexturedLayer());
 
     // push_layer(new advance_model::AdvanceModelLayer());
-    push_layer(new advance_model::AnimatedModelLayer());
+    // push_layer(new advance_model::AnimatedModelLayer());
   }
 
   void virtual update(float dt) override
