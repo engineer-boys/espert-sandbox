@@ -1,3 +1,6 @@
+/*
+	Based on https://github.com/SaschaWillems/Vulkan/blob/master/shaders/glsl/gltfloading/mesh.vert
+*/
 #version 450
 
 layout (location = 0) in vec3 inPos;

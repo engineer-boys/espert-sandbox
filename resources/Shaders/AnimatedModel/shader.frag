@@ -1,3 +1,6 @@
+/* 
+	Come from https://github.com/SaschaWillems/Vulkan/blob/master/shaders/glsl/gltfskinning/skinnedmodel.frag
+*/
 #version 450
 
 layout (set = 1, binding = 0) uniform sampler2D samplerColorMap;
