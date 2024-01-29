@@ -1,3 +1,6 @@
 [submodule "espert-core"]
 	path = espert-core
 	url = https://github.com/engineer-boys/espert-core
+[submodule "resources"]
+	path = resources
+	url = https://github.com/engineer-boys/espert-sandbox-resources
