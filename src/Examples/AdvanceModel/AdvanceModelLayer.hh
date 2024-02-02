@@ -86,8 +86,12 @@ namespace advance_model
     }
 
    private:
+    bool do_update = false;
+
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       Scene::set_current_camera(&m_camera);
       m_camera.set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
@@ -113,6 +117,10 @@ namespace advance_model
 
       m_final_pass.m_depth_block->clear();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 } // namespace advance_model
 

@@ -81,8 +81,12 @@ namespace obj_example
     }
 
    private:
+    bool do_update = false;
+
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       m_final_product_plan->begin_plan();
       {
         Scene::set_current_camera(&m_camera);
@@ -105,6 +109,10 @@ namespace obj_example
       }
       m_final_product_plan->end_plan();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 
 } // namespace obj_example

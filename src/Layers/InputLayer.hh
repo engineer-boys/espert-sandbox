@@ -10,9 +10,12 @@ namespace esp_sbx
   class InputLayer : public Layer
   {
    public:
-    InputLayer() = default;
+    InputLayer(std::vector<esp::Layer*> layers, esp::Layer* current_layer);
 
    private:
+    std::vector<esp::Layer*> m_layers;
+    esp::Layer* m_current_layer;
+
     inline void update(float dt) override
     {
       auto camera = Scene::get_current_camera();
@@ -27,6 +30,8 @@ namespace esp_sbx
 
     void handle_event(Event& event, float dt) override;
     bool mouse_scroll_event_handler(esp::MouseScrolledEvent& event);
+
+    void switch_to_layer(size_t i);
   };
 } // namespace esp_sbx
 

@@ -140,10 +140,14 @@ namespace advance_rendering_example
     }
 
    private:
+    bool do_update = false;
+
     virtual ~OffscreenRenderingLayer() override {}
 
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       // 1. render pass
       m_product_plan->begin_plan();
       {
@@ -174,6 +178,10 @@ namespace advance_rendering_example
       }
       m_final_product_plan->end_plan();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 } // namespace advance_rendering_example
 

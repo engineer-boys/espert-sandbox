@@ -108,14 +108,14 @@ namespace my_game
     }
 
    private:
+    bool do_update = false;
+
     virtual ~InstancingExampleLayer() override {}
-
-    virtual void attach() override {}
-
-    virtual void detach() override {}
 
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       m_final_product_plan->begin_plan();
       {
         m_shader->attach();
@@ -130,6 +130,10 @@ namespace my_game
       }
       m_final_product_plan->end_plan();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 } // namespace my_game
 

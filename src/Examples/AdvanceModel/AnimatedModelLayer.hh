@@ -92,8 +92,12 @@ namespace advance_model
     }
 
    private:
+    bool do_update = false;
+
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       m_animator->update_animation(dt, m_cesium_man.m_model.get()); // TODO: pass model by reference (?)
 
       Scene::set_current_camera(&m_camera);
@@ -120,6 +124,10 @@ namespace advance_model
 
       m_final_pass.m_depth_block->clear();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 } // namespace advance_model
 
