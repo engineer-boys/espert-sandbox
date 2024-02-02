@@ -515,8 +515,12 @@ namespace advance_rendering2_example
     }
 
    private:
+    bool do_update = false;
+
     virtual void update(float dt) override
     {
+      if (!do_update) return;
+
       Scene::set_current_camera(&m_camera);
 
       m_first_pass.m_final_product_plan->begin_plan();
@@ -569,6 +573,10 @@ namespace advance_rendering2_example
 
       m_first_pass.m_depth_block->clear();
     }
+
+    virtual void attach() override { do_update = true; }
+
+    virtual void detach() override { do_update = false; }
   };
 } // namespace advance_rendering2_example
 
