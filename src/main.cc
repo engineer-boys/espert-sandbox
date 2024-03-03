@@ -7,9 +7,10 @@ class SandBoxApp : public esp::EspApplication
 {
  private:
  public:
-  SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = true })
+  SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = false, .m_use_gui = true })
   {
     push_layer(new esp_sbx::InputLayer());
+    push_layer(new esp_sbx::GuiLayer());
 
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
