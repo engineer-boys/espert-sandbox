@@ -1,6 +1,6 @@
 #include "Examples/Examples.hh"
 #include "Layers/Layers.hh"
-#include "MG1/TorusLayer.hh"
+#include "MG1/CadCamLayer.hh"
 
 #include "ClientPoint.hh"
 
@@ -12,8 +12,8 @@ class SandBoxApp : public esp::EspApplication
   {
     // push_layer(new esp_sbx::InputLayer());
     push_layer(new esp_sbx::GuiLayer());
+    push_layer(new mg1::CadCamLayer());
 
-    push_layer(new mg1::TorusLayer());
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
     // push_layer(new my_game::InstancingExampleLayer());
