@@ -3,7 +3,7 @@
 
 #include "Espert.hh"
 
-namespace esp_sbx
+namespace mg1
 {
   template<typename T> class GuiParam
   {
@@ -149,6 +149,6 @@ namespace esp_sbx
       return false;
     }
   };
-} // namespace esp_sbx
+} // namespace mg1
 
 #endif // ESPERT_SANDBOX_GUIPARAM_HH

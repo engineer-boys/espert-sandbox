@@ -2,7 +2,7 @@
 #define ESPERT_SANDBOX_TORUSLAYER_HH
 
 #include "Espert.hh"
-#include "Layers/Gui/GuiEvent.hh"
+#include "Gui/GuiEvent.hh"
 
 using namespace esp;
 
@@ -34,8 +34,8 @@ namespace mg1
     virtual void update(float dt) override;
     virtual void handle_event(Event& event, float dt) override;
 
-    bool gui_float_param_changed_event_handler(esp_sbx::GuiFloatParamChangedEvent& event);
-    bool gui_int_param_changed_event_handler(esp_sbx::GuiIntParamChangedEvent& event);
+    bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event);
+    bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event);
 
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool mouse_scrolled_event_handler(MouseScrolledEvent& event);

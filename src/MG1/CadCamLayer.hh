@@ -3,9 +3,6 @@
 
 #include "Espert.hh"
 
-#include "Layers/Gui/GuiLayer.hh"
-#include "TorusLayer.hh"
-
 using namespace esp;
 
 namespace mg1

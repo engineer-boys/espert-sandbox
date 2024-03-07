@@ -67,10 +67,10 @@ namespace mg1
 
   void TorusLayer::handle_event(esp::Event& event, float dt)
   {
-    Event::try_handler<esp_sbx::GuiFloatParamChangedEvent>(
+    Event::try_handler<GuiFloatParamChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_float_param_changed_event_handler));
-    Event::try_handler<esp_sbx::GuiIntParamChangedEvent>(
+    Event::try_handler<GuiIntParamChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_int_param_changed_event_handler));
     /*Event::try_handler<GuiParamChangedEvent<float>>(
@@ -81,7 +81,7 @@ namespace mg1
     Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_scrolled_event_handler));
   }
 
-  bool TorusLayer::gui_float_param_changed_event_handler(esp_sbx::GuiFloatParamChangedEvent& event)
+  bool TorusLayer::gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event)
   {
     bool event_handled = false;
 
@@ -101,7 +101,7 @@ namespace mg1
     return event_handled;
   }
 
-  bool TorusLayer::gui_int_param_changed_event_handler(esp_sbx::GuiIntParamChangedEvent& event)
+  bool TorusLayer::gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event)
   {
     bool event_handled = false;
 

@@ -5,7 +5,7 @@
 
 using namespace esp;
 
-namespace esp_sbx
+namespace mg1
 {
   /*template<typename T> class GuiParamChangedEvent : public Event
   {
@@ -60,6 +60,6 @@ namespace esp_sbx
 
     inline int get_value() { return m_value; }
   };
-} // namespace esp_sbx
+} // namespace mg1
 
 #endif // ESPERT_SANDBOX_GUIEVENT_HH

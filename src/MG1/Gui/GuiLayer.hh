@@ -8,7 +8,7 @@
 
 using namespace esp;
 
-namespace esp_sbx
+namespace mg1
 {
   template<typename T> using Params = std::vector<std::unique_ptr<GuiParam<T>>>;
 
@@ -65,6 +65,6 @@ namespace esp_sbx
       }
     }
   };
-} // namespace esp_sbx
+} // namespace mg1
 
 #endif // ESPERT_SANDBOX_GUILAYER_HH

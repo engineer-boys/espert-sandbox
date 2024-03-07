@@ -1,4 +1,6 @@
 #include "CadCamLayer.hh"
+#include "Gui/GuiLayer.hh"
+#include "TorusLayer.hh"
 
 namespace mg1
 {
@@ -31,7 +33,8 @@ namespace mg1
 
     // create children layers
     {
-      m_children.emplace_back(new mg1::TorusLayer(m_scene.get()));
+      m_children.emplace_back(new GuiLayer());
+      m_children.emplace_back(new TorusLayer(m_scene.get()));
     }
   }
 
@@ -45,14 +48,15 @@ namespace mg1
 
   void CadCamLayer::update(float dt)
   {
+    for (auto& child : m_children)
+    {
+      child->update(dt);
+    }
+
     m_final_render_plan->begin_plan();
     {
-      for (auto& child : m_children)
-      {
-        child->update(dt);
-      }
-
       m_scene->draw();
+      if (EspGui::m_use_gui) { EspGui::render(); }
     }
     m_final_render_plan->end_plan();
   }
