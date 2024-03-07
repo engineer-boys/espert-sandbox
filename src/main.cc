@@ -10,7 +10,7 @@ class SandBoxApp : public esp::EspApplication
  public:
   SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = false, .m_use_gui = true })
   {
-    push_layer(new esp_sbx::InputLayer());
+    // push_layer(new esp_sbx::InputLayer());
     push_layer(new esp_sbx::GuiLayer());
 
     push_layer(new mg1::TorusLayer());

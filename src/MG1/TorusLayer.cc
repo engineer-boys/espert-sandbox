@@ -79,7 +79,7 @@ namespace mg1
   {
     auto camera = Scene::get_current_camera();
 
-    m_torus.m_node->rotate(dt / 2, { 0, 1, 0 });
+    // m_torus.m_node->rotate(dt / 2, { 0, 1, 0 });
 
     auto& uniform_manager = m_torus.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
     glm::mat4 mvp         = camera->get_projection() * /*camera->get_view() **/ m_torus.m_node->get_model_mat();
@@ -94,15 +94,150 @@ namespace mg1
 
   void TorusLayer::handle_event(esp::Event& event, float dt)
   {
-    /*Event::try_handler<GuiParamChangedEvent<float>>(
-        event,
-        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_param_changed_event_handler<float>));*/
     Event::try_handler<GuiFloatParamChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_float_param_changed_event_handler));
     Event::try_handler<GuiIntParamChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_int_param_changed_event_handler));
+    /*Event::try_handler<GuiParamChangedEvent<float>>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_param_changed_event_handler<float>));*/
+
+    Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_moved_event_handler, dt));
+    Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_scrolled_event_handler));
+  }
+
+  bool TorusLayer::gui_float_param_changed_event_handler(esp_sbx::GuiFloatParamChangedEvent& event)
+  {
+    bool event_handled = false;
+
+    if (event.label_equals("R"))
+    {
+      m_torus.m_R   = event.get_value();
+      event_handled = true;
+    }
+    if (event.label_equals("r"))
+    {
+      m_torus.m_r   = event.get_value();
+      event_handled = true;
+    }
+
+    if (event_handled) { m_pre_update = true; }
+
+    return event_handled;
+  }
+
+  bool TorusLayer::gui_int_param_changed_event_handler(esp_sbx::GuiIntParamChangedEvent& event)
+  {
+    bool event_handled = false;
+
+    if (event.label_equals("Density - theta"))
+    {
+      m_torus.m_density_theta = event.get_value();
+      event_handled           = true;
+      m_pre_update            = true;
+    }
+    if (event.label_equals("Density - phi"))
+    {
+      m_torus.m_density_phi = event.get_value();
+      event_handled         = true;
+      m_pre_update          = true;
+    }
+    if (event.label_equals("Rotation axis"))
+    {
+      m_rotation_axis = event.get_value();
+      event_handled   = true;
+    }
+
+    return event_handled;
+  }
+
+  /*template<typename T> bool gui_param_changed_event_handler(GuiParamChangedEvent<T>& event)
+    {
+      bool event_handled = false;
+
+  if (event.label_equals("R"))
+  {
+    m_torus.m_R   = event.get_value();
+    event_handled = true;
+  }
+  if (event.label_equals("r"))
+  {
+    m_torus.m_r   = event.get_value();
+    event_handled = true;
+  }
+  if (event.label_equals("Density - theta"))
+  {
+    m_torus.m_density_theta = event.get_value();
+    event_handled                = true;
+  }
+  if (event.label_equals("Density - phi"))
+  {
+    m_torus.m_density_phi = event.get_value();
+    event_handled              = true;
+  }
+
+  if (event_handled) { m_pre_update = true; }
+
+  return event_handled;
+}*/
+
+  bool TorusLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
+  {
+    auto camera = Scene::get_current_camera();
+    if (camera == nullptr) { return false; }
+
+    camera->look_at({ event.get_x(), event.get_y() }, dt);
+
+    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+    {
+      m_torus.m_node->translate(glm::vec3(2 * dt * camera->get_delta_move(), 0));
+    }
+
+    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
+    {
+      // glm::vec2 d_norm = glm::normalize(camera->get_delta_move());
+      // I
+      // m_torus.m_node->rotate(d_norm.y * dt, { 1, 0, 0 });
+      // m_torus.m_node->rotate(d_norm.x * dt, { 0, 1, 0 });
+      // II
+      // m_torus.m_node->rotate(dt, glm::normalize(glm::vec3(camera->get_delta_move().y, camera->get_delta_move().x,
+      // 0)));
+      // III
+      switch (m_rotation_axis)
+      {
+      case 0:
+      {
+        m_torus.m_node->rotate_x(2 * dt * camera->get_delta_move().y);
+        break;
+      }
+      case 1:
+      {
+        m_torus.m_node->rotate_y(2 * dt * camera->get_delta_move().x);
+        break;
+      }
+      case 2:
+      {
+        m_torus.m_node->rotate_z(2 * dt * glm::dot(camera->get_delta_move(), { 1, 1 }) / 2);
+        break;
+      }
+      default:
+      {
+        break;
+      }
+      }
+    }
+
+    return true;
+  }
+
+  bool TorusLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
+  {
+    float offset_y = event.get_offset_y();
+    if (offset_y > 0) { m_torus.m_node->scale(1.1f); }
+    else if (offset_y < 0) { m_torus.m_node->scale(.9f); }
+    return true;
   }
 } // namespace mg1
 

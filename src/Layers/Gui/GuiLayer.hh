@@ -20,6 +20,8 @@ namespace esp_sbx
     Params<float> m_float_params{};
     Params<int> m_int_params{};
 
+    GuiRadioButtonField m_rotation_axis_field{ "Rotation axis", 0, { "X", "Y", "Z" } };
+
    public:
     GuiLayer()
     {
@@ -44,6 +46,10 @@ namespace esp_sbx
         render_params(m_float_params);
         ImGui::Spacing();
         render_params(m_int_params);
+        ImGui::SeparatorText("Rotation axis");
+        m_rotation_axis_field.render();
+        if (m_rotation_axis_field.changed()) { post_event(*m_rotation_axis_field.create_event()); }
+        ImGui::Spacing();
 
         EspGui::end();
         EspGui::end_frame();

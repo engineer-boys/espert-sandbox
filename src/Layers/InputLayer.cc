@@ -29,6 +29,7 @@ namespace esp_sbx
     if (camera == nullptr) { return false; }
 
     camera->set_fov(camera->get_fov() - glm::radians(event.get_offset_y()));
+    camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
 
     return true;
   }

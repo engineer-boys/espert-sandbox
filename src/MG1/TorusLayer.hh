@@ -20,6 +20,7 @@ namespace mg1
     std::shared_ptr<Scene> m_scene;
 
     bool m_pre_update{ false };
+    int m_rotation_axis;
 
     struct
     {
@@ -40,73 +41,11 @@ namespace mg1
     virtual void update(float dt) override;
     virtual void handle_event(Event& event, float dt) override;
 
-    bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event)
-    {
-      bool event_handled = false;
+    bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event);
+    bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event);
 
-      if (event.label_equals("R"))
-      {
-        m_torus.m_R   = event.get_value();
-        event_handled = true;
-      }
-      if (event.label_equals("r"))
-      {
-        m_torus.m_r   = event.get_value();
-        event_handled = true;
-      }
-
-      if (event_handled) { m_pre_update = true; }
-
-      return event_handled;
-    }
-    bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event)
-    {
-      bool event_handled = false;
-
-      if (event.label_equals("Density - theta"))
-      {
-        m_torus.m_density_theta = event.get_value();
-        event_handled           = true;
-      }
-      if (event.label_equals("Density - phi"))
-      {
-        m_torus.m_density_phi = event.get_value();
-        event_handled         = true;
-      }
-
-      if (event_handled) { m_pre_update = true; }
-
-      return event_handled;
-    }
-    /*template<typename T> bool gui_param_changed_event_handler(GuiParamChangedEvent<T>& event)
-    {
-      bool event_handled = false;
-
-      if (event.label_equals("R"))
-      {
-        m_torus.m_R   = event.get_value();
-        event_handled = true;
-      }
-      if (event.label_equals("r"))
-      {
-        m_torus.m_r   = event.get_value();
-        event_handled = true;
-      }
-      if (event.label_equals("Density - theta"))
-      {
-        m_torus.m_density_theta = event.get_value();
-        event_handled                = true;
-      }
-      if (event.label_equals("Density - phi"))
-      {
-        m_torus.m_density_phi = event.get_value();
-        event_handled              = true;
-      }
-
-      if (event_handled) { m_pre_update = true; }
-
-      return event_handled;
-    }*/
+    bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
+    bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
   };
 }; // namespace mg1
 
