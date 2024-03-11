@@ -13,7 +13,7 @@ namespace mg1
     uniform_meta_data->establish_descriptor_set();
     uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
 
-    auto shader = ShaderSystem::acquire("Shaders/MG1/shader");
+    auto shader = ShaderSystem::acquire("Shaders/MG1/TorusLayer/shader");
     shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
     shader->set_vertex_layouts({ m_torus.m_model_params.get_vertex_layouts() });
     shader->set_worker_layout(std::move(uniform_meta_data));

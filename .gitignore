@@ -1,6 +1,7 @@
 .vscode
 build
 */**/.DS_Store
+.DS_Store
 
 # clion
 .idea

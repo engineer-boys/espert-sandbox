@@ -1,4 +1,5 @@
 #include "CadCamLayer.hh"
+#include "CursorLayer.hh"
 #include "Gui/GuiLayer.hh"
 #include "TorusLayer.hh"
 
@@ -23,8 +24,8 @@ namespace mg1
       m_scene->add_camera(std::make_shared<Camera>());
 
       auto camera = m_scene->get_camera(0);
-      camera->set_position(glm::vec3{ 0.f, 1.f, 5.f });
-      camera->look_at(glm::vec3{ 0.f, 0.f, 0.f });
+      //      camera->set_position(glm::vec3{ 0.f, 1.f, 5.f });
+      //      camera->look_at(glm::vec3{ 0.f, 0.f, 0.f });
       camera->set_move_speed(3.f);
       camera->set_sensitivity(4.f);
       camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
@@ -34,6 +35,7 @@ namespace mg1
     // create children layers
     {
       m_children.emplace_back(new GuiLayer());
+      m_children.emplace_back(new CursorLayer());
       m_children.emplace_back(new TorusLayer(m_scene.get()));
     }
   }
@@ -48,13 +50,13 @@ namespace mg1
 
   void CadCamLayer::update(float dt)
   {
-    for (auto& child : m_children)
-    {
-      child->update(dt);
-    }
-
     m_final_render_plan->begin_plan();
     {
+      for (auto& child : m_children)
+      {
+        child->update(dt);
+      }
+
       m_scene->draw();
       if (EspGui::m_use_gui) { EspGui::render(); }
     }

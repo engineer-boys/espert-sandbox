@@ -51,6 +51,10 @@ namespace mg1
         if (m_rotation_axis_field.changed()) { post_event(*m_rotation_axis_field.create_event()); }
         ImGui::Spacing();
 
+        //        if (!ImGui::IsWindowHovered()) { ImGui::GetIO().ConfigFlags &= -ImGuiConfigFlags_NoMouseCursorChange;
+        //        } else { ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; }
+        if (!ImGui::IsWindowHovered()) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
+
         EspGui::end();
         EspGui::end_frame();
       }
