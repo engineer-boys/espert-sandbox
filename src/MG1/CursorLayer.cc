@@ -17,8 +17,7 @@ namespace mg1
 
       m_shader = ShaderSystem::acquire("Shaders/MG1/CursorLayer/shader");
       m_shader->set_input_assembly_settings({ .m_primitive_topology = ESP_PRIMITIVE_TOPOLOGY_POINT_LIST });
-      //      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-      //      EspCompareOp::ESP_COMPARE_OP_LESS);
+      // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->set_rasterizer_settings({ .m_line_width = 3.f });
       m_shader->build_worker();
@@ -33,6 +32,8 @@ namespace mg1
 
   void CursorLayer::update(float dt)
   {
+    if (!m_update) return;
+
     m_shader->attach();
 
     // TODO: this shouldn't have to be updated
@@ -47,5 +48,18 @@ namespace mg1
     m_uniform_manager->attach();
 
     EspJob::draw(1);
+  }
+
+  void CursorLayer::handle_event(esp::Event& event, float dt)
+  {
+    Event::try_handler<GuiMouseStateChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CursorLayer::gui_mouse_state_changed_event_handler));
+  }
+
+  bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
+  {
+    m_update = !(bool)event.get_state();
+    return true;
   }
 } // namespace mg1

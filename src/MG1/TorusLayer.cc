@@ -14,7 +14,7 @@ namespace mg1
     uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
 
     auto shader = ShaderSystem::acquire("Shaders/MG1/TorusLayer/shader");
-    shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+    // shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
     shader->set_vertex_layouts({ m_torus.m_model_params.get_vertex_layouts() });
     shader->set_worker_layout(std::move(uniform_meta_data));
     shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
@@ -44,14 +44,13 @@ namespace mg1
 
   void TorusLayer::pre_update(float dt)
   {
-    if (m_pre_update)
-    {
-      auto vertices = generate_torus_vertices(m_torus.m_R, m_torus.m_r, m_torus.m_density_theta, m_torus.m_density_phi);
-      auto indices  = generate_torus_indices(m_torus.m_density_theta, m_torus.m_density_phi);
+    if (!m_pre_update) return;
 
-      m_torus.m_model->set_vertex_buffer(vertices);
-      m_torus.m_model->set_index_buffer(indices, 0);
-    }
+    auto vertices = generate_torus_vertices(m_torus.m_R, m_torus.m_r, m_torus.m_density_theta, m_torus.m_density_phi);
+    auto indices  = generate_torus_indices(m_torus.m_density_theta, m_torus.m_density_phi);
+
+    m_torus.m_model->set_vertex_buffer(vertices);
+    m_torus.m_model->set_index_buffer(indices, 0);
 
     m_pre_update = false;
   }
@@ -73,12 +72,15 @@ namespace mg1
     Event::try_handler<GuiIntParamChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_int_param_changed_event_handler));
-    /*Event::try_handler<GuiParamChangedEvent<float>>(
+    Event::try_handler<GuiMouseStateChangedEvent>(
         event,
-        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_param_changed_event_handler<float>));*/
+        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_mouse_state_changed_event_handler));
 
-    Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_moved_event_handler, dt));
-    Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_scrolled_event_handler));
+    if (m_handle_mouse)
+    {
+      Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_moved_event_handler, dt));
+      Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_scrolled_event_handler));
+    }
   }
 
   bool TorusLayer::gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event)
@@ -126,35 +128,11 @@ namespace mg1
     return event_handled;
   }
 
-  /*template<typename T> bool gui_param_changed_event_handler(GuiParamChangedEvent<T>& event)
-    {
-      bool event_handled = false;
-
-  if (event.label_equals("R"))
+  bool TorusLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
-    m_torus.m_R   = event.get_value();
-    event_handled = true;
+    m_handle_mouse = !(bool)event.get_state();
+    return true;
   }
-  if (event.label_equals("r"))
-  {
-    m_torus.m_r   = event.get_value();
-    event_handled = true;
-  }
-  if (event.label_equals("Density - theta"))
-  {
-    m_torus.m_density_theta = event.get_value();
-    event_handled                = true;
-  }
-  if (event.label_equals("Density - phi"))
-  {
-    m_torus.m_density_phi = event.get_value();
-    event_handled              = true;
-  }
-
-  if (event_handled) { m_pre_update = true; }
-
-  return event_handled;
-}*/
 
   bool TorusLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
   {
@@ -170,14 +148,6 @@ namespace mg1
 
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
     {
-      // glm::vec2 d_norm = glm::normalize(camera->get_delta_move());
-      // I
-      // m_torus.m_node->rotate(d_norm.y * dt, { 1, 0, 0 });
-      // m_torus.m_node->rotate(d_norm.x * dt, { 0, 1, 0 });
-      // II
-      // m_torus.m_node->rotate(dt, glm::normalize(glm::vec3(camera->get_delta_move().y, camera->get_delta_move().x,
-      // 0)));
-      // III
       switch (m_rotation_axis)
       {
       case 0:

@@ -60,6 +60,26 @@ namespace mg1
 
     inline int get_value() { return m_value; }
   };
+
+  enum MouseState
+  {
+    NOT_CAPTURED,
+    CAPTURED
+  };
+
+  class GuiMouseStateChangedEvent : public Event
+  {
+   private:
+    MouseState m_state;
+
+   public:
+    GuiMouseStateChangedEvent(MouseState state) : m_state{ state } {}
+
+    inline MouseState get_state() { return m_state; }
+
+    EVENT_CLASS_TYPE(EventType::EventTypeGui)
+    EVENT_CLASS_SUBTYPE(Nothing)
+  };
 } // namespace mg1
 
 #endif // ESPERT_SANDBOX_GUIEVENT_HH

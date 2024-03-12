@@ -22,6 +22,8 @@ namespace mg1
 
     GuiRadioButtonField m_rotation_axis_field{ "Rotation axis", 0, { "X", "Y", "Z" } };
 
+    MouseState m_mouse_state{ NOT_CAPTURED };
+
    public:
     GuiLayer()
     {
@@ -51,9 +53,14 @@ namespace mg1
         if (m_rotation_axis_field.changed()) { post_event(*m_rotation_axis_field.create_event()); }
         ImGui::Spacing();
 
-        //        if (!ImGui::IsWindowHovered()) { ImGui::GetIO().ConfigFlags &= -ImGuiConfigFlags_NoMouseCursorChange;
-        //        } else { ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange; }
-        if (!ImGui::IsWindowHovered()) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
+        bool mouse_captured = ImGui::IsWindowHovered();
+        if (!mouse_captured) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
+        if (m_mouse_state != mouse_captured)
+        {
+          m_mouse_state = (MouseState)mouse_captured;
+          GuiMouseStateChangedEvent mouse_state_changed_event{ m_mouse_state };
+          post_event(mouse_state_changed_event);
+        }
 
         EspGui::end();
         EspGui::end_frame();

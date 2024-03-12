@@ -2,6 +2,7 @@
 #define ESPERT_SANDBOX_CURSORLAYER_HH
 
 #include "Espert.hh"
+#include "Gui/GuiEvent.hh"
 
 using namespace esp;
 
@@ -20,10 +21,15 @@ namespace mg1
     std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
 
+    bool m_update{ true };
+
    public:
     CursorLayer();
 
-    void update(float dt) override;
+    virtual void update(float dt) override;
+    virtual void handle_event(Event& event, float dt) override;
+
+    bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
   };
 } // namespace mg1
 

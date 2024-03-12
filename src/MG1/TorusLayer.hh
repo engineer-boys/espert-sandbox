@@ -12,6 +12,7 @@ namespace mg1
   {
    private:
     bool m_pre_update{ false };
+    bool m_handle_mouse{ true };
     int m_rotation_axis;
 
     struct
@@ -36,6 +37,7 @@ namespace mg1
 
     bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event);
     bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event);
+    bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
 
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
