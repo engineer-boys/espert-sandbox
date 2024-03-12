@@ -58,6 +58,7 @@ namespace mg1
       }
 
       m_scene->draw();
+
       if (EspGui::m_use_gui) { EspGui::render(); }
     }
     m_final_render_plan->end_plan();
