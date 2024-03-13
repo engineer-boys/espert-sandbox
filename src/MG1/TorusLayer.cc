@@ -1,67 +1,60 @@
 #include "TorusLayer.hh"
-#include "TorusUtils.hh"
-
-static std::vector<Vertex> generate_torus_vertices(float R, float r, int num_segments_theta, int num_segments_phi);
-static std::vector<uint32_t> generate_torus_indices(int num_segments_theta, int num_segments_phi);
+#include "Objects/ObjectEvent.hh"
 
 namespace mg1
 {
-  TorusLayer::TorusLayer(Scene* scene)
+  TorusLayer::TorusLayer(Scene* scene) : m_scene{ scene }
   {
     // create shader
-    auto uniform_meta_data = EspUniformMetaData::create();
-    uniform_meta_data->establish_descriptor_set();
-    uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
+    {
+      auto uniform_meta_data = EspUniformMetaData::create();
+      uniform_meta_data->establish_descriptor_set();
+      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
 
-    auto shader = ShaderSystem::acquire("Shaders/MG1/TorusLayer/shader");
-    // shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-    shader->set_vertex_layouts({ m_torus.m_model_params.get_vertex_layouts() });
-    shader->set_worker_layout(std::move(uniform_meta_data));
-    shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
-    shader->build_worker();
+      m_shader = ShaderSystem::acquire("Shaders/MG1/TorusLayer/shader");
+      // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->set_vertex_layouts({ TorusInfo::s_model_params.get_vertex_layouts() });
+      m_shader->set_worker_layout(std::move(uniform_meta_data));
+      m_shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
+      m_shader->build_worker();
+    }
 
-    // create torus
-    m_torus.m_R             = TorusInfo::S_INIT_R;
-    m_torus.m_r             = TorusInfo::S_INIT_r;
-    m_torus.m_density_theta = TorusInfo::S_INIT_DENSITY_THETA;
-    m_torus.m_density_phi   = TorusInfo::S_INIT_DENSITY_PHI;
-
-    auto vertices = generate_torus_vertices(m_torus.m_R, m_torus.m_r, m_torus.m_density_theta, m_torus.m_density_phi);
-    auto indices  = generate_torus_indices(m_torus.m_density_theta, m_torus.m_density_phi);
-
-    m_torus.m_node = Node::create();
-    m_torus.m_model =
-        std::make_shared<Model>(vertices, indices, std::vector<std::shared_ptr<EspTexture>>{}, m_torus.m_model_params);
-
-    auto entity = scene->create_entity();
-    entity->add_component<ModelComponent>(m_torus.m_model, shader);
-
-    m_torus.m_node->attach_entity(entity);
-    m_torus.m_node->translate({ 0, 0, -5 });
-
-    scene->get_root().add_child(m_torus.m_node);
+    m_all_objects[0] = std::make_shared<Object>("None");
+    create_initial_scene();
   }
 
   void TorusLayer::pre_update(float dt)
   {
-    if (!m_pre_update) return;
-
-    auto vertices = generate_torus_vertices(m_torus.m_R, m_torus.m_r, m_torus.m_density_theta, m_torus.m_density_phi);
-    auto indices  = generate_torus_indices(m_torus.m_density_theta, m_torus.m_density_phi);
-
-    m_torus.m_model->set_vertex_buffer(vertices);
-    m_torus.m_model->set_index_buffer(indices, 0);
-
-    m_pre_update = false;
+    for (auto& kv : m_all_objects)
+    {
+      auto object = kv.second;
+      if (!object->is_selected()) { continue; }
+      object->pre_update(dt);
+    }
   }
 
   void TorusLayer::update(float dt)
   {
-    auto camera = Scene::get_current_camera();
+    for (auto& kv : m_all_objects)
+    {
+      auto object = kv.second;
+      object->update(dt);
+    }
+  }
 
-    auto& uniform_manager = m_torus.m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
-    glm::mat4 mvp         = camera->get_projection() * /*camera->get_view() **/ m_torus.m_node->get_model_mat();
-    uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
+  void TorusLayer::post_update(float dt)
+  {
+    static bool temp = true;
+    if (temp)
+    {
+      for (auto& kv : m_all_objects)
+      {
+        auto object = kv.second;
+        ObjectAddedEvent event{ { object->get_id(), object->get_name(), object->get_state_handle() } };
+        post_event(event);
+      }
+      temp = false;
+    }
   }
 
   void TorusLayer::handle_event(esp::Event& event, float dt)
@@ -85,47 +78,27 @@ namespace mg1
 
   bool TorusLayer::gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event)
   {
-    bool event_handled = false;
-
-    if (event.label_equals("R"))
+    for (auto& kv : m_all_objects)
     {
-      m_torus.m_R   = event.get_value();
-      event_handled = true;
+      auto object = kv.second;
+      if (!object->is_selected()) { continue; }
+      object->handle_event(event);
     }
-    if (event.label_equals("r"))
-    {
-      m_torus.m_r   = event.get_value();
-      event_handled = true;
-    }
-
-    if (event_handled) { m_pre_update = true; }
-
-    return event_handled;
+    return true;
   }
 
   bool TorusLayer::gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event)
   {
-    bool event_handled = false;
-
-    if (event.label_equals("Density - theta"))
+    for (auto& kv : m_all_objects)
     {
-      m_torus.m_density_theta = event.get_value();
-      event_handled           = true;
-      m_pre_update            = true;
-    }
-    if (event.label_equals("Density - phi"))
-    {
-      m_torus.m_density_phi = event.get_value();
-      event_handled         = true;
-      m_pre_update          = true;
-    }
-    if (event.label_equals("Rotation axis"))
-    {
-      m_rotation_axis = event.get_value();
-      event_handled   = true;
+      auto object = kv.second;
+      if (!object->is_selected()) { continue; }
+      object->handle_event(event);
     }
 
-    return event_handled;
+    if (event.label_equals("Rotation axis")) { Object::set_rotation_axis(event.get_value()); }
+
+    return true;
   }
 
   bool TorusLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
@@ -141,35 +114,11 @@ namespace mg1
 
     camera->look_at({ event.get_x(), event.get_y() }, dt);
 
-    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+    for (auto& kv : m_all_objects)
     {
-      m_torus.m_node->translate(glm::vec3(2 * dt * camera->get_delta_move(), 0));
-    }
-
-    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-      switch (m_rotation_axis)
-      {
-      case 0:
-      {
-        m_torus.m_node->rotate_x(2 * dt * camera->get_delta_move().y);
-        break;
-      }
-      case 1:
-      {
-        m_torus.m_node->rotate_y(2 * dt * camera->get_delta_move().x);
-        break;
-      }
-      case 2:
-      {
-        m_torus.m_node->rotate_z(2 * dt * glm::dot(camera->get_delta_move(), { 1, 1 }) / 2);
-        break;
-      }
-      default:
-      {
-        break;
-      }
-      }
+      auto object = kv.second;
+      if (!object->is_selected()) { continue; }
+      object->handle_event(event, dt);
     }
 
     return true;
@@ -177,61 +126,58 @@ namespace mg1
 
   bool TorusLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
   {
-    float offset_y = event.get_offset_y();
-    if (offset_y > 0) { m_torus.m_node->scale(1.1f); }
-    else if (offset_y < 0) { m_torus.m_node->scale(.9f); }
+    for (auto& kv : m_all_objects)
+    {
+      auto object = kv.second;
+      if (!object->is_selected()) { continue; }
+      object->handle_event(event);
+    }
+
     return true;
   }
+
+  void TorusLayer::create_initial_scene()
+  {
+    {
+      Torus torus{};
+
+      auto entity = m_scene->create_entity();
+      entity->add_component<ModelComponent>(torus.get_model(), m_shader);
+
+      torus.get_node()->attach_entity(entity);
+      torus.get_node()->translate({ 2, 0, -5 });
+
+      m_scene->get_root().add_child(torus.get_node());
+
+      m_all_objects[torus.get_id()] = std::make_shared<Torus>(torus);
+    }
+
+    {
+      Torus torus{};
+
+      auto entity = m_scene->create_entity();
+      entity->add_component<ModelComponent>(torus.get_model(), m_shader);
+
+      torus.get_node()->attach_entity(entity);
+      torus.get_node()->translate({ -2, 0, -5 });
+
+      m_scene->get_root().add_child(torus.get_node());
+
+      m_all_objects[torus.get_id()] = std::make_shared<Torus>(torus);
+    }
+
+    {
+      Torus torus{};
+
+      auto entity = m_scene->create_entity();
+      entity->add_component<ModelComponent>(torus.get_model(), m_shader);
+
+      torus.get_node()->attach_entity(entity);
+      torus.get_node()->translate({ 0, 0, -10 });
+
+      m_scene->get_root().add_child(torus.get_node());
+
+      m_all_objects[torus.get_id()] = std::make_shared<Torus>(torus);
+    }
+  }
 } // namespace mg1
-
-static std::vector<Vertex> generate_torus_vertices(float R, float r, int num_segments_theta, int num_segments_phi)
-{
-  std::vector<Vertex> vertices{};
-
-  float d_theta = 2.0f * M_PI / num_segments_theta;
-  float d_phi   = 2.0f * M_PI / num_segments_phi;
-
-  for (int i = 0; i < num_segments_theta; i++)
-  {
-    float theta = i * d_theta;
-
-    for (int j = 0; j <= num_segments_phi; j++)
-    {
-      float phi = j * d_phi;
-
-      float x = (R + r * std::cos(phi)) * std::cos(theta);
-      float y = (R + r * std::cos(phi)) * std::sin(theta);
-      float z = r * std::sin(phi);
-
-      vertices.push_back({ { x, y, z } });
-    }
-  }
-
-  return vertices;
-}
-
-static std::vector<uint32_t> generate_torus_indices(int num_segments_theta, int num_segments_phi)
-{
-  std::vector<uint32_t> indices{};
-
-  for (int i = 0; i < num_segments_theta; ++i)
-  {
-    for (int j = 0; j < num_segments_phi; ++j)
-    {
-      int first  = i * (num_segments_phi + 1) + j;
-      int second = (first + num_segments_phi + 1) % ((num_segments_theta) * (num_segments_phi + 1));
-      int third  = (first + 1) % ((num_segments_theta) * (num_segments_phi + 1));
-      int fourth = (second + 1) % ((num_segments_theta) * (num_segments_phi + 1));
-
-      indices.push_back(first);
-      indices.push_back(second);
-      indices.push_back(third);
-
-      indices.push_back(second);
-      indices.push_back(fourth);
-      indices.push_back(third);
-    }
-  }
-
-  return indices;
-}

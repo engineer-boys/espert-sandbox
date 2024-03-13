@@ -35,7 +35,7 @@ namespace mg1
 
     inline bool label_equals(const std::string& second_label) { return m_label == second_label; }
 
-    EVENT_CLASS_TYPE(EventType::EventTypeGui)
+    EVENT_CLASS_TYPE(EventTypeGui)
     EVENT_CLASS_SUBTYPE(Nothing)
   };
 
@@ -77,8 +77,22 @@ namespace mg1
 
     inline MouseState get_state() { return m_state; }
 
-    EVENT_CLASS_TYPE(EventType::EventTypeGui)
+    EVENT_CLASS_TYPE(EventTypeGui)
     EVENT_CLASS_SUBTYPE(Nothing)
+  };
+
+  class GuiUintListParamChangedEvent : public GuiParamChangedEvent
+  {
+   private:
+    std::vector<uint32_t> m_value;
+
+   public:
+    GuiUintListParamChangedEvent(const std::string& label, std::vector<uint32_t> value) :
+        GuiParamChangedEvent(label), m_value{ value }
+    {
+    }
+
+    inline std::vector<uint32_t> get_value() { return m_value; }
   };
 } // namespace mg1
 

@@ -3,6 +3,7 @@
 
 #include "Espert.hh"
 #include "Gui/GuiEvent.hh"
+#include "MG1/Objects/Torus.hh"
 
 using namespace esp;
 
@@ -11,36 +12,31 @@ namespace mg1
   class TorusLayer : public Layer
   {
    private:
-    bool m_pre_update{ false };
     bool m_handle_mouse{ true };
-    int m_rotation_axis;
 
-    struct
-    {
-      float m_R;
-      float m_r;
-      int m_density_theta;
-      int m_density_phi;
+    Scene* m_scene;
 
-      ModelParams m_model_params = { .m_position = true };
-      std::shared_ptr<Model> m_model;
-      std::shared_ptr<Node> m_node;
-    } m_torus;
+    std::shared_ptr<EspShader> m_shader;
+
+    std::map<uint32_t, std::shared_ptr<Object>> m_all_objects{};
 
    public:
     TorusLayer(Scene* scene);
 
-   private:
     virtual void pre_update(float dt) override;
     virtual void update(float dt) override;
+    virtual void post_update(float dt) override;
     virtual void handle_event(Event& event, float dt) override;
 
+   private:
     bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event);
     bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event);
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
 
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
+
+    void create_initial_scene(); // TODO: remove
   };
 }; // namespace mg1
 

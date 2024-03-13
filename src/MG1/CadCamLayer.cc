@@ -62,6 +62,7 @@ namespace mg1
       if (EspGui::m_use_gui) { EspGui::render(); }
     }
     m_final_render_plan->end_plan();
+    m_depth_block->clear();
   }
 
   void CadCamLayer::post_update(float dt)
