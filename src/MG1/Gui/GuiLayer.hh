@@ -2,35 +2,33 @@
 #define ESPERT_SANDBOX_GUILAYER_HH
 
 #include "Espert.hh"
-#include "GuiEvent.hh"
-#include "GuiParam.hh"
-#include "MG1/Objects/ObjectEvent.hh"
+#include "GuiEvents/GuiEvents.hh"
+#include "GuiFields/GuiFields.hh"
+#include "MG1/Objects/ObjectEvents/ObjectEvents.hh"
 #include "MG1/Objects/ObjectUtils.hh"
 
 using namespace esp;
 
 namespace mg1
 {
-  template<typename T> using Param = std::unique_ptr<GuiParam<T>>;
-
   class GuiLayer : public Layer
   {
    private:
     static constexpr ImVec2 OFFSET{ 10, 10 };
 
-    MouseState m_mouse_state{ NOT_CAPTURED };
+    MouseState m_mouse_state{ NotCaptured };
 
     struct
     {
-      Param<float> m_R;
-      Param<float> m_r;
-      Param<int> m_density_theta;
-      Param<int> m_density_phi;
+      std::unique_ptr<GuiInputFloat> m_R;
+      std::unique_ptr<GuiInputFloat> m_r;
+      std::unique_ptr<GuiInputInt> m_density_theta;
+      std::unique_ptr<GuiInputInt> m_density_phi;
     } m_torus_params;
 
-    Param<int> m_rotation_axis_field;
+    std::unique_ptr<GuiRadioButton> m_rotation_axis_field;
 
-    std::unique_ptr<GuiStringListBoxField> m_objects_list_box;
+    std::unique_ptr<GuiListBox> m_objects_list_box;
 
    public:
     GuiLayer();
@@ -42,7 +40,7 @@ namespace mg1
     void update_mouse_state();
     void help_marker(const char* desc);
 
-    template<typename T> void update_param(GuiParam<T>& param)
+    template<typename T> void update_param(GuiField<T>& param)
     {
       param.render();
       if (param.changed()) { post_event(*(param.create_event())); }

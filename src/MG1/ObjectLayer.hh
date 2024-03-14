@@ -1,15 +1,15 @@
-#ifndef ESPERT_SANDBOX_TORUSLAYER_HH
-#define ESPERT_SANDBOX_TORUSLAYER_HH
+#ifndef ESPERT_SANDBOX_OBJECTLAYER_HH
+#define ESPERT_SANDBOX_OBJECTLAYER_HH
 
 #include "Espert.hh"
-#include "Gui/GuiEvent.hh"
+#include "MG1/Gui/GuiEvents/GuiEvents.hh"
 #include "MG1/Objects/Torus.hh"
 
 using namespace esp;
 
 namespace mg1
 {
-  class TorusLayer : public Layer
+  class ObjectLayer : public Layer
   {
    private:
     bool m_handle_mouse{ true };
@@ -21,7 +21,7 @@ namespace mg1
     std::map<uint32_t, std::shared_ptr<Object>> m_all_objects{};
 
    public:
-    TorusLayer(Scene* scene);
+    ObjectLayer(Scene* scene);
 
     virtual void pre_update(float dt) override;
     virtual void update(float dt) override;
@@ -29,8 +29,8 @@ namespace mg1
     virtual void handle_event(Event& event, float dt) override;
 
    private:
-    bool gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event);
-    bool gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event);
+    bool gui_float_param_changed_event_handler(GuiInputFloatChangedEvent& event);
+    bool gui_int_param_changed_event_handler(GuiInputIntChangedEvent& event);
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
 
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
@@ -40,4 +40,4 @@ namespace mg1
   };
 }; // namespace mg1
 
-#endif // ESPERT_SANDBOX_TORUSLAYER_HH
+#endif // ESPERT_SANDBOX_OBJECTLAYER_HH

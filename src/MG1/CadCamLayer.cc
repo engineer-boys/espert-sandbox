@@ -1,7 +1,7 @@
 #include "CadCamLayer.hh"
 #include "CursorLayer.hh"
 #include "Gui/GuiLayer.hh"
-#include "TorusLayer.hh"
+#include "ObjectLayer.hh"
 
 namespace mg1
 {
@@ -36,7 +36,7 @@ namespace mg1
     {
       m_children.emplace_back(new GuiLayer());
       m_children.emplace_back(new CursorLayer());
-      m_children.emplace_back(new TorusLayer(m_scene.get()));
+      m_children.emplace_back(new ObjectLayer(m_scene.get()));
     }
   }
 

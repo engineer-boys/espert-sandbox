@@ -5,7 +5,7 @@ build
 
 # clion
 .idea
-cmake-build-debug
+cmake-build-debug*
 
 # shaders
 */**/*.spv

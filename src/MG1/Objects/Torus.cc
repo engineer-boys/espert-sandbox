@@ -1,4 +1,5 @@
 #include "Torus.hh"
+#include "MG1/Gui/GuiUtils.hh"
 
 static std::vector<Vertex> generate_torus_vertices(float R, float r, int num_segments_theta, int num_segments_phi);
 static std::vector<uint32_t> generate_torus_indices(int num_segments_theta, int num_segments_phi);
@@ -18,7 +19,7 @@ namespace mg1
     m_model       = std::make_shared<Model>(vertices,
                                       indices,
                                       std::vector<std::shared_ptr<EspTexture>>{},
-                                      TorusInfo::s_model_params);
+                                      TorusInit::s_model_params);
   }
 
   void Torus::pre_update(float dt)
@@ -35,17 +36,17 @@ namespace mg1
     uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
   }
 
-  void Torus::handle_event(mg1::GuiFloatParamChangedEvent& event)
+  void Torus::handle_event(mg1::GuiInputFloatChangedEvent& event)
   {
-    if (event.label_equals("R")) { m_R = event.get_value(); }
-    if (event.label_equals("r")) { m_r = event.get_value(); }
+    if (event.label_equals(GuiFieldLabel::R)) { m_R = event.get_value(); }
+    if (event.label_equals(GuiFieldLabel::r)) { m_r = event.get_value(); }
     m_needs_reconstruction = true;
   }
 
-  void Torus::handle_event(mg1::GuiIntParamChangedEvent& event)
+  void Torus::handle_event(mg1::GuiInputIntChangedEvent& event)
   {
-    if (event.label_equals("Density - theta")) { m_density_theta = event.get_value(); }
-    if (event.label_equals("Density - phi")) { m_density_phi = event.get_value(); }
+    if (event.label_equals(GuiFieldLabel::density_theta)) { m_density_theta = event.get_value(); }
+    if (event.label_equals(GuiFieldLabel::density_phi)) { m_density_phi = event.get_value(); }
     m_needs_reconstruction = true;
   }
 

@@ -2,5 +2,5 @@
 
 namespace mg1
 {
-  const ModelParams TorusInfo::s_model_params = { .m_position = true };
+  const ModelParams TorusInit::s_model_params = { .m_position = true };
 }

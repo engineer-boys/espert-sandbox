@@ -1,20 +1,20 @@
 #include "GuiLayer.hh"
+#include "GuiUtils.hh"
 
 namespace mg1
 {
   GuiLayer::GuiLayer()
   {
-    m_torus_params.m_R = Param<float>(new GuiInputFloatParam("R", mg1::TorusInfo::S_INIT_R, 0.05f, 1.0f));
-    m_torus_params.m_r = Param<float>(new GuiInputFloatParam("r", mg1::TorusInfo::S_INIT_r, 0.05f, 1.0f));
+    m_torus_params.m_R = std::make_unique<GuiInputFloat>(GuiFieldLabel::R, TorusInit::S_R, 0.05f, 1.0f);
+    m_torus_params.m_r = std::make_unique<GuiInputFloat>(GuiFieldLabel::r, TorusInit::S_r, 0.05f, 1.0f);
     m_torus_params.m_density_theta =
-        Param<int>(new GuiInputIntParam("Density - theta", mg1::TorusInfo::S_INIT_DENSITY_THETA));
-    m_torus_params.m_density_phi =
-        Param<int>(new GuiInputIntParam("Density - phi", mg1::TorusInfo::S_INIT_DENSITY_PHI));
+        std::make_unique<GuiInputInt>(GuiFieldLabel::density_theta, TorusInit::S_DENSITY_THETA);
+    m_torus_params.m_density_phi = std::make_unique<GuiInputInt>(GuiFieldLabel::density_phi, TorusInit::S_DENSITY_PHI);
 
-    m_rotation_axis_field = Param<int>(new GuiRadioButtonField{ "Rotation axis", 0, { "X", "Y", "Z" } });
+    m_rotation_axis_field =
+        std::make_unique<GuiRadioButton>(GuiFieldLabel::rotation_axis, 0, std::vector<std::string>{ "X", "Y", "Z" });
 
-    m_objects_list_box = std::unique_ptr<GuiStringListBoxField>(new GuiStringListBoxField("Objects", {}));
-    // { { "AAAA", false }, { "BBBB", false }, { "CCCC", false }, { "DDDD", false } }
+    m_objects_list_box = std::make_unique<GuiListBox>(GuiFieldLabel::objects, std::map<uint32_t, ObjectInfo>{});
   }
 
   void GuiLayer::update(float dt)
@@ -58,7 +58,7 @@ namespace mg1
     // Event::try_handler<ObjectRemovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_removed_event_handler));
   }
 
-  bool GuiLayer::object_added_event_handler(mg1::ObjectAddedEvent& event)
+  bool GuiLayer::object_added_event_handler(ObjectAddedEvent& event)
   {
     m_objects_list_box->handle_event(event);
     return true;

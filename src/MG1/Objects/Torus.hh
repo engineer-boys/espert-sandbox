@@ -23,17 +23,17 @@ namespace mg1
     bool m_needs_reconstruction{ false };
 
    public:
-    Torus(float R           = TorusInfo::S_INIT_R,
-          float r           = TorusInfo::S_INIT_r,
-          int density_theta = TorusInfo::S_INIT_DENSITY_THETA,
-          int density_phi   = TorusInfo::S_INIT_DENSITY_PHI);
+    Torus(float R           = TorusInit::S_R,
+          float r           = TorusInit::S_r,
+          int density_theta = TorusInit::S_DENSITY_THETA,
+          int density_phi   = TorusInit::S_DENSITY_PHI);
     ~Torus() = default;
 
     void pre_update(float dt) override;
     void update(float dt) override;
 
-    void handle_event(GuiFloatParamChangedEvent& event) override;
-    void handle_event(GuiIntParamChangedEvent& event) override;
+    void handle_event(GuiInputFloatChangedEvent& event) override;
+    void handle_event(GuiInputIntChangedEvent& event) override;
     void handle_event(MouseMovedEvent& event, float dt) override;
     void handle_event(MouseScrolledEvent& event) override;
 

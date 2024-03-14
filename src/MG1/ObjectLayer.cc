@@ -1,9 +1,9 @@
-#include "TorusLayer.hh"
-#include "Objects/ObjectEvent.hh"
+#include "ObjectLayer.hh"
+#include "MG1/Objects/ObjectEvents/ObjectEvents.hh"
 
 namespace mg1
 {
-  TorusLayer::TorusLayer(Scene* scene) : m_scene{ scene }
+  ObjectLayer::ObjectLayer(Scene* scene) : m_scene{ scene }
   {
     // create shader
     {
@@ -11,9 +11,9 @@ namespace mg1
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
 
-      m_shader = ShaderSystem::acquire("Shaders/MG1/TorusLayer/shader");
+      m_shader = ShaderSystem::acquire("Shaders/MG1/ObjectLayer/shader");
       // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts({ TorusInfo::s_model_params.get_vertex_layouts() });
+      m_shader->set_vertex_layouts({ TorusInit::s_model_params.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
       m_shader->build_worker();
@@ -23,7 +23,7 @@ namespace mg1
     create_initial_scene();
   }
 
-  void TorusLayer::pre_update(float dt)
+  void ObjectLayer::pre_update(float dt)
   {
     for (auto& kv : m_all_objects)
     {
@@ -33,7 +33,7 @@ namespace mg1
     }
   }
 
-  void TorusLayer::update(float dt)
+  void ObjectLayer::update(float dt)
   {
     for (auto& kv : m_all_objects)
     {
@@ -42,7 +42,7 @@ namespace mg1
     }
   }
 
-  void TorusLayer::post_update(float dt)
+  void ObjectLayer::post_update(float dt)
   {
     static bool temp = true;
     if (temp)
@@ -57,26 +57,26 @@ namespace mg1
     }
   }
 
-  void TorusLayer::handle_event(esp::Event& event, float dt)
+  void ObjectLayer::handle_event(esp::Event& event, float dt)
   {
-    Event::try_handler<GuiFloatParamChangedEvent>(
+    Event::try_handler<GuiInputFloatChangedEvent>(
         event,
-        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_float_param_changed_event_handler));
-    Event::try_handler<GuiIntParamChangedEvent>(
+        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_float_param_changed_event_handler));
+    Event::try_handler<GuiInputIntChangedEvent>(
         event,
-        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_int_param_changed_event_handler));
+        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_int_param_changed_event_handler));
     Event::try_handler<GuiMouseStateChangedEvent>(
         event,
-        ESP_BIND_EVENT_FOR_FUN(TorusLayer::gui_mouse_state_changed_event_handler));
+        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_mouse_state_changed_event_handler));
 
     if (m_handle_mouse)
     {
-      Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_moved_event_handler, dt));
-      Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(TorusLayer::mouse_scrolled_event_handler));
+      Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_moved_event_handler, dt));
+      Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_scrolled_event_handler));
     }
   }
 
-  bool TorusLayer::gui_float_param_changed_event_handler(GuiFloatParamChangedEvent& event)
+  bool ObjectLayer::gui_float_param_changed_event_handler(GuiInputFloatChangedEvent& event)
   {
     for (auto& kv : m_all_objects)
     {
@@ -87,7 +87,7 @@ namespace mg1
     return true;
   }
 
-  bool TorusLayer::gui_int_param_changed_event_handler(GuiIntParamChangedEvent& event)
+  bool ObjectLayer::gui_int_param_changed_event_handler(GuiInputIntChangedEvent& event)
   {
     for (auto& kv : m_all_objects)
     {
@@ -96,18 +96,18 @@ namespace mg1
       object->handle_event(event);
     }
 
-    if (event.label_equals("Rotation axis")) { Object::set_rotation_axis(event.get_value()); }
+    if (event.label_equals(GuiFieldLabel::rotation_axis)) { Object::set_rotation_axis(event.get_value()); }
 
     return true;
   }
 
-  bool TorusLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
+  bool ObjectLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
     m_handle_mouse = !(bool)event.get_state();
     return true;
   }
 
-  bool TorusLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
+  bool ObjectLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
   {
     auto camera = Scene::get_current_camera();
     if (camera == nullptr) { return false; }
@@ -124,7 +124,7 @@ namespace mg1
     return true;
   }
 
-  bool TorusLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
+  bool ObjectLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
   {
     for (auto& kv : m_all_objects)
     {
@@ -136,7 +136,7 @@ namespace mg1
     return true;
   }
 
-  void TorusLayer::create_initial_scene()
+  void ObjectLayer::create_initial_scene()
   {
     {
       Torus torus{};

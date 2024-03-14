@@ -2,7 +2,7 @@
 #define ESPERT_SANDBOX_CURSORLAYER_HH
 
 #include "Espert.hh"
-#include "Gui/GuiEvent.hh"
+#include "Gui/GuiEvents/GuiEvents.hh"
 
 using namespace esp;
 

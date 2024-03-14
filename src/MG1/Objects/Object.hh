@@ -2,7 +2,7 @@
 #define ESPERT_SANDBOX_OBJECT_HH
 
 #include "Espert.hh"
-#include "MG1/Gui/GuiEvent.hh"
+#include "MG1/Gui/GuiEvents/GuiEvents.hh"
 #include "ObjectState.hh"
 
 namespace mg1
@@ -35,8 +35,8 @@ namespace mg1
     virtual void update(float dt) {}
     virtual void post_update(float dt) {}
 
-    virtual void handle_event(GuiFloatParamChangedEvent& event) {}
-    virtual void handle_event(GuiIntParamChangedEvent& event) {}
+    virtual void handle_event(GuiInputFloatChangedEvent& event) {}
+    virtual void handle_event(GuiInputIntChangedEvent& event) {}
     virtual void handle_event(MouseMovedEvent& event, float dt) {}
     virtual void handle_event(MouseScrolledEvent& event) {}
   };
