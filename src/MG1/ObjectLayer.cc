@@ -157,7 +157,6 @@ namespace mg1
       entity->add_component<ModelComponent>(torus.get_model(), m_shader);
 
       torus.get_node()->attach_entity(entity);
-      torus.get_node()->translate({ -2, 0, -5 });
 
       m_scene->get_root().add_child(torus.get_node());
 
@@ -171,7 +170,7 @@ namespace mg1
       entity->add_component<ModelComponent>(torus.get_model(), m_shader);
 
       torus.get_node()->attach_entity(entity);
-      torus.get_node()->translate({ 0, 0, 0 });
+      torus.get_node()->translate({ -2, 0, 5 });
 
       m_scene->get_root().add_child(torus.get_node());
 
