@@ -15,7 +15,7 @@ namespace mg1
 
     inline MouseState get_state() { return m_state; }
 
-    EVENT_CLASS_TYPE(EventTypeGui)
+    EVENT_CLASS_TYPE(EventTypeMouse)
     EVENT_CLASS_SUBTYPE(Nothing)
   };
 } // namespace mg1

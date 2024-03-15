@@ -82,15 +82,39 @@ namespace mg1
     }
 
     Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(CadCamLayer::mouse_moved_event_handler, dt));
+    Event::try_handler<GuiListBoxChangedEvent>(event,
+                                               ESP_BIND_EVENT_FOR_FUN(CadCamLayer::gui_list_box_changed_event_handler));
   }
 
   bool CadCamLayer::mouse_moved_event_handler(MouseMovedEvent& event, float dt)
   {
+    if (!m_update_camera) { return false; }
+
     if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_LEFT))
     {
       m_camera->rotate(event.get_dx() * dt / 2, event.get_dy() * dt / 2);
     }
     if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_RIGHT)) { m_camera->zoom(event.get_dy() * dt / 2); }
+
+    return true;
+  }
+
+  bool CadCamLayer::gui_list_box_changed_event_handler(GuiListBoxChangedEvent& event)
+  {
+    if (!event.label_equals(GuiFieldLabel::objects)) { return false; }
+
+    bool none_selected = false;
+    for (auto& id : event.get_value())
+    {
+      if (id == 0)
+      {
+        none_selected = true;
+        break;
+      }
+    }
+
+    if (none_selected) { m_update_camera = true; }
+    else { m_update_camera = false; }
 
     return true;
   }

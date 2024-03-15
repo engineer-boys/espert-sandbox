@@ -2,6 +2,7 @@
 #define ESPERT_SANDBOX_CADCAMLAYER_HH
 
 #include "Espert.hh"
+#include "Gui/GuiEvents/GuiEvents.hh"
 
 using namespace esp;
 
@@ -18,6 +19,8 @@ namespace mg1
 
     std::vector<std::unique_ptr<Layer>> m_children{};
 
+    bool m_update_camera{ true };
+
    public:
     CadCamLayer();
 
@@ -28,6 +31,7 @@ namespace mg1
 
    private:
     bool mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt);
+    bool gui_list_box_changed_event_handler(GuiListBoxChangedEvent& event);
   };
 } // namespace mg1
 

@@ -54,7 +54,7 @@ namespace mg1
   {
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
     {
-      m_node->translate(glm::vec3(2 * dt * event.get_dx(), 2 * dt * event.get_dy(), 0));
+      m_node->translate(glm::vec3(dt * event.get_dx(), -dt * event.get_dy(), 0));
     }
 
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
@@ -63,17 +63,17 @@ namespace mg1
       {
       case 0:
       {
-        m_node->rotate_x(2 * dt * event.get_dy());
+        m_node->rotate_x(dt * event.get_dy());
         break;
       }
       case 1:
       {
-        m_node->rotate_y(2 * dt * event.get_dx());
+        m_node->rotate_y(dt * event.get_dx());
         break;
       }
       case 2:
       {
-        m_node->rotate_z(2 * dt * glm::dot(glm::vec2{ event.get_dx(), event.get_dy() }, { 1, 1 }) / 2);
+        m_node->rotate_z(dt * (event.get_dx() + event.get_dy()) / 2);
         break;
       }
       default:

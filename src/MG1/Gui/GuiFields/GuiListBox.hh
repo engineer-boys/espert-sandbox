@@ -47,7 +47,7 @@ namespace mg1
 
     inline std::shared_ptr<Event> create_event() override
     {
-      return std::make_shared<GuiListBoxChangedEvent>(m_label, m_value); // TODO: currently redundant
+      return std::make_shared<GuiListBoxChangedEvent>(m_label, m_value);
     }
 
     inline virtual bool changed() override
