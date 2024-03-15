@@ -28,7 +28,7 @@ namespace obj_example
                                    .m_load_process_flags      = EspProcessFlipUVs };
 
     std::shared_ptr<Scene> m_scene;
-    Camera m_camera{};
+    FpsCamera m_camera{};
     std::shared_ptr<Node> m_viking_room_node;
 
    public:

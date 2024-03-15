@@ -65,7 +65,7 @@ namespace advance_rendering2_example
     } m_skybox;
 
    private:
-    Camera m_camera{};
+    FpsCamera m_camera{};
     glm::vec3 m_lights[4];
 
     const std::string SKYBOX_PATH = "Textures/HDRRosendalMountainSkybox/mount.hdr";

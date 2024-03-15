@@ -1,5 +1,4 @@
 #include "Examples/Examples.hh"
-#include "Layers/Layers.hh"
 #include "MG1/CadCamLayer.hh"
 
 #include "ClientPoint.hh"

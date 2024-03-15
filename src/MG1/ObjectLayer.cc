@@ -112,8 +112,6 @@ namespace mg1
     auto camera = Scene::get_current_camera();
     if (camera == nullptr) { return false; }
 
-    camera->look_at({ event.get_x(), event.get_y() }, dt);
-
     for (auto& kv : m_all_objects)
     {
       auto object = kv.second;
@@ -173,7 +171,7 @@ namespace mg1
       entity->add_component<ModelComponent>(torus.get_model(), m_shader);
 
       torus.get_node()->attach_entity(entity);
-      torus.get_node()->translate({ 0, 0, -10 });
+      torus.get_node()->translate({ 0, 0, 0 });
 
       m_scene->get_root().add_child(torus.get_node());
 

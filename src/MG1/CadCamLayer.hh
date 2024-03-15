@@ -13,6 +13,7 @@ namespace mg1
     std::shared_ptr<EspDepthBlock> m_depth_block;
     std::unique_ptr<EspRenderPlan> m_final_render_plan;
 
+    std::shared_ptr<OrbitCamera> m_camera;
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::unique_ptr<Layer>> m_children{};
@@ -24,6 +25,9 @@ namespace mg1
     void update(float dt) override;
     void post_update(float dt) override;
     void handle_event(Event& event, float dt) override;
+
+   private:
+    bool mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt);
   };
 } // namespace mg1
 

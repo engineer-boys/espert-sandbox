@@ -19,7 +19,7 @@ namespace advance_model
   {
    private:
     std::shared_ptr<Scene> m_scene;
-    Camera m_camera{};
+    FpsCamera m_camera{};
     std::shared_ptr<Animator> m_animator;
 
     struct

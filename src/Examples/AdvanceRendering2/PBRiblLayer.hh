@@ -59,7 +59,7 @@ namespace advance_rendering2_example
     } m_skybox;
 
    private:
-    Camera m_camera{};
+    FpsCamera m_camera{};
     glm::vec3 m_lights[4];
 
     const uint32_t GRID_DIM = 7;

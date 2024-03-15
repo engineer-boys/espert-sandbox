@@ -157,7 +157,7 @@ namespace obj_example
     } m_final_pass;
 
     std::shared_ptr<Scene> m_scene;
-    Camera m_camera{};
+    FpsCamera m_camera{};
 
     struct
     {

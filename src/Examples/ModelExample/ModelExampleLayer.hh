@@ -55,13 +55,13 @@ namespace model_example
 
       // create scene
       m_scene = Scene::create();
-      m_scene->add_camera(std::make_shared<Camera>());
-      auto camera = m_scene->get_camera(0);
-      camera->set_position(glm::vec3{ 0.f, 1.f, 10.f });
-      camera->look_at(glm::vec3{ 0.f, 0.f, 0.f });
-      camera->set_move_speed(3.f);
-      camera->set_sensitivity(4.f);
-      m_scene->set_current_camera(camera.get());
+      //      m_scene->add_camera(std::make_shared<Camera>());
+      //      auto camera = m_scene->get_camera(0);
+      //      camera->set_position(glm::vec3{ 0.f, 1.f, 10.f });
+      //      camera->look_at(glm::vec3{ 0.f, 0.f, 0.f });
+      //      camera->set_move_speed(3.f);
+      //      camera->set_sensitivity(4.f);
+      //      m_scene->set_current_camera(camera.get());
 
       auto cube_model = std::make_shared<Model>(model_example::colored_cube,
                                                 model_example::cube_idx,

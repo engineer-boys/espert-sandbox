@@ -32,7 +32,7 @@ namespace mg1
     auto camera = Scene::get_current_camera();
 
     auto& uniform_manager = m_node->get_entity()->get_component<ModelComponent>().get_uniform_manager();
-    glm::mat4 mvp         = camera->get_projection() * /*camera->get_view() **/ m_node->get_model_mat();
+    glm::mat4 mvp         = camera->get_projection() * camera->get_view() * m_node->get_model_mat();
     uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
   }
 
@@ -52,11 +52,9 @@ namespace mg1
 
   void Torus::handle_event(esp::MouseMovedEvent& event, float dt)
   {
-    auto camera = Scene::get_current_camera();
-
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
     {
-      m_node->translate(glm::vec3(2 * dt * camera->get_delta_move(), 0));
+      m_node->translate(glm::vec3(2 * dt * event.get_dx(), 2 * dt * event.get_dy(), 0));
     }
 
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
@@ -65,17 +63,17 @@ namespace mg1
       {
       case 0:
       {
-        m_node->rotate_x(2 * dt * camera->get_delta_move().y);
+        m_node->rotate_x(2 * dt * event.get_dy());
         break;
       }
       case 1:
       {
-        m_node->rotate_y(2 * dt * camera->get_delta_move().x);
+        m_node->rotate_y(2 * dt * event.get_dx());
         break;
       }
       case 2:
       {
-        m_node->rotate_z(2 * dt * glm::dot(camera->get_delta_move(), { 1, 1 }) / 2);
+        m_node->rotate_z(2 * dt * glm::dot(glm::vec2{ event.get_dx(), event.get_dy() }, { 1, 1 }) / 2);
         break;
       }
       default:

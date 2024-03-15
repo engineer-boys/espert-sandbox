@@ -46,7 +46,7 @@ namespace advance_rendering_example
   class SkyBoxLayer : public Layer
   {
    private:
-    Camera m_camera{};
+    FpsCamera m_camera{};
 
     struct
     {

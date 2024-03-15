@@ -21,7 +21,7 @@ namespace advance_model
   class AdvanceModelLayer : public Layer
   {
    private:
-    Camera m_camera{};
+    FpsCamera m_camera{};
     std::shared_ptr<Scene> m_scene;
     std::shared_ptr<Node> m_flight_helmet_node;
 

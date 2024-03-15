@@ -1,4 +1,7 @@
+#include <memory>
+
 #include "CadCamLayer.hh"
+#include "CoordinateSystemLayer.hh"
 #include "CursorLayer.hh"
 #include "Gui/GuiLayer.hh"
 #include "ObjectLayer.hh"
@@ -20,14 +23,11 @@ namespace mg1
 
     // create scene
     {
-      m_scene = Scene::create();
-      m_scene->add_camera(std::make_shared<Camera>());
+      m_camera = std::make_shared<OrbitCamera>();
+      m_scene  = Scene::create();
+      m_scene->add_camera(m_camera);
 
       auto camera = m_scene->get_camera(0);
-      //      camera->set_position(glm::vec3{ 0.f, 1.f, 5.f });
-      //      camera->look_at(glm::vec3{ 0.f, 0.f, 0.f });
-      camera->set_move_speed(3.f);
-      camera->set_sensitivity(4.f);
       camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
       m_scene->set_current_camera(camera.get());
     }
@@ -37,6 +37,7 @@ namespace mg1
       m_children.emplace_back(new GuiLayer());
       m_children.emplace_back(new CursorLayer());
       m_children.emplace_back(new ObjectLayer(m_scene.get()));
+      m_children.emplace_back(new CoordinateSystemLayer());
     }
   }
 
@@ -79,5 +80,18 @@ namespace mg1
     {
       child->handle_event(event, dt);
     }
+
+    Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(CadCamLayer::mouse_moved_event_handler, dt));
+  }
+
+  bool CadCamLayer::mouse_moved_event_handler(MouseMovedEvent& event, float dt)
+  {
+    if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_LEFT))
+    {
+      m_camera->rotate(event.get_dx() * dt / 2, event.get_dy() * dt / 2);
+    }
+    if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_RIGHT)) { m_camera->zoom(event.get_dy() * dt / 2); }
+
+    return true;
   }
 } // namespace mg1
