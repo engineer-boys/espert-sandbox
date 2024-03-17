@@ -1,5 +1,5 @@
 #include "Examples/Examples.hh"
-#include "MG1/CadCamLayer.hh"
+#include "MG1/Layers/CadLayer.hh"
 
 #include "ClientPoint.hh"
 
@@ -10,7 +10,7 @@ class SandBoxApp : public esp::EspApplication
   SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = false, .m_use_gui = true })
   {
     // push_layer(new esp_sbx::InputLayer());
-    push_layer(new mg1::CadCamLayer());
+    push_layer(new mg1::CadLayer());
 
     /* ----------- Select 1 example ----------- */
     // push_layer(new my_game::ExampleLayer());
