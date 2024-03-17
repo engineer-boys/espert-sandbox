@@ -13,6 +13,8 @@ namespace mg1
 
     ObjectInfo(uint32_t id, const std::string& name) : m_id{ id }, m_name{ name }, m_is_selected{ false } {}
 
+    inline void select() { m_is_selected = true; }
+    inline void unselect() { m_is_selected = false; }
     virtual void render() = 0;
   };
 

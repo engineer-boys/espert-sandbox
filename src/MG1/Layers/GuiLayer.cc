@@ -3,7 +3,20 @@
 
 namespace mg1
 {
-  GuiLayer::GuiLayer() { m_objects_list_box = std::make_unique<GuiObjectInfoSelectableListBox>(GuiLabel::objects); }
+  GuiLayer::GuiLayer()
+  {
+    m_actions_combo = std::make_unique<GuiSelectableCombo>(
+        GuiLabel::actions,
+        GuiSelectables{ std::make_shared<GuiSelectable>(GuiLabel::action_none, true),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_rot_ox, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_rot_oy, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_rot_oz, false) });
+    m_objects_list_box = std::make_unique<GuiObjectInfoSelectableListBox>(
+        GuiLabel::objects,
+        GuiSelectables{
+            std::make_shared<GuiSelectable>(GuiLabel::object_none, true),
+        });
+  }
 
   void GuiLayer::update(float dt)
   {
@@ -17,8 +30,9 @@ namespace mg1
 
     ImGui::Text("FPS: %.1f", 1.f / dt);
 
-    ImGui::SeparatorText("Rotation axis:");
-    // update_param(*m_rotation_axis_field);
+    ImGui::SeparatorText("Actions:");
+    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - 15);
+    m_actions_combo->render();
 
     ImGui::SeparatorText("Objects:");
     m_objects_list_box->render();

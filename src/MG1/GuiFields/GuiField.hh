@@ -19,6 +19,8 @@ namespace mg1
     GuiField(const std::string& label, T value) : m_label{ label }, m_value{ value } {}
     virtual ~GuiField() {}
 
+    inline std::string get_label() { return m_label; }
+
     virtual void render() = 0;
     virtual void create_and_post_event() {}
     virtual inline bool changed() { return ImGui::IsItemDeactivatedAfterEdit(); }

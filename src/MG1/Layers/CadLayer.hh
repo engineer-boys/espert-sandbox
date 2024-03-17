@@ -31,7 +31,7 @@ namespace mg1
 
    private:
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
-    bool gui_selectable_changed_event_handler(GuiSelectableListBoxAnySelectedEvent& event);
+    bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
   };
 } // namespace mg1
 

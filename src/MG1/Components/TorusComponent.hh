@@ -6,6 +6,7 @@
 #include "MG1/Common/TorusInit.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
 #include "MG1/Interfaces/Interfaces.hh"
+#include "MG1/Utils.hh"
 
 using namespace esp;
 
@@ -34,7 +35,7 @@ namespace mg1
     inline std::shared_ptr<Node> get_node() { return m_node; }
     inline TorusInfo* get_info() { return m_info.get(); }
 
-    void handle_event(MouseMovedEvent& event, float dt, int rotation_axis);
+    void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);
     void handle_event(MouseScrolledEvent& event);
   };
 } // namespace mg1

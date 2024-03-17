@@ -62,25 +62,18 @@ namespace mg1
 
   void ObjectLayer::handle_event(esp::Event& event, float dt)
   {
-    Event::try_handler<GuiInputIntChangedEvent>(
-        event,
-        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_int_param_changed_event_handler));
     Event::try_handler<GuiMouseStateChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_mouse_state_changed_event_handler));
+    Event::try_handler<GuiSelectableChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_selectable_changed_event_handler));
 
     if (m_handle_mouse)
     {
       Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_moved_event_handler, dt));
       Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_scrolled_event_handler));
     }
-  }
-
-  bool ObjectLayer::gui_int_param_changed_event_handler(GuiInputIntChangedEvent& event)
-  {
-    if (event.label_equals(GuiLabel::rotation_axis)) { m_rotation_axis = event.get_value(); }
-
-    return true;
   }
 
   bool ObjectLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
@@ -107,6 +100,16 @@ namespace mg1
     {
       if (torus.get_info()->m_is_selected) { torus.handle_event(event); }
     }
+
+    return true;
+  }
+
+  bool ObjectLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
+  {
+    if (event.label_equals(GuiLabel::action_none)) { m_rotation_axis = RotationNone; }
+    if (event.label_equals(GuiLabel::action_rot_ox)) { m_rotation_axis = RotationOX; }
+    if (event.label_equals(GuiLabel::action_rot_oy)) { m_rotation_axis = RotationOY; }
+    if (event.label_equals(GuiLabel::action_rot_oz)) { m_rotation_axis = RotationOZ; }
 
     return true;
   }

@@ -18,6 +18,7 @@ namespace mg1
 
     MouseState m_mouse_state{ GuiNotCaptured };
 
+    std::unique_ptr<GuiSelectableCombo> m_actions_combo;
     std::unique_ptr<GuiObjectInfoSelectableListBox> m_objects_list_box;
 
    public:

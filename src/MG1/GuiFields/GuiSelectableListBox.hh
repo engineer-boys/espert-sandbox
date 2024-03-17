@@ -107,6 +107,12 @@ namespace mg1
         for (auto& selectable : m_value)
         {
           selectable->render();
+
+          if (selectable->changed())
+          {
+            if (!ImGui::GetIO().KeyCtrl) { clear(); }
+            selectable->select();
+          }
         }
 
         ImGui::EndListBox();
@@ -128,6 +134,15 @@ namespace mg1
     {
       GuiSelectableListBoxAnySelectedEvent event{ m_label, is_any_selected() };
       post_event(event);
+    }
+
+   private:
+    void clear()
+    {
+      for (auto& selectable : m_value)
+      {
+        selectable->unselect();
+      }
     }
   };
 

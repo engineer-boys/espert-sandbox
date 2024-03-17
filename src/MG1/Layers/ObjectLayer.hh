@@ -3,6 +3,7 @@
 
 #include "Espert.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
+#include "MG1/Utils.hh"
 
 using namespace esp;
 
@@ -12,7 +13,7 @@ namespace mg1
   {
    private:
     bool m_handle_mouse{ true };
-    int m_rotation_axis{ 1 };
+    RotationAxis m_rotation_axis{ RotationNone };
 
     Scene* m_scene;
 
@@ -27,8 +28,8 @@ namespace mg1
     virtual void handle_event(Event& event, float dt) override;
 
    private:
-    bool gui_int_param_changed_event_handler(GuiInputIntChangedEvent& event);
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
+    bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
 
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool mouse_scrolled_event_handler(MouseScrolledEvent& event);

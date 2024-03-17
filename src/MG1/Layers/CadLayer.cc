@@ -82,7 +82,7 @@ namespace mg1
     }
 
     Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(CadLayer::mouse_moved_event_handler, dt));
-    Event::try_handler<GuiSelectableListBoxAnySelectedEvent>(
+    Event::try_handler<GuiSelectableChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CadLayer::gui_selectable_changed_event_handler));
   }
@@ -100,9 +100,9 @@ namespace mg1
     return true;
   }
 
-  bool CadLayer::gui_selectable_changed_event_handler(GuiSelectableListBoxAnySelectedEvent& event)
+  bool CadLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
-    m_update_camera = !event.get_value();
+    if (event.label_equals(GuiLabel::object_none)) { m_update_camera = event.get_value(); }
 
     return true;
   }
