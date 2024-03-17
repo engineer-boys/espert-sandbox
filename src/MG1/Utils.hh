@@ -40,6 +40,14 @@ namespace mg1
   inline const std::string GuiLabel::action_rot_oy = "Rotate around OY";
   inline const std::string GuiLabel::action_rot_oz = "Rotate around OZ";
 
+  struct ObjectConstants
+  {
+    static const glm::vec3 default_color;
+    static const glm::vec3 selected_color;
+  };
+
+  inline const glm::vec3 ObjectConstants::default_color  = { 1, 1, 1 };
+  inline const glm::vec3 ObjectConstants::selected_color = { 1, 1, 0 };
 } // namespace mg1
 
 #endif // ESPERT_SANDBOX_UTILS_HH

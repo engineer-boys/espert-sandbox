@@ -11,6 +11,7 @@ namespace mg1
       auto uniform_meta_data = EspUniformMetaData::create();
       uniform_meta_data->establish_descriptor_set();
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_VTX_STAGE, sizeof(glm::mat4));
+      uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_FRAG_STAGE, sizeof(glm::vec3));
 
       m_shader = ShaderSystem::acquire("Shaders/MG1/ObjectLayer/shader");
       // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
@@ -47,6 +48,10 @@ namespace mg1
       auto& uniform_manager = model.get_uniform_manager();
       glm::mat4 mvp         = camera->get_projection() * camera->get_view() * torus.get_node()->get_model_mat();
       uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
+
+      glm::vec3 color =
+          torus.get_info()->m_is_selected ? ObjectConstants::selected_color : ObjectConstants::default_color;
+      uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
     }
   }
 
