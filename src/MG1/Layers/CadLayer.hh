@@ -20,6 +20,7 @@ namespace mg1
     std::vector<std::unique_ptr<Layer>> m_children{};
 
     bool m_update_camera{ true };
+    bool m_update_mouse{ true };
 
    public:
     CadLayer();
@@ -32,6 +33,7 @@ namespace mg1
    private:
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
+    bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
   };
 } // namespace mg1
 

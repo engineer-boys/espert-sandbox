@@ -35,7 +35,7 @@ namespace mg1
     // create children layers
     {
       m_children.emplace_back(new GuiLayer());
-      m_children.emplace_back(new CursorLayer());
+      // m_children.emplace_back(new CursorLayer());
       m_children.emplace_back(new ObjectLayer(m_scene.get()));
       m_children.emplace_back(new CoordinateSystemLayer());
     }
@@ -85,11 +85,14 @@ namespace mg1
     Event::try_handler<GuiSelectableChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CadLayer::gui_selectable_changed_event_handler));
+    Event::try_handler<GuiMouseStateChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CadLayer::gui_mouse_state_changed_event_handler));
   }
 
   bool CadLayer::mouse_moved_event_handler(MouseMovedEvent& event, float dt)
   {
-    if (!m_update_camera) { return false; }
+    if (!m_update_camera || !m_update_mouse) { return false; }
 
     if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_LEFT))
     {
@@ -105,5 +108,11 @@ namespace mg1
     if (event.label_equals(GuiLabel::object_none)) { m_update_camera = event.get_value(); }
 
     return true;
+  }
+
+  bool CadLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
+  {
+    m_update_mouse = !(bool)event.get_state();
+    return false;
   }
 } // namespace mg1
