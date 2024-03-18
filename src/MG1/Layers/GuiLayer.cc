@@ -25,7 +25,8 @@ namespace mg1
     if (!EspGui::m_use_gui) return;
 
     EspGui::new_frame();
-    ImGui::SetNextWindowPos(OFFSET, ImGuiCond_Appearing);
+    ImGui::GetStyle().WindowMinSize = MIN_SIZE;
+    ImGui::SetNextWindowPos(INIT_OFFSET, ImGuiCond_Appearing);
     EspGui::begin();
 
     update_mouse_state();

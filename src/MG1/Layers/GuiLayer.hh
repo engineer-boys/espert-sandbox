@@ -14,7 +14,8 @@ namespace mg1
   class GuiLayer : public Layer
   {
    private:
-    static constexpr ImVec2 OFFSET{ 10, 10 };
+    static constexpr ImVec2 MIN_SIZE{ 220, 1 };
+    static constexpr ImVec2 INIT_OFFSET{ 10, 10 };
 
     MouseState m_mouse_state{ GuiNotCaptured };
 
