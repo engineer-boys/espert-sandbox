@@ -114,17 +114,17 @@ namespace mg1
 
   bool ObjectLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
-    if (event.label_equals(GuiLabel::action_none)) { m_rotation_axis = RotationNone; }
-    if (event.label_equals(GuiLabel::action_rot_ox)) { m_rotation_axis = RotationOX; }
-    if (event.label_equals(GuiLabel::action_rot_oy)) { m_rotation_axis = RotationOY; }
-    if (event.label_equals(GuiLabel::action_rot_oz)) { m_rotation_axis = RotationOZ; }
+    if (event == GuiLabel::action_none) { m_rotation_axis = RotationNone; }
+    if (event == GuiLabel::action_rot_ox) { m_rotation_axis = RotationOX; }
+    if (event == GuiLabel::action_rot_oy) { m_rotation_axis = RotationOY; }
+    if (event == GuiLabel::action_rot_oz) { m_rotation_axis = RotationOZ; }
 
     return true;
   }
 
   bool ObjectLayer::gui_button_clicked_event_handler(mg1::GuiButtonClickedEvent& event)
   {
-    if (event.label_equals(GuiLabel::create_torus_button)) { create_torus(/* TODO: get torus initial position */); }
+    if (event == GuiLabel::create_torus_button) { create_torus(/* TODO: get torus initial position */); }
 
     return true;
   }

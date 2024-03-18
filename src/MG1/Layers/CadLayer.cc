@@ -105,7 +105,7 @@ namespace mg1
 
   bool CadLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
-    if (event.label_equals(GuiLabel::object_none)) { m_update_camera = event.get_value(); }
+    if (event == GuiLabel::object_none) { m_update_camera = event.get_value(); }
 
     return true;
   }

@@ -62,14 +62,14 @@ namespace mg1
 
   bool GuiLayer::object_added_event_handler(ObjectAddedEvent& event)
   {
-    if (!event.label_equals(ObjectLabel::object_created_event)) { return false; }
+    if (!(event == ObjectLabel::object_created_event)) { return false; }
     m_objects_list_box->handle_event(event);
     return true;
   }
 
   bool GuiLayer::object_removed_event_handler(mg1::ObjectRemovedEvent& event)
   {
-    if (!event.label_equals(ObjectLabel::object_removed_event)) { return false; }
+    if (!(event == ObjectLabel::object_removed_event)) { return false; }
     m_objects_list_box->handle_event(event);
     return true;
   }

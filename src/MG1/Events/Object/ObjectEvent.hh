@@ -15,10 +15,7 @@ namespace mg1
    public:
     ObjectEvent(const std::string& label) : m_label{ label } {}
 
-    inline bool label_equals(const std::string& second_label)
-    {
-      return m_label == second_label;
-    } // TODO: overload opeartor
+    bool operator==(const std::string& label) { return m_label == label; }
 
     EVENT_CLASS_TYPE(EventTypeLayer)
     EVENT_CLASS_SUBTYPE(Nothing)
