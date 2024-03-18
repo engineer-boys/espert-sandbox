@@ -1,6 +1,7 @@
 #ifndef ESPERT_SANDBOX_GUISELECTABLE_HH
 #define ESPERT_SANDBOX_GUISELECTABLE_HH
 
+#include "GuiButton.hh"
 #include "GuiField.hh"
 #include "MG1/Common/ObjectInfo.hh"
 
@@ -54,8 +55,17 @@ namespace mg1
    private:
     ObjectInfo* m_info;
 
+    std::shared_ptr<GuiButton> m_rename_button;
+    std::shared_ptr<GuiButton> m_delete_button;
+
    public:
-    GuiObjectInfoSelectable(ObjectInfo* info) : GuiSelectable(info->m_name, info->m_is_selected), m_info{ info } {}
+    GuiObjectInfoSelectable(ObjectInfo* info) : GuiSelectable(info->m_name, info->m_is_selected), m_info{ info }
+    {
+      m_rename_button = std::make_shared<GuiButton>("Rename");
+      m_rename_button->set_max_width();
+      m_delete_button = std::make_shared<GuiButton>("Delete");
+      m_delete_button->set_max_width();
+    }
 
     inline void render() override
     {
@@ -65,7 +75,16 @@ namespace mg1
         else { unselect(); }
       }
 
-      if (m_value) { m_info->render(); }
+      if (ImGui::BeginPopupContextItem())
+      {
+        m_changed = true;
+        select();
+        m_info->render();
+        m_rename_button->render();
+        if (m_rename_button->clicked() && !m_info->m_name.empty()) { m_label = m_info->m_name; }
+        m_delete_button->render();
+        ImGui::EndPopup();
+      }
 
       m_prev_selected = m_value;
     }

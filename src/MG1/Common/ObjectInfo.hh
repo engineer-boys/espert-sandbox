@@ -31,26 +31,19 @@ namespace mg1
 
     inline void render() override
     {
-      ImGui::PushID(m_id);
-
-      if (ImGui::TreeNode("Info:"))
-      {
-        ImGui::InputFloat("R", &m_R, 0.05f, 1.0f, "%.2f");
-        if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
-        ImGui::InputFloat("r", &m_r, 0.05f, 1.0f, "%.2f");
-        if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
-        ImGui::InputInt("Density - theta", &m_density_theta, 1, 100);
-        if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
-        ImGui::InputInt("Density - phi", &m_density_phi, 1, 100);
-        if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
-
-        ImGui::TreePop();
-      }
-
-      ImGui::PopID();
+      ImGui::SeparatorText("Info:");
+      ImGui::Spacing();
+      ImGui::InputText("Name", &m_name);
+      ImGui::InputFloat("R", &m_R, 0.05f, 1.0f, "%.2f");
+      if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::InputFloat("r", &m_r, 0.05f, 1.0f, "%.2f");
+      if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::InputInt("Density - theta", &m_density_theta, 1, 100);
+      if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::InputInt("Density - phi", &m_density_phi, 1, 100);
+      if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::Spacing();
     }
-
-    inline bool needs_reconstruction() { return m_dirty; }
   };
 } // namespace mg1
 
