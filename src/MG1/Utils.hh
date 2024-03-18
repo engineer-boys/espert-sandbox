@@ -30,7 +30,7 @@ namespace mg1
     static const std::string action_rot_oy;
     static const std::string action_rot_oz;
     static const std::string create_torus_button;
-    static const std::string delete_object_button;
+    static const std::string remove_object_button;
     static const std::string rename_object_button;
   };
 
@@ -43,7 +43,7 @@ namespace mg1
   inline const std::string GuiLabel::action_rot_oy        = "Rotate around OY";
   inline const std::string GuiLabel::action_rot_oz        = "Rotate around OZ";
   inline const std::string GuiLabel::create_torus_button  = "Create torus";
-  inline const std::string GuiLabel::delete_object_button = "Delete";
+  inline const std::string GuiLabel::remove_object_button = "Remove";
   inline const std::string GuiLabel::rename_object_button = "Rename";
 
   struct ObjectLabel

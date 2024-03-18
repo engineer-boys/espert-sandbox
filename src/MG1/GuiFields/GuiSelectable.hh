@@ -56,15 +56,15 @@ namespace mg1
     ObjectInfo* m_info;
 
     std::shared_ptr<GuiButton> m_rename_button;
-    std::shared_ptr<GuiButton> m_delete_button;
+    std::shared_ptr<GuiButton> m_remove_button;
 
    public:
-    GuiObjectInfoSelectable(ObjectInfo* info) : GuiSelectable(info->m_name, info->m_is_selected), m_info{ info }
+    GuiObjectInfoSelectable(ObjectInfo* info) : GuiSelectable(info->m_name, info->selected()), m_info{ info }
     {
       m_rename_button = std::make_shared<GuiButton>(GuiLabel::rename_object_button);
       m_rename_button->set_max_width();
-      m_delete_button = std::make_shared<GuiButton>(GuiLabel::delete_object_button);
-      m_delete_button->set_max_width();
+      m_remove_button = std::make_shared<GuiButton>(GuiLabel::remove_object_button);
+      m_remove_button->set_max_width();
     }
 
     inline void render() override
@@ -82,8 +82,8 @@ namespace mg1
         m_info->render();
         m_rename_button->render();
         if (m_rename_button->clicked() && !m_info->m_name.empty()) { m_label = m_info->m_name; }
-        m_delete_button->render();
-        if (m_delete_button->clicked()) { m_info->remove(); }
+        m_remove_button->render();
+        if (m_remove_button->clicked()) { m_info->remove(); }
         ImGui::EndPopup();
       }
 

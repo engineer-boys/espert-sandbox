@@ -7,19 +7,36 @@ namespace mg1
 {
   struct ObjectInfo
   {
+   public:
+    enum class ObjectState
+    {
+      None     = 0,
+      Selected = 1,
+      Removed  = 2
+    };
+
+   private:
+    ObjectState m_state;
+
+   public:
     uint32_t m_id;
     std::string m_name;
-    bool m_is_selected; // TODO: add enum state
-    bool m_is_removed;
 
-    ObjectInfo(uint32_t id, const std::string& name) :
-        m_id{ id }, m_name{ name }, m_is_selected{ false }, m_is_removed{ false }
+    ObjectInfo(uint32_t id, const std::string& name) : m_id{ id }, m_name{ name }, m_state{ ObjectState::None } {}
+
+    inline void select()
     {
+      if (m_state == ObjectState::None) { m_state = ObjectState::Selected; }
     }
+    inline void unselect()
+    {
+      if (m_state == ObjectState::Selected) { m_state = ObjectState::None; }
+    }
+    inline void remove() { m_state = ObjectState::Removed; }
 
-    inline void select() { m_is_selected = true; }
-    inline void unselect() { m_is_selected = false; }
-    inline void remove() { m_is_removed = true; }
+    inline bool selected() { return m_state == ObjectState::Selected; }
+    inline bool removed() { return m_state == ObjectState::Removed; }
+
     virtual void render() = 0;
   };
 

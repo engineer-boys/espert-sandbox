@@ -29,7 +29,7 @@ namespace mg1
     auto view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
     for (auto&& [entity, torus, model] : view.each())
     {
-      if (torus.get_info()->m_is_removed) { remove_object(torus.get_info()); }
+      if (torus.get_info()->removed()) { remove_object(torus.get_info()); }
       else if (torus.get_info()->m_dirty)
       {
         auto [vertices, indices] = torus.reconstruct();
@@ -50,8 +50,7 @@ namespace mg1
       glm::mat4 mvp         = camera->get_projection() * camera->get_view() * torus.get_node()->get_model_mat();
       uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
 
-      glm::vec3 color =
-          torus.get_info()->m_is_selected ? ObjectConstants::selected_color : ObjectConstants::default_color;
+      glm::vec3 color = torus.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
     }
   }
@@ -96,7 +95,7 @@ namespace mg1
     auto view = m_scene->m_registry.view<TorusComponent>();
     for (auto&& [entity, torus] : view.each())
     {
-      if (torus.get_info()->m_is_selected) { torus.handle_event(event, dt, m_rotation_axis); }
+      if (torus.get_info()->selected()) { torus.handle_event(event, dt, m_rotation_axis); }
     }
 
     return true;
@@ -107,7 +106,7 @@ namespace mg1
     auto view = m_scene->m_registry.view<TorusComponent>();
     for (auto&& [entity, torus] : view.each())
     {
-      if (torus.get_info()->m_is_selected) { torus.handle_event(event); }
+      if (torus.get_info()->selected()) { torus.handle_event(event); }
     }
 
     return true;
