@@ -33,7 +33,11 @@ namespace mg1
 
     inline bool clicked() { return m_clicked; }
 
-    inline void create_and_post_event() override {}
+    inline void create_and_post_event() override
+    {
+      GuiButtonClickedEvent event{ m_label };
+      post_event(event);
+    }
   };
 } // namespace mg1
 

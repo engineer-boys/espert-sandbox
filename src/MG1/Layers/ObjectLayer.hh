@@ -3,6 +3,7 @@
 
 #include "Espert.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
+#include "MG1/Events/Object/ObjectEvents.hh"
 #include "MG1/Utils.hh"
 
 using namespace esp;
@@ -30,11 +31,12 @@ namespace mg1
    private:
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
-
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
+    bool gui_button_clicked_event_handler(GuiButtonClickedEvent& event);
 
-    void create_initial_scene(); // TODO: remove
+    void create_torus(glm::vec3 position = { 0, 0, 0 });
+    void remove_object(ObjectInfo* info);
   };
 }; // namespace mg1
 

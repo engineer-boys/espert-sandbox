@@ -16,6 +16,8 @@ namespace mg1
         GuiSelectables{
             std::make_shared<GuiSelectable>(GuiLabel::object_none, true),
         });
+    m_create_torus_button = std::make_unique<GuiButton>(GuiLabel::create_torus_button);
+    m_create_torus_button->set_max_width();
   }
 
   void GuiLayer::update(float dt)
@@ -36,11 +38,12 @@ namespace mg1
     ImGui::Text("Mouse pos: (%.2f,%.2f)", EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs());
 
     ImGui::SeparatorText("Actions:");
-    ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - 15);
+    ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
     m_actions_combo->render();
 
     ImGui::SeparatorText("Objects:");
     m_objects_list_box->render();
+    m_create_torus_button->render();
 
     EspGui::end();
 
@@ -54,11 +57,19 @@ namespace mg1
   void GuiLayer::handle_event(esp::Event& event, float dt)
   {
     Event::try_handler<ObjectAddedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_added_event_handler));
-    // Event::try_handler<ObjectRemovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_removed_event_handler));
+    Event::try_handler<ObjectRemovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_removed_event_handler));
   }
 
   bool GuiLayer::object_added_event_handler(ObjectAddedEvent& event)
   {
+    if (!event.label_equals(ObjectLabel::object_created_event)) { return false; }
+    m_objects_list_box->handle_event(event);
+    return true;
+  }
+
+  bool GuiLayer::object_removed_event_handler(mg1::ObjectRemovedEvent& event)
+  {
+    if (!event.label_equals(ObjectLabel::object_removed_event)) { return false; }
     m_objects_list_box->handle_event(event);
     return true;
   }

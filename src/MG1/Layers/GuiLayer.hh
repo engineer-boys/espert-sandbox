@@ -20,6 +20,7 @@ namespace mg1
 
     std::unique_ptr<GuiSelectableCombo> m_actions_combo;
     std::unique_ptr<GuiObjectInfoSelectableListBox> m_objects_list_box;
+    std::unique_ptr<GuiButton> m_create_torus_button;
 
    public:
     GuiLayer();
@@ -32,7 +33,7 @@ namespace mg1
     void help_marker(const char* desc);
 
     bool object_added_event_handler(ObjectAddedEvent& event);
-    // bool object_removed_event_handler(ObjectRemovedEvent& event);
+    bool object_removed_event_handler(ObjectRemovedEvent& event);
   };
 } // namespace mg1
 

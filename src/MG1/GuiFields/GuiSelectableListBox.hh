@@ -160,6 +160,15 @@ namespace mg1
       GuiObjectInfoSelectable selectable{ info };
       m_value.push_back(std::make_shared<GuiObjectInfoSelectable>(selectable));
     }
+
+    inline void handle_event(ObjectRemovedEvent& event)
+    {
+      auto found = std::find_if(m_value.begin(),
+                                m_value.end(),
+                                [&](const auto& item) { return item->get_label() == event.get_name(); });
+
+      if (found != m_value.end()) { m_value.erase(found); }
+    }
   };
 } // namespace mg1
 

@@ -29,7 +29,8 @@ namespace mg1
     auto view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
     for (auto&& [entity, torus, model] : view.each())
     {
-      if (torus.get_info()->m_dirty)
+      if (torus.get_info()->m_is_removed) { remove_object(torus.get_info()); }
+      else if (torus.get_info()->m_dirty)
       {
         auto [vertices, indices] = torus.reconstruct();
         model.get_model().set_vertex_buffer(vertices);
@@ -60,7 +61,9 @@ namespace mg1
     static bool temp = true;
     if (temp)
     {
-      create_initial_scene();
+      // initial scene
+      create_torus({ 2, 0, -5 });
+      create_torus({ -2, 0, 5 });
       temp = false;
     }
   }
@@ -73,12 +76,13 @@ namespace mg1
     Event::try_handler<GuiSelectableChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_selectable_changed_event_handler));
-
     if (m_handle_mouse)
     {
       Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_moved_event_handler, dt));
       Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_scrolled_event_handler));
     }
+    Event::try_handler<GuiButtonClickedEvent>(event,
+                                              ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_button_clicked_event_handler));
   }
 
   bool ObjectLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
@@ -119,65 +123,39 @@ namespace mg1
     return true;
   }
 
-  void ObjectLayer::create_initial_scene()
+  bool ObjectLayer::gui_button_clicked_event_handler(mg1::GuiButtonClickedEvent& event)
   {
-    {
-      auto entity = m_scene->create_entity();
+    if (event.label_equals(GuiLabel::create_torus_button)) { create_torus(/* TODO: get torus initial position */); }
 
-      entity->add_component<TorusComponent>(entity->get_id());
-      auto& torus = entity->get_component<TorusComponent>();
+    return true;
+  }
 
-      auto [vertices, indices] = torus.reconstruct();
-      auto model               = std::make_shared<Model>(vertices,
-                                           indices,
-                                           std::vector<std::shared_ptr<EspTexture>>{},
-                                           TorusInit::S_MODEL_PARAMS);
+  void ObjectLayer::create_torus(glm::vec3 position)
+  {
+    auto entity = m_scene->create_entity();
 
-      entity->add_component<ModelComponent>(model, m_shader);
+    entity->add_component<TorusComponent>(entity->get_id());
+    auto& torus = entity->get_component<TorusComponent>();
 
-      torus.get_node()->attach_entity(entity);
-      torus.get_node()->translate({ 2, 0, -5 });
+    auto [vertices, indices] = torus.reconstruct();
+    auto model               = std::make_shared<Model>(vertices,
+                                         indices,
+                                         std::vector<std::shared_ptr<EspTexture>>{},
+                                         TorusInit::S_MODEL_PARAMS);
 
-      m_scene->get_root().add_child(torus.get_node());
-    }
+    entity->add_component<ModelComponent>(model, m_shader);
 
-    {
-      auto entity = m_scene->create_entity();
+    torus.get_node()->attach_entity(entity);
+    torus.get_node()->translate(position);
 
-      entity->add_component<TorusComponent>(entity->get_id());
-      auto& torus = entity->get_component<TorusComponent>();
+    m_scene->get_root().add_child(torus.get_node());
+  }
 
-      auto [vertices, indices] = torus.reconstruct();
-      auto model               = std::make_shared<Model>(vertices,
-                                           indices,
-                                           std::vector<std::shared_ptr<EspTexture>>{},
-                                           TorusInit::S_MODEL_PARAMS);
-
-      entity->add_component<ModelComponent>(model, m_shader);
-
-      torus.get_node()->attach_entity(entity);
-
-      m_scene->get_root().add_child(torus.get_node());
-    }
-
-    {
-      auto entity = m_scene->create_entity();
-
-      entity->add_component<TorusComponent>(entity->get_id());
-      auto& torus = entity->get_component<TorusComponent>();
-
-      auto [vertices, indices] = torus.reconstruct();
-      auto model               = std::make_shared<Model>(vertices,
-                                           indices,
-                                           std::vector<std::shared_ptr<EspTexture>>{},
-                                           TorusInit::S_MODEL_PARAMS);
-
-      entity->add_component<ModelComponent>(model, m_shader);
-
-      torus.get_node()->attach_entity(entity);
-      torus.get_node()->translate({ -2, 0, 5 });
-
-      m_scene->get_root().add_child(torus.get_node());
-    }
+  void ObjectLayer::remove_object(ObjectInfo* info)
+  {
+    EspJob::done_all_jobs();
+    m_scene->destroy_entity(info->m_id);
+    ObjectRemovedEvent event{ info->m_name };
+    post_event(event);
   }
 } // namespace mg1
