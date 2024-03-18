@@ -29,6 +29,11 @@ namespace mg1
     update_mouse_state();
 
     ImGui::Text("FPS: %.1f", 1.f / dt);
+    ImGui::Spacing();
+    glm::vec3 pos = Scene::get_current_camera()->get_position();
+    ImGui::Text("Camera pos: (%.2f,%.2f,%.2f)", pos.x, pos.y, pos.z);
+    ImGui::Spacing();
+    ImGui::Text("Mouse pos: (%.2f,%.2f)", EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs());
 
     ImGui::SeparatorText("Actions:");
     ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - 15);
@@ -61,7 +66,7 @@ namespace mg1
   void GuiLayer::update_mouse_state()
   {
     bool mouse_captured = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
-    if (!mouse_captured) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
+    // if (!mouse_captured) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
     if (m_mouse_state != mouse_captured)
     {
       m_mouse_state = (MouseState)mouse_captured;
