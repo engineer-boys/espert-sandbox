@@ -11,15 +11,11 @@ namespace mg1
   class CursorLayer : public Layer
   {
    private:
-    struct CursorParams
-    {
-      alignas(16) float m_cursor_size;
-      alignas(16) glm::vec3 m_cursor_color;
-      float m_aspect_ratio;
-    };
-
     std::shared_ptr<EspShader> m_shader;
     std::unique_ptr<EspUniformManager> m_uniform_manager;
+
+    std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
+    std::unique_ptr<EspIndexBuffer> m_index_buffer;
 
     bool m_update{ true };
 

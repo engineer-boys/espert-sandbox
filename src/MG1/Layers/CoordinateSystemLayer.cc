@@ -3,13 +3,13 @@
 #define GRID_THRESHOLD 30
 #define GRID_SCALE     3
 
-struct PosColVertex
+struct Pos2ColVertex
 {
   glm::vec2 m_pos;
   glm::vec3 m_col;
 };
 
-static void generate_grid(std::vector<PosColVertex>& vertices, std::vector<uint32_t>& indices);
+static void generate_grid(std::vector<Pos2ColVertex>& vertices, std::vector<uint32_t>& indices);
 
 namespace mg1
 {
@@ -25,11 +25,11 @@ namespace mg1
       m_shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
       // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts(
-          { VTX_LAYOUT(sizeof(PosColVertex),
+          { VTX_LAYOUT(sizeof(Pos2ColVertex),
                        0,
                        ESP_VERTEX_INPUT_RATE_VERTEX,
-                       ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(PosColVertex, m_pos)),
-                       ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(PosColVertex, m_col))) });
+                       ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32_SFLOAT, offsetof(Pos2ColVertex, m_pos)),
+                       ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Pos2ColVertex, m_col))) });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
 
@@ -37,23 +37,22 @@ namespace mg1
       m_uniform_manager->build();
     }
 
-    std::vector<PosColVertex> vertices{};
+    std::vector<Pos2ColVertex> vertices{};
     std::vector<uint32_t> indices{};
     generate_grid(vertices, indices);
-    m_vertex_buffer = EspVertexBuffer::create(vertices.data(), sizeof(PosColVertex), vertices.size());
+    m_vertex_buffer = EspVertexBuffer::create(vertices.data(), sizeof(Pos2ColVertex), vertices.size());
     m_index_buffer  = EspIndexBuffer::create(indices.data(), indices.size());
   }
 
   void CoordinateSystemLayer::update(float dt)
   {
+    auto camera  = Scene::get_current_camera();
+    glm::mat4 vp = camera->get_projection() * camera->get_view();
+
+    m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &vp);
+
     m_shader->attach();
-
-    auto camera          = Scene::get_current_camera();
-    glm::mat4 projection = camera->get_projection() * camera->get_view();
-
-    m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &projection);
     m_uniform_manager->attach();
-
     m_vertex_buffer->attach();
     m_index_buffer->attach();
 
@@ -61,13 +60,13 @@ namespace mg1
   }
 } // namespace mg1
 
-static void generate_grid(std::vector<PosColVertex>& vertices, std::vector<uint32_t>& indices)
+static void generate_grid(std::vector<Pos2ColVertex>& vertices, std::vector<uint32_t>& indices)
 {
   for (int i = 0; i < GRID_THRESHOLD; i++)
   {
     for (int j = 0; j < GRID_THRESHOLD; j++)
     {
-      PosColVertex v{};
+      Pos2ColVertex v{};
       v.m_pos = { i - GRID_THRESHOLD / 2, j - GRID_THRESHOLD / 2 };
       v.m_col = { 1, 1, 1 };
 
@@ -111,7 +110,7 @@ static void generate_grid(std::vector<PosColVertex>& vertices, std::vector<uint3
   int offset = vertices.size();
   for (int i = 0; i < GRID_THRESHOLD; i++)
   {
-    PosColVertex v{};
+    Pos2ColVertex v{};
     v.m_pos = { i - GRID_THRESHOLD / 2, 0 };
     v.m_col = { 1, 0, 0 };
 
@@ -131,7 +130,7 @@ static void generate_grid(std::vector<PosColVertex>& vertices, std::vector<uint3
   offset = vertices.size();
   for (int i = 0; i < GRID_THRESHOLD; i++)
   {
-    PosColVertex v{};
+    Pos2ColVertex v{};
     v.m_pos = { 0, i - GRID_THRESHOLD / 2 };
     v.m_col = { 0, 0, 1 };
 

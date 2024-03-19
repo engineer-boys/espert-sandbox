@@ -35,7 +35,7 @@ namespace mg1
     // create children layers
     {
       m_children.emplace_back(new GuiLayer());
-      // m_children.emplace_back(new CursorLayer());
+      m_children.emplace_back(new CursorLayer());
       m_children.emplace_back(new ObjectLayer(m_scene.get()));
       m_children.emplace_back(new CoordinateSystemLayer());
     }
