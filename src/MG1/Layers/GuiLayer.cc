@@ -1,5 +1,5 @@
 #include "GuiLayer.hh"
-#include "MG1/Common/TorusInit.hh"
+#include "MG1/Common/InitInfo.hh"
 
 namespace mg1
 {

@@ -1,5 +1,5 @@
 #include "CursorLayer.hh"
-#include "MG1/Common/CursorInit.hh"
+#include "MG1/Common/InitInfo.hh"
 
 namespace mg1
 {
@@ -15,7 +15,7 @@ namespace mg1
       m_shader = ShaderSystem::acquire("Shaders/MG1/CursorLayer/shader");
       m_shader->set_rasterizer_settings(
           { .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE, .m_line_width = 5.f });
-      // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ CursorInit::S_MODEL_PARAMS.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();

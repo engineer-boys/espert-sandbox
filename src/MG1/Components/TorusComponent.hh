@@ -2,8 +2,8 @@
 #define ESPERT_SANDBOX_TORUSCOMPONENT_HH
 
 #include "Espert.hh"
+#include "MG1/Common/InitInfo.hh"
 #include "MG1/Common/ObjectInfo.hh"
-#include "MG1/Common/TorusInit.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
 #include "MG1/Interfaces/Interfaces.hh"
 #include "MG1/Utils.hh"

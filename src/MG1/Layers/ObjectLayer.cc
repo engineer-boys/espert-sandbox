@@ -1,5 +1,5 @@
 #include "ObjectLayer.hh"
-#include "MG1/Common/TorusInit.hh"
+#include "MG1/Common/InitInfo.hh"
 #include "MG1/Components/Components.hh"
 
 namespace mg1
@@ -14,7 +14,7 @@ namespace mg1
       uniform_meta_data->add_buffer_uniform(EspUniformShaderStage::ESP_FRAG_STAGE, sizeof(glm::vec3));
 
       m_shader = ShaderSystem::acquire("Shaders/MG1/ObjectLayer/shader");
-      // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
+      m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ TorusInit::S_MODEL_PARAMS.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });

@@ -1,7 +1,7 @@
 #include <memory>
 
 #include "CadLayer.hh"
-#include "CoordinateSystemLayer.hh"
+#include "CoordinateSystemGridLayer.hh"
 #include "CursorLayer.hh"
 #include "GuiLayer.hh"
 #include "ObjectLayer.hh"
@@ -37,7 +37,7 @@ namespace mg1
       m_children.emplace_back(new GuiLayer());
       m_children.emplace_back(new CursorLayer(m_scene.get()));
       m_children.emplace_back(new ObjectLayer(m_scene.get()));
-      m_children.emplace_back(new CoordinateSystemLayer());
+      m_children.emplace_back(new CoordinateSystemGridLayer(m_scene.get()));
     }
   }
 
@@ -51,16 +51,15 @@ namespace mg1
 
   void CadLayer::update(float dt)
   {
+    for (auto& child : m_children)
+    {
+      child->update(dt);
+    }
+
     m_final_render_plan->begin_plan();
     {
-      for (auto& child : m_children)
-      {
-        child->update(dt);
-      }
-
-      m_scene->draw();
-
       if (EspGui::m_use_gui) { EspGui::render(); }
+      m_scene->draw();
     }
     m_final_render_plan->end_plan();
     m_depth_block->clear();
