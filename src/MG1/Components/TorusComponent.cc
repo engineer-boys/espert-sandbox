@@ -7,10 +7,8 @@ static std::vector<uint32_t> generate_torus_indices(int num_segments_theta, int 
 namespace mg1
 {
   TorusComponent::TorusComponent(uint32_t id, float R, float r, int density_theta, int density_phi) :
-      m_id{ id }, m_name{ "Torus " + std::to_string(m_id) }
+      IComponent(id), m_name{ "Torus " + std::to_string(m_id) }
   {
-    m_node = Node::create();
-
     m_info                  = std::make_shared<TorusInfo>(m_id, m_name);
     m_info->m_R             = R;
     m_info->m_r             = r;

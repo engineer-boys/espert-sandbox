@@ -1,46 +1,9 @@
 #include "CursorLayer.hh"
-
-#define CURSOR_SIZE     .5f
-#define CURSOR_COLOR_OX glm::vec3(1, 0, 0)
-#define CURSOR_COLOR_OY glm::vec3(0, 1, 0)
-#define CURSOR_COLOR_OZ glm::vec3(0, 0, 1)
-
-glm::vec3 ray_cast(float x, float y, glm::mat4 view, glm::mat4 projection)
-{
-  glm::vec4 ray_clip  = glm::vec4(x, y, 1.f, 1.f);
-  glm::vec4 ray_eye   = glm::inverse(projection) * ray_clip;
-  glm::vec4 ray_world = glm::inverse(view) * ray_eye;
-  ray_world           = normalize(ray_world);
-
-  return { ray_world.x, ray_world.y, ray_world.z };
-}
-
-struct Plane
-{
-  glm::vec3 n;
-  float D;
-};
-
-glm::vec3 intersect_vector_plane(glm::vec3 start, glm::vec3 dir, Plane p)
-{
-  float denominator = glm::dot(dir, p.n);
-
-  float t = (p.D - glm::dot(start, p.n)) / denominator;
-
-  return start + t * dir;
-}
-
-struct Pos3ColVertex
-{
-  glm::vec3 m_pos;
-  glm::vec3 m_col;
-};
-
-static void generate_cursor(std::vector<Pos3ColVertex>& vertices, std::vector<uint32_t>& indices);
+#include "MG1/Common/CursorInit.hh"
 
 namespace mg1
 {
-  CursorLayer::CursorLayer()
+  CursorLayer::CursorLayer(Scene* scene) : m_scene{ scene }
   {
     // create shader
     {
@@ -53,46 +16,31 @@ namespace mg1
       m_shader->set_rasterizer_settings(
           { .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE, .m_line_width = 5.f });
       // m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
-      m_shader->set_vertex_layouts(
-          { VTX_LAYOUT(sizeof(Pos3ColVertex),
-                       0,
-                       ESP_VERTEX_INPUT_RATE_VERTEX,
-                       ATTR(0, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Pos3ColVertex, m_pos)),
-                       ATTR(1, EspAttrFormat::ESP_FORMAT_R32G32B32_SFLOAT, offsetof(Pos3ColVertex, m_col))) });
+      m_shader->set_vertex_layouts({ CursorInit::S_MODEL_PARAMS.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
-
-      m_uniform_manager = m_shader->create_uniform_manager(0, 0);
-      m_uniform_manager->build();
     }
 
-    std::vector<Pos3ColVertex> vertices{};
-    std::vector<uint32_t> indices{};
-    generate_cursor(vertices, indices);
-    m_vertex_buffer = EspVertexBuffer::create(vertices.data(), sizeof(Pos3ColVertex), vertices.size());
-    m_index_buffer  = EspIndexBuffer::create(indices.data(), indices.size());
+    create_cursor(CursorType::Mouse);
   }
 
   void CursorLayer::update(float dt)
   {
     if (!m_update) return;
 
-    auto camera = Scene::get_current_camera();
-
-    glm::vec3 ray_mouse =
-        ray_cast(EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs(), camera->get_view(), camera->get_projection());
-    glm::vec3 cursor_pos = intersect_vector_plane(camera->get_position(), ray_mouse, { { 0, 1, 0 }, 0 });
-    m_uniform_manager->update_buffer_uniform(0, 0, 0, sizeof(glm::vec3), &cursor_pos);
-
+    auto camera  = Scene::get_current_camera();
     glm::mat4 vp = camera->get_projection() * camera->get_view();
-    m_uniform_manager->update_buffer_uniform(0, 1, 0, sizeof(glm::mat4), &vp);
 
-    m_shader->attach();
-    m_uniform_manager->attach();
-    m_vertex_buffer->attach();
-    m_index_buffer->attach();
+    auto view = m_scene->m_registry.view<CursorComponent, ModelComponent>();
+    for (auto&& [entity, cursor, model] : view.each())
+    {
+      cursor.update();
 
-    EspJob::draw_indexed(m_index_buffer->get_index_count());
+      auto& uniform_manager = model.get_uniform_manager();
+      glm::vec3 cursor_pos  = cursor.get_position();
+      uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::vec3), &cursor_pos);
+      uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::mat4), &vp);
+    }
   }
 
   void CursorLayer::handle_event(esp::Event& event, float dt)
@@ -107,19 +55,24 @@ namespace mg1
     m_update = !(bool)event.get_state();
     return false;
   }
+
+  void CursorLayer::create_cursor(mg1::CursorType type, glm::vec3 position)
+  {
+    auto entity = m_scene->create_entity();
+
+    entity->add_component<CursorComponent>(entity->get_id(), type);
+    auto& cursor = entity->get_component<CursorComponent>();
+
+    auto [vertices, indices] = CursorComponent::construct();
+    auto model               = std::make_shared<Model>(vertices,
+                                         indices,
+                                         std::vector<std::shared_ptr<EspTexture>>{},
+                                         CursorInit::S_MODEL_PARAMS);
+    entity->add_component<ModelComponent>(model, m_shader);
+
+    cursor.get_node()->attach_entity(entity);
+    cursor.get_node()->translate(position);
+
+    m_scene->get_root().add_child(cursor.get_node());
+  }
 } // namespace mg1
-
-static void generate_cursor(std::vector<Pos3ColVertex>& vertices, std::vector<uint32_t>& indices)
-{
-  // OX strip
-  vertices.push_back({ { 0, 0, 0 }, CURSOR_COLOR_OX });
-  vertices.push_back({ { CURSOR_SIZE, 0, 0 }, CURSOR_COLOR_OX });
-  // OZ strip
-  vertices.push_back({ { 0, 0, 0 }, CURSOR_COLOR_OZ });
-  vertices.push_back({ { 0, 0, -CURSOR_SIZE }, CURSOR_COLOR_OZ });
-  // OY strip
-  vertices.push_back({ { 0, 0, 0 }, CURSOR_COLOR_OY });
-  vertices.push_back({ { 0, CURSOR_SIZE, 0 }, CURSOR_COLOR_OY });
-
-  indices = { 0, 1, 0, 2, 3, 2, 4, 5, 4 };
-}

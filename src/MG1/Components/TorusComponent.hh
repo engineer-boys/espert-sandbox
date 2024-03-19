@@ -12,14 +12,10 @@ using namespace esp;
 
 namespace mg1
 {
-  class TorusComponent : IEventable
+  class TorusComponent : public IComponent, public IEventable
   {
    private:
-    uint32_t m_id;
     std::string m_name;
-
-    std::shared_ptr<Node> m_node;
-
     std::shared_ptr<TorusInfo> m_info;
 
    public:
@@ -32,7 +28,6 @@ namespace mg1
 
     std::tuple<std::vector<Vertex>, std::vector<uint32_t>> reconstruct();
 
-    inline std::shared_ptr<Node> get_node() { return m_node; }
     inline TorusInfo* get_info() { return m_info.get(); }
 
     void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);

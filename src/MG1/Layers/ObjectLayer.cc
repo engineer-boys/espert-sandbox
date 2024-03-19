@@ -20,8 +20,6 @@ namespace mg1
       m_shader->set_rasterizer_settings({ .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE });
       m_shader->build_worker();
     }
-
-    // m_all_objects[0] = std::make_shared<Object>("None");
   }
 
   void ObjectLayer::pre_update(float dt)
@@ -141,7 +139,6 @@ namespace mg1
                                          indices,
                                          std::vector<std::shared_ptr<EspTexture>>{},
                                          TorusInit::S_MODEL_PARAMS);
-
     entity->add_component<ModelComponent>(model, m_shader);
 
     torus.get_node()->attach_entity(entity);
