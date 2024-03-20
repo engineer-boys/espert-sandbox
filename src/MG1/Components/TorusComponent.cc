@@ -36,17 +36,17 @@ namespace mg1
       {
       case RotationOX:
       {
-        m_node->rotate_x(dt * event.get_dy());
+        m_node->rotate(dt * event.get_dy(), { 1, 0, 0 });
         break;
       }
       case RotationOY:
       {
-        m_node->rotate_y(dt * event.get_dx());
+        m_node->rotate(dt * event.get_dx(), { 0, 1, 0 });
         break;
       }
       case RotationOZ:
       {
-        m_node->rotate_z(dt * (event.get_dx() + event.get_dy()) / 2);
+        m_node->rotate(dt * (event.get_dx() + event.get_dy()) / 2, { 0, 0, 1 });
         break;
       }
       default:

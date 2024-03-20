@@ -91,6 +91,11 @@ namespace mg1
 
   void GuiLayer::update_mouse_state()
   {
+    if (m_mouse_state == MouseState::GuiCaptured && EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+    {
+      return;
+    }
+
     bool window_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
     // if (!window_hovered) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
     if (m_mouse_state != window_hovered)
