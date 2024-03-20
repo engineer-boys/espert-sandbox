@@ -21,7 +21,8 @@ static std::vector<uint32_t> generate_cursor_indices();
 
 namespace mg1
 {
-  CursorComponent::CursorComponent(uint32_t id, CursorType type, glm::vec3 position) : IComponent(id)
+  CursorComponent::CursorComponent(uint32_t id, CursorType type, glm::vec3 position) :
+      IComponent(id), m_previous_position{ position }
   {
     std::string name;
     switch (type)
@@ -65,7 +66,8 @@ namespace mg1
     auto camera = Scene::get_current_camera();
     glm::vec3 ray_mouse =
         ray_cast(EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs(), camera->get_view(), camera->get_projection());
-    m_info->m_position = intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE);
+    m_previous_position = m_info->m_position;
+    m_info->m_position  = intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE);
   }
 } // namespace mg1
 

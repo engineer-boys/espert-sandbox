@@ -5,6 +5,7 @@
 #include "MG1/Common/InitInfo.hh"
 #include "MG1/Common/ObjectInfo.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
+#include "MG1/Events/Object/ObjectEvents.hh"
 #include "MG1/Interfaces/Interfaces.hh"
 #include "MG1/Utils.hh"
 
@@ -31,6 +32,7 @@ namespace mg1
 
     void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);
     void handle_event(MouseScrolledEvent& event);
+    void handle_event(CursorPosChangedEvent& event);
   };
 } // namespace mg1
 

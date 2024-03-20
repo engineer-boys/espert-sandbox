@@ -81,18 +81,18 @@ namespace mg1
   bool GuiLayer::cursor_pos_changed_event_handler(CursorPosChangedEvent& event)
   {
     if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
-    m_mouse_cursor_pos = event.get_postion();
+    m_mouse_cursor_pos = event.get_position();
 
     return true;
   }
 
   void GuiLayer::update_mouse_state()
   {
-    bool mouse_captured = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
-    // if (!mouse_captured) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
-    if (m_mouse_state != mouse_captured)
+    bool window_hovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+    // if (!window_hovered) { ImGui::SetMouseCursor(ImGuiMouseCursor_None); }
+    if (m_mouse_state != window_hovered)
     {
-      m_mouse_state = (MouseState)mouse_captured;
+      m_mouse_state = (MouseState)window_hovered;
       GuiMouseStateChangedEvent mouse_state_changed_event{ m_mouse_state };
       post_event(mouse_state_changed_event);
     }

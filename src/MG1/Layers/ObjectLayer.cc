@@ -80,6 +80,8 @@ namespace mg1
     }
     Event::try_handler<GuiButtonClickedEvent>(event,
                                               ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_button_clicked_event_handler));
+    Event::try_handler<CursorPosChangedEvent>(event,
+                                              ESP_BIND_EVENT_FOR_FUN(ObjectLayer::cursor_pos_changed_event_handler));
   }
 
   bool ObjectLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
@@ -124,6 +126,20 @@ namespace mg1
   {
     if (event == GuiLabel::create_torus_button) { create_torus(/* TODO: get torus initial position */); }
 
+    return true;
+  }
+
+  bool ObjectLayer::cursor_pos_changed_event_handler(CursorPosChangedEvent& event)
+  {
+    if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
+    m_mouse_cursor_pos = event.get_position();
+
+    auto view = m_scene->m_registry.view<TorusComponent>();
+    for (auto&& [entity, torus] : view.each())
+    {
+      if (torus.get_info()->selected()) { torus.handle_event(event); }
+    }
+    
     return true;
   }
 

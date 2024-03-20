@@ -13,6 +13,7 @@ namespace mg1
   {
    private:
     std::shared_ptr<CursorInfo> m_info;
+    glm::vec3 m_previous_position;
 
    public:
     CursorComponent(uint32_t id, CursorType type, glm::vec3 position = { 0, 0, 0 });
@@ -25,6 +26,7 @@ namespace mg1
     void update();
 
     inline glm::vec3 get_position() { return m_info->m_position; }
+    inline glm::vec3 get_delta_position() { return m_info->m_position - m_previous_position; }
     inline CursorType get_type() { return m_info->m_type; }
     inline bool is_type(CursorType type) { return m_info->m_type == type; }
 

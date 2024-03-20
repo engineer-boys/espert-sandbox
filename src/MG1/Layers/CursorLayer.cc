@@ -34,7 +34,9 @@ namespace mg1
     for (auto&& [entity, cursor, model] : view.each())
     {
       if (!cursor.get_info()->selected()) { cursor.update(); }
-      CursorPosChangedEvent event{ cursor.get_info()->m_type, cursor.get_info()->m_position };
+      CursorPosChangedEvent event{ cursor.get_info()->m_type,
+                                   cursor.get_info()->m_position,
+                                   cursor.get_delta_position() };
       post_event(event);
 
       auto& uniform_manager = model.get_uniform_manager();

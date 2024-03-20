@@ -30,11 +30,6 @@ namespace mg1
 
   void TorusComponent::handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis)
   {
-    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
-    {
-      m_node->translate(glm::vec3(dt * event.get_dx(), -dt * event.get_dy(), 0));
-    }
-
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
     {
       switch (rotation_axis)
@@ -68,6 +63,17 @@ namespace mg1
 
     if (offset_y > 0) { m_node->scale(1.1f); }
     else if (offset_y < 0) { m_node->scale(.9f); }
+  }
+
+  void TorusComponent::handle_event(mg1::CursorPosChangedEvent& event)
+  {
+    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+    {
+      auto d_pos = event.get_delta_position();
+      m_node->translate({ d_pos.x, 0, 0 });
+      if (EspInput::is_key_pressed(GLFW_KEY_Y)) { m_node->translate({ 0, -d_pos.z, 0 }); }
+      if (EspInput::is_key_pressed(GLFW_KEY_Z)) { m_node->translate({ 0, 0, d_pos.z }); }
+    }
   }
 } // namespace mg1
 
