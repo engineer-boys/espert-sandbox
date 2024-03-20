@@ -24,13 +24,25 @@ namespace mg1
 
   void ObjectLayer::pre_update(float dt)
   {
-    auto view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-    for (auto&& [entity, torus, model] : view.each())
+    auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+    for (auto&& [entity, torus, model] : torus_view.each())
     {
       if (torus.get_info()->removed()) { remove_object(torus.get_info()); }
       else if (torus.get_info()->m_dirty)
       {
         auto [vertices, indices] = torus.reconstruct();
+        model.get_model().set_vertex_buffer(vertices);
+        model.get_model().set_index_buffer(indices, 0);
+      }
+    }
+
+    auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+    for (auto&& [entity, point, model] : point_view.each())
+    {
+      if (point.get_info()->removed()) { remove_object(point.get_info()); }
+      else if (point.get_info()->m_dirty)
+      {
+        auto [vertices, indices] = point.reconstruct();
         model.get_model().set_vertex_buffer(vertices);
         model.get_model().set_index_buffer(indices, 0);
       }
@@ -41,14 +53,25 @@ namespace mg1
   {
     auto camera = Scene::get_current_camera();
 
-    auto view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-    for (auto&& [entity, torus, model] : view.each())
+    auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+    for (auto&& [entity, torus, model] : torus_view.each())
     {
       auto& uniform_manager = model.get_uniform_manager();
       glm::mat4 mvp         = camera->get_projection() * camera->get_view() * torus.get_node()->get_model_mat();
       uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
 
       glm::vec3 color = torus.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
+      uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
+    }
+
+    auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+    for (auto&& [entity, point, model] : point_view.each())
+    {
+      auto& uniform_manager = model.get_uniform_manager();
+      glm::mat4 mvp         = camera->get_projection() * camera->get_view() * point.get_node()->get_model_mat();
+      uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
+
+      glm::vec3 color = point.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
     }
   }
@@ -60,7 +83,10 @@ namespace mg1
     {
       // initial scene
       create_torus({ 2, 0, -5 });
-      create_torus({ -2, 0, 5 });
+      create_torus({ -2, 0, -5 });
+      create_point({ 1, 1, -1 });
+      create_point({ 0, 1, -1 });
+      create_point({ -1, 1, -1 });
       first_loop = false;
     }
   }
@@ -134,8 +160,14 @@ namespace mg1
     if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
     m_mouse_cursor_pos = event.get_position();
 
-    auto view = m_scene->m_registry.view<TorusComponent>();
-    for (auto&& [entity, torus] : view.each())
+    auto torus_view = m_scene->m_registry.view<TorusComponent>();
+    for (auto&& [entity, torus] : torus_view.each())
+    {
+      if (torus.get_info()->selected()) { torus.handle_event(event); }
+    }
+
+    auto point_view = m_scene->m_registry.view<PointComponent>();
+    for (auto&& [entity, torus] : point_view.each())
     {
       if (torus.get_info()->selected()) { torus.handle_event(event); }
     }
@@ -161,6 +193,26 @@ namespace mg1
     torus.get_node()->translate(position);
 
     m_scene->get_root().add_child(torus.get_node());
+  }
+
+  void ObjectLayer::create_point(glm::vec3 position)
+  {
+    auto entity = m_scene->create_entity();
+
+    entity->add_component<PointComponent>(entity->get_id());
+    auto& point = entity->get_component<PointComponent>();
+
+    auto [vertices, indices] = point.reconstruct();
+    auto model               = std::make_shared<Model>(vertices,
+                                         indices,
+                                         std::vector<std::shared_ptr<EspTexture>>{},
+                                         TorusInit::S_MODEL_PARAMS);
+    entity->add_component<ModelComponent>(model, m_shader);
+
+    point.get_node()->attach_entity(entity);
+    point.get_node()->translate(position);
+
+    m_scene->get_root().add_child(point.get_node());
   }
 
   void ObjectLayer::remove_object(ObjectInfo* info)

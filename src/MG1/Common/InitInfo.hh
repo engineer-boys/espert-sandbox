@@ -29,6 +29,14 @@ namespace mg1
   };
 
   inline const esp::ModelParams TorusInit::S_MODEL_PARAMS = { .m_position = true };
+
+  struct PointInit
+  {
+    static constexpr float S_R = .1f;
+    static const esp::ModelParams S_MODEL_PARAMS;
+  };
+
+  inline const esp::ModelParams PointInit::S_MODEL_PARAMS = { .m_position = true };
 } // namespace mg1
 
 #endif // ESPERT_SANDBOX_INITINFO_HH

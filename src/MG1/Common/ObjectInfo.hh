@@ -71,7 +71,26 @@ namespace mg1
       ImGui::Spacing();
     };
   };
-  
+
+  struct PointInfo : public ObjectInfo
+  {
+    float m_r;
+
+    bool m_dirty{ false };
+
+    PointInfo(uint32_t id, const std::string& name) : ObjectInfo(id, name) { m_renameable = m_removeable = true; }
+
+    inline void render() override
+    {
+      ImGui::SeparatorText("Info:");
+      ImGui::Spacing();
+      ImGui::InputText("Name", &m_name);
+      ImGui::InputFloat("R", &m_r, 0.05f, 1.0f, "%.2f");
+      if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::Spacing();
+    }
+  };
+
   enum class CursorType
   {
     Object = 0,

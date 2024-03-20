@@ -38,6 +38,7 @@ namespace mg1
     bool cursor_pos_changed_event_handler(CursorPosChangedEvent& event);
 
     void create_torus(glm::vec3 position = { 0, 0, 0 });
+    void create_point(glm::vec3 position = { 0, 0, 0 });
     void remove_object(ObjectInfo* info);
   };
 }; // namespace mg1
