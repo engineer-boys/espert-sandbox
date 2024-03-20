@@ -1,5 +1,6 @@
 #include "CursorLayer.hh"
 #include "MG1/Common/InitInfo.hh"
+#include "MG1/Events/Object/ObjectEvents.hh"
 
 namespace mg1
 {
@@ -20,8 +21,6 @@ namespace mg1
       m_shader->set_worker_layout(std::move(uniform_meta_data));
       m_shader->build_worker();
     }
-
-    create_cursor(CursorType::Mouse);
   }
 
   void CursorLayer::update(float dt)
@@ -34,12 +33,25 @@ namespace mg1
     auto view = m_scene->m_registry.view<CursorComponent, ModelComponent>();
     for (auto&& [entity, cursor, model] : view.each())
     {
-      cursor.update();
+      if (!cursor.get_info()->selected()) { cursor.update(); }
+      CursorPosChangedEvent event{ cursor.get_info()->m_type, cursor.get_info()->m_position };
+      post_event(event);
 
       auto& uniform_manager = model.get_uniform_manager();
       glm::vec3 cursor_pos  = cursor.get_position();
       uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::vec3), &cursor_pos);
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::mat4), &vp);
+    }
+  }
+
+  void CursorLayer::post_update(float dt)
+  {
+    static bool first_loop = true;
+    if (first_loop)
+    {
+      // initial scene
+      create_cursor(CursorType::Mouse);
+      first_loop = false;
     }
   }
 
@@ -53,6 +65,8 @@ namespace mg1
   bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
     m_update = !(bool)event.get_state();
+    if (m_update) { push_cursor(); }
+    else { pop_cursor(); }
     return false;
   }
 
@@ -75,4 +89,23 @@ namespace mg1
 
     m_scene->get_root().add_child(cursor.get_node());
   }
+
+  void CursorLayer::push_cursor()
+  {
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      m_scene->get_root().add_child(cursor.get_node());
+    }
+  }
+
+  void CursorLayer::pop_cursor()
+  {
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      m_scene->get_root().remove_child(cursor.get_node().get());
+    }
+  }
+
 } // namespace mg1

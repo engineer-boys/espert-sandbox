@@ -55,13 +55,13 @@ namespace mg1
 
   void ObjectLayer::post_update(float dt)
   {
-    static bool temp = true;
-    if (temp)
+    static bool first_loop = true;
+    if (first_loop)
     {
       // initial scene
       create_torus({ 2, 0, -5 });
       create_torus({ -2, 0, 5 });
-      temp = false;
+      first_loop = false;
     }
   }
 

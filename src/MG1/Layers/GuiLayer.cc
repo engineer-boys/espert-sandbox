@@ -1,5 +1,4 @@
 #include "GuiLayer.hh"
-#include "MG1/Common/InitInfo.hh"
 
 namespace mg1
 {
@@ -37,6 +36,8 @@ namespace mg1
     ImGui::Text("Camera pos: (%.2f,%.2f,%.2f)", pos.x, pos.y, pos.z);
     ImGui::Spacing();
     ImGui::Text("Mouse pos: (%.2f,%.2f)", EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs());
+    ImGui::Spacing();
+    ImGui::Text("Cursor pos: (%.2f,%.2f,%.2f)", m_mouse_cursor_pos.x, m_mouse_cursor_pos.y, m_mouse_cursor_pos.z);
 
     ImGui::SeparatorText("Actions:");
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -59,6 +60,8 @@ namespace mg1
   {
     Event::try_handler<ObjectAddedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_added_event_handler));
     Event::try_handler<ObjectRemovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(GuiLayer::object_removed_event_handler));
+    Event::try_handler<CursorPosChangedEvent>(event,
+                                              ESP_BIND_EVENT_FOR_FUN(GuiLayer::cursor_pos_changed_event_handler));
   }
 
   bool GuiLayer::object_added_event_handler(ObjectAddedEvent& event)
@@ -72,6 +75,14 @@ namespace mg1
   {
     if (!(event == ObjectLabel::object_removed_event)) { return false; }
     m_objects_list_box->handle_event(event);
+    return true;
+  }
+
+  bool GuiLayer::cursor_pos_changed_event_handler(CursorPosChangedEvent& event)
+  {
+    if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
+    m_mouse_cursor_pos = event.get_postion();
+
     return true;
   }
 

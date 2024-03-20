@@ -22,12 +22,15 @@ namespace mg1
     CursorLayer(Scene* scene);
 
     virtual void update(float dt) override;
+    virtual void post_update(float dt) override;
     virtual void handle_event(Event& event, float dt) override;
 
    private:
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
 
     void create_cursor(CursorType type, glm::vec3 position = { 0, 0, 0 });
+    void push_cursor();
+    void pop_cursor();
   };
 } // namespace mg1
 

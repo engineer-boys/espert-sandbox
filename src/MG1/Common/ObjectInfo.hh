@@ -15,8 +15,10 @@ namespace mg1
       Removed  = 2
     };
 
-   private:
+   protected:
     ObjectState m_state;
+    bool m_renameable{ false };
+    bool m_removeable{ false };
 
    public:
     uint32_t m_id;
@@ -36,6 +38,8 @@ namespace mg1
 
     inline bool selected() { return m_state == ObjectState::Selected; }
     inline bool removed() { return m_state == ObjectState::Removed; }
+    inline bool is_renameable() { return m_renameable; }
+    inline bool is_removeable() { return m_removeable; }
 
     virtual void render() = 0;
   };
@@ -49,7 +53,7 @@ namespace mg1
 
     bool m_dirty{ false };
 
-    TorusInfo(uint32_t id, const std::string& name) : ObjectInfo(id, name) {}
+    TorusInfo(uint32_t id, const std::string& name) : ObjectInfo(id, name) { m_renameable = m_removeable = true; }
 
     inline void render() override
     {
@@ -64,6 +68,36 @@ namespace mg1
       if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
       ImGui::InputInt("Density - phi", &m_density_phi, 1, 100);
       if (ImGui::IsItemDeactivatedAfterEdit()) { m_dirty = true; }
+      ImGui::Spacing();
+    };
+  };
+  
+  enum class CursorType
+  {
+    Object = 0,
+    Mouse  = 1
+  };
+
+  struct CursorInfo : public ObjectInfo
+  {
+    CursorType m_type;
+    glm::vec3 m_position;
+
+   public:
+    CursorInfo(uint32_t id, const std::string& name, CursorType type, glm::vec3 position) :
+        ObjectInfo(id, name), m_type{ type }, m_position{ position }
+    {
+    }
+
+    inline void render() override
+    {
+      ImGui::SeparatorText("Info:");
+      ImGui::Text("Name %s", m_name.c_str());
+      ImGui::Spacing();
+      // ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x / 3);
+      ImGui::InputFloat("x", &m_position.x, 0.05f, 1.0f, "%.2f");
+      ImGui::InputFloat("z", &m_position.z, 0.05f, 1.0f, "%.2f");
+      // ImGui::PopItemWidth();
       ImGui::Spacing();
     }
   };

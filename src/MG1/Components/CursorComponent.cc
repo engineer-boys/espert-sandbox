@@ -1,4 +1,5 @@
 #include "CursorComponent.hh"
+#include "MG1/Events/Object/ObjectEvents.hh"
 
 struct Plane
 {
@@ -20,9 +21,23 @@ static std::vector<uint32_t> generate_cursor_indices();
 
 namespace mg1
 {
-  CursorComponent::CursorComponent(uint32_t id, CursorType type, glm::vec3 position) :
-      IComponent(id), m_position{ position }, m_type{ type }
+  CursorComponent::CursorComponent(uint32_t id, CursorType type, glm::vec3 position) : IComponent(id)
   {
+    std::string name;
+    switch (type)
+    {
+    case CursorType::Object:
+      name = ObjectLabel::object_cursor;
+      break;
+    case CursorType::Mouse:
+      name = ObjectLabel::mouse_cursor;
+      break;
+    }
+
+    m_info = std::make_shared<CursorInfo>(m_id, name, type, position);
+
+    ObjectAddedEvent e{ m_info.get() };
+    post_event(e);
   }
 
   std::tuple<std::vector<Vertex>, std::vector<uint32_t>> CursorComponent::construct()
@@ -35,7 +50,7 @@ namespace mg1
 
   void CursorComponent::update()
   {
-    switch (m_type)
+    switch (m_info->m_type)
     {
     case CursorType::Object:
       break;
@@ -50,7 +65,7 @@ namespace mg1
     auto camera = Scene::get_current_camera();
     glm::vec3 ray_mouse =
         ray_cast(EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs(), camera->get_view(), camera->get_projection());
-    m_position = intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE);
+    m_info->m_position = intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE);
   }
 } // namespace mg1
 

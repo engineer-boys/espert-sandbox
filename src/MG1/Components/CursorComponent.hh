@@ -2,23 +2,17 @@
 #define ESPERT_SANDBOX_CURSORCOMPONENT_HH
 
 #include "Espert.hh"
+#include "MG1/Common/ObjectInfo.hh"
 #include "MG1/Interfaces/Interfaces.hh"
 
 using namespace esp;
 
 namespace mg1
 {
-  enum class CursorType // TODO: (?)
-  {
-    Object = 0,
-    Mouse  = 1
-  };
-  
-  class CursorComponent : public IComponent
+  class CursorComponent : public IComponent, public IEventable
   {
    private:
-    glm::vec3 m_position;
-    CursorType m_type;
+    std::shared_ptr<CursorInfo> m_info;
 
    public:
     CursorComponent(uint32_t id, CursorType type, glm::vec3 position = { 0, 0, 0 });
@@ -26,10 +20,13 @@ namespace mg1
 
     static std::tuple<std::vector<Vertex>, std::vector<uint32_t>> construct();
 
+    inline CursorInfo* get_info() { return m_info.get(); }
+
     void update();
 
-    inline glm::vec3 get_position() { return m_position; }
-    inline bool is_type(CursorType type) { return m_type == type; }
+    inline glm::vec3 get_position() { return m_info->m_position; }
+    inline CursorType get_type() { return m_info->m_type; }
+    inline bool is_type(CursorType type) { return m_info->m_type == type; }
 
    private:
     void update_mouse();

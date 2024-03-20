@@ -15,7 +15,6 @@ namespace mg1
   class TorusComponent : public IComponent, public IEventable
   {
    private:
-    std::string m_name;
     std::shared_ptr<TorusInfo> m_info;
 
    public:

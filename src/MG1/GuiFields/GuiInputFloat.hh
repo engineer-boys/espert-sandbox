@@ -43,7 +43,6 @@ namespace mg1
       post_event(e);
     }
   };
-
 } // namespace mg1
 
 #endif // ESPERT_SANDBOX_GUIINPUTFLOAT_HH

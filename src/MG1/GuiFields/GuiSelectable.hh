@@ -80,10 +80,17 @@ namespace mg1
         m_changed = true;
         select();
         m_info->render();
-        m_rename_button->render();
-        if (m_rename_button->clicked() && !m_info->m_name.empty()) { m_label = m_info->m_name; }
-        m_remove_button->render();
-        if (m_remove_button->clicked()) { m_info->remove(); }
+        if (m_info->is_renameable())
+        {
+          m_rename_button->render();
+          if (m_rename_button->clicked() && !m_info->m_name.empty()) { m_label = m_info->m_name; }
+        }
+        if (m_info->is_removeable())
+        {
+          m_remove_button->render();
+          if (m_remove_button->clicked()) { m_info->remove(); }
+        }
+        
         ImGui::EndPopup();
       }
 
