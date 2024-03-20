@@ -67,8 +67,8 @@ namespace mg1
   bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
     m_update = !(bool)event.get_state();
-    if (m_update) { push_cursor(); }
-    else { pop_cursor(); }
+    //    if (m_update) { push_cursor(); }
+    //    else { pop_cursor(); }
     return false;
   }
 

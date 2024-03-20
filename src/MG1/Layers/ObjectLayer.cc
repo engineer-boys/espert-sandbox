@@ -124,7 +124,7 @@ namespace mg1
 
   bool ObjectLayer::gui_button_clicked_event_handler(mg1::GuiButtonClickedEvent& event)
   {
-    if (event == GuiLabel::create_torus_button) { create_torus(/* TODO: get torus initial position */); }
+    if (event == GuiLabel::create_torus_button) { create_torus(m_mouse_cursor_pos); }
 
     return true;
   }
@@ -139,7 +139,7 @@ namespace mg1
     {
       if (torus.get_info()->selected()) { torus.handle_event(event); }
     }
-    
+
     return true;
   }
 
