@@ -2,6 +2,7 @@
 #define ESPERT_SANDBOX_GUIEVENTS_HH
 
 #include "GuiButtonClickedEvent.hh"
+#include "GuiCheckboxChangedEvent.hh"
 #include "GuiEvent.hh"
 #include "GuiInputFloatChangedEvent.hh"
 #include "GuiInputIntChangedEvent.hh"

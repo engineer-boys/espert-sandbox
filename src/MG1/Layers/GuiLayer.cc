@@ -4,6 +4,7 @@ namespace mg1
 {
   GuiLayer::GuiLayer()
   {
+    m_grid_checkbox = std::make_unique<GuiCheckbox>(GuiLabel::grid_checkbox, true);
     m_actions_combo = std::make_unique<GuiSelectableCombo>(
         GuiLabel::actions,
         GuiSelectables{ std::make_shared<GuiSelectable>(GuiLabel::action_none, true),
@@ -38,6 +39,8 @@ namespace mg1
     ImGui::Text("Mouse pos: (%.2f,%.2f)", EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs());
     ImGui::Spacing();
     ImGui::Text("Cursor pos: (%.2f,%.2f,%.2f)", m_mouse_cursor_pos.x, m_mouse_cursor_pos.y, m_mouse_cursor_pos.z);
+    ImGui::Spacing();
+    m_grid_checkbox->render();
 
     ImGui::SeparatorText("Actions:");
     ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);

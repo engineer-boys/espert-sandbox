@@ -22,6 +22,7 @@ namespace mg1
     MouseState m_mouse_state{ GuiNotCaptured };
     glm::vec3 m_mouse_cursor_pos{ 0, 0, 0 };
 
+    std::unique_ptr<GuiCheckbox> m_grid_checkbox;
     std::unique_ptr<GuiSelectableCombo> m_actions_combo;
     std::unique_ptr<GuiObjectInfoSelectableListBox> m_objects_list_box;
     std::unique_ptr<GuiButton> m_create_torus_button;

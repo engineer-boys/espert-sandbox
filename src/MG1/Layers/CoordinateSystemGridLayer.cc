@@ -39,6 +39,22 @@ namespace mg1
     }
   }
 
+  void CoordinateSystemGridLayer::handle_event(esp::Event& event, float dt)
+  {
+    Event::try_handler<GuiCheckboxChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CoordinateSystemGridLayer::gui_checkbox_changed_event_handler));
+  }
+
+  bool CoordinateSystemGridLayer::gui_checkbox_changed_event_handler(mg1::GuiCheckboxChangedEvent& event)
+  {
+    if (!(event == GuiLabel::grid_checkbox)) { return false; }
+    if (event.get_value()) { push_grid(); }
+    else { pop_grid(); }
+
+    return true;
+  }
+
   void CoordinateSystemGridLayer::create_coordinate_system_grid()
   {
     auto entity = m_scene->create_entity();
@@ -56,5 +72,23 @@ namespace mg1
     cursor.get_node()->attach_entity(entity);
 
     m_scene->get_root().add_child(cursor.get_node());
+  }
+
+  void CoordinateSystemGridLayer::push_grid()
+  {
+    auto view = m_scene->m_registry.view<GridComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      m_scene->get_root().add_child(cursor.get_node());
+    }
+  }
+
+  void CoordinateSystemGridLayer::pop_grid()
+  {
+    auto view = m_scene->m_registry.view<GridComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      m_scene->get_root().remove_child(cursor.get_node().get());
+    }
   }
 } // namespace mg1
