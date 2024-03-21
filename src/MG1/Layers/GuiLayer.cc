@@ -18,6 +18,8 @@ namespace mg1
         });
     m_create_torus_button = std::make_unique<GuiButton>(GuiLabel::create_torus_button);
     m_create_torus_button->set_max_width();
+    m_create_point_button = std::make_unique<GuiButton>(GuiLabel::create_point_button);
+    m_create_point_button->set_max_width();
   }
 
   void GuiLayer::update(float dt)
@@ -49,6 +51,7 @@ namespace mg1
     ImGui::SeparatorText("Objects:");
     m_objects_list_box->render();
     m_create_torus_button->render();
+    m_create_point_button->render();
 
     EspGui::end();
 

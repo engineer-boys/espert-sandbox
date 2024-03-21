@@ -183,6 +183,7 @@ namespace mg1
   bool ObjectLayer::gui_button_clicked_event_handler(mg1::GuiButtonClickedEvent& event)
   {
     if (event == GuiLabel::create_torus_button) { create_torus(m_mouse_cursor_pos); }
+    if (event == GuiLabel::create_point_button) { create_point(m_mouse_cursor_pos); }
 
     return true;
   }
