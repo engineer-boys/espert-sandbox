@@ -62,13 +62,44 @@ namespace mg1
     Event::try_handler<GuiMouseStateChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CursorLayer::gui_mouse_state_changed_event_handler));
+    Event::try_handler<ObjectMassCentreChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CursorLayer::object_mass_centre_changed_event_handler));
   }
 
   bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
-    m_update = !(bool)event.get_state();
+    // m_update = !(bool)event.get_state();
     //    if (m_update) { push_cursor(); }
     //    else { pop_cursor(); }
+    return false;
+  }
+
+  bool CursorLayer::object_mass_centre_changed_event_handler(mg1::ObjectMassCentreChangedEvent& event)
+  {
+    if (!(event == ObjectLabel::object_mass_centre_changed_event)) { return false; }
+
+    bool cursor_exists = false;
+    auto view          = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      if (cursor.is_type(CursorType::Object))
+      {
+        if (event.create())
+        {
+          cursor.get_info()->m_position = event.get_position();
+          cursor_exists                 = true;
+        }
+        else
+        {
+          remove_cursor(cursor.get_info());
+          return false;
+        }
+      }
+    }
+
+    if (!cursor_exists && event.create()) { create_cursor(CursorType::Object, event.get_position()); }
+
     return false;
   }
 
@@ -76,7 +107,7 @@ namespace mg1
   {
     auto entity = m_scene->create_entity();
 
-    entity->add_component<CursorComponent>(entity->get_id(), type);
+    entity->add_component<CursorComponent>(entity->get_id(), type, position);
     auto& cursor = entity->get_component<CursorComponent>();
 
     auto [vertices, indices] = CursorComponent::construct();
@@ -90,6 +121,14 @@ namespace mg1
     cursor.get_node()->translate(position);
 
     m_scene->get_root().add_child(cursor.get_node());
+  }
+
+  void CursorLayer::remove_cursor(mg1::ObjectInfo* info)
+  {
+    EspJob::done_all_jobs();
+    m_scene->destroy_entity(info->m_id);
+    ObjectRemovedEvent event{ info->m_name };
+    post_event(event);
   }
 
   void CursorLayer::push_cursor()

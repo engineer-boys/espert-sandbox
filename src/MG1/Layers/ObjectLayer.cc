@@ -53,6 +53,9 @@ namespace mg1
   {
     auto camera = Scene::get_current_camera();
 
+    glm::vec3 mass_sum   = { 0, 0, 0 };
+    int selected_objects = 0;
+
     auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
     for (auto&& [entity, torus, model] : torus_view.each())
     {
@@ -62,6 +65,12 @@ namespace mg1
 
       glm::vec3 color = torus.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
+
+      if (torus.get_info()->selected())
+      {
+        mass_sum += torus.get_node()->get_translation();
+        selected_objects++;
+      }
     }
 
     auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
@@ -73,6 +82,29 @@ namespace mg1
 
       glm::vec3 color = point.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
+
+      if (point.get_info()->selected())
+      {
+        mass_sum += point.get_node()->get_translation();
+        selected_objects++;
+      }
+    }
+
+    if (selected_objects > 0)
+    {
+      glm::vec3 new_mass_centre = mass_sum / (float)selected_objects;
+      if (new_mass_centre != m_mass_centre)
+      {
+        m_mass_centre = new_mass_centre;
+        ObjectMassCentreChangedEvent event{ true, m_mass_centre };
+        post_event(event);
+      }
+    }
+    else if (m_mass_centre != glm::vec3{ 0, 0, 0 })
+    {
+      ObjectMassCentreChangedEvent event{ false };
+      post_event(event);
+      m_mass_centre = { 0, 0, 0 };
     }
   }
 

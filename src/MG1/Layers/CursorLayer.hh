@@ -4,6 +4,7 @@
 #include "Espert.hh"
 #include "MG1/Components/CursorComponent.hh"
 #include "MG1/Events/Gui/GuiEvents.hh"
+#include "MG1/Events/Object/ObjectEvents.hh"
 
 using namespace esp;
 
@@ -27,8 +28,10 @@ namespace mg1
 
    private:
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
+    bool object_mass_centre_changed_event_handler(ObjectMassCentreChangedEvent& event);
 
     void create_cursor(CursorType type, glm::vec3 position = { 0, 0, 0 });
+    void remove_cursor(ObjectInfo* info);
     void push_cursor();
     void pop_cursor();
   };

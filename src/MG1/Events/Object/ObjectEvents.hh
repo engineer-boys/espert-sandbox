@@ -4,6 +4,7 @@
 #include "CursorPosChangedEvent.hh"
 #include "ObjectAddedEvent.hh"
 #include "ObjectEvent.hh"
+#include "ObjectMassCentreChangedEvent.hh"
 #include "ObjectRemovedEvent.hh"
 
 #endif // ESPERT_SANDBOX_OBJECTEVENTS_HH

@@ -16,6 +16,7 @@ namespace mg1
     bool m_handle_mouse{ true };
     RotationAxis m_rotation_axis{ RotationNone };
     glm::vec3 m_mouse_cursor_pos{ 0, 0, 0 };
+    glm::vec3 m_mass_centre{ 0, 0, 0 };
 
     Scene* m_scene;
 

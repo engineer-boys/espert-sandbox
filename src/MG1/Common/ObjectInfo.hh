@@ -113,10 +113,11 @@ namespace mg1
       ImGui::SeparatorText("Info:");
       ImGui::Text("Name %s", m_name.c_str());
       ImGui::Spacing();
-      // ImGui::PushItemWidth(ImGui::GetContentRegionAvail().x / 3);
-      ImGui::InputFloat("x", &m_position.x, 0.05f, 1.0f, "%.2f");
-      ImGui::InputFloat("z", &m_position.z, 0.05f, 1.0f, "%.2f");
-      // ImGui::PopItemWidth();
+      if (m_type == CursorType::Mouse)
+      {
+        ImGui::InputFloat("x", &m_position.x, 0.05f, 1.0f, "%.2f");
+        ImGui::InputFloat("z", &m_position.z, 0.05f, 1.0f, "%.2f");
+      }
       ImGui::Spacing();
     }
   };
