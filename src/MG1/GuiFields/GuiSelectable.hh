@@ -69,6 +69,7 @@ namespace mg1
 
     inline void render() override
     {
+      m_value = m_info->selected();
       if ((m_changed = ImGui::Selectable(m_label.c_str(), m_value)))
       {
         if (!m_prev_selected) { select(); }
@@ -90,7 +91,7 @@ namespace mg1
           m_remove_button->render();
           if (m_remove_button->clicked()) { m_info->remove(); }
         }
-        
+
         ImGui::EndPopup();
       }
 

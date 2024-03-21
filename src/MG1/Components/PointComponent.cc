@@ -23,6 +23,22 @@ namespace mg1
     return { vertices, indices };
   }
 
+  void PointComponent::check_if_clicked()
+  {
+    if (!EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT)) { return; }
+
+    auto camera = Scene::get_current_camera();
+
+    glm::vec3 translation      = m_node->get_translation();
+    glm::vec4 translation_clip = camera->get_projection() * camera->get_view() * glm::vec4(translation, 1);
+    glm::vec3 translation_hom  = translation_clip / translation_clip.w;
+    if (fabsf(translation_hom.x - EspInput::get_mouse_x_cs()) <= m_info->m_r / 4 &&
+        fabsf(translation_hom.y - EspInput::get_mouse_y_cs()) <= m_info->m_r / 2)
+    {
+      m_info->select();
+    }
+  }
+
   void PointComponent::handle_event(CursorPosChangedEvent& event)
   {
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))

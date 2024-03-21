@@ -83,6 +83,7 @@ namespace mg1
       glm::vec3 color = point.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
 
+      point.check_if_clicked();
       if (point.get_info()->selected())
       {
         mass_sum += point.get_node()->get_translation();
