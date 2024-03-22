@@ -24,6 +24,7 @@ namespace mg1
     inline CursorInfo* get_info() { return m_info.get(); }
 
     void update();
+    void update_when_mouse_pressed();
 
     inline glm::vec3 get_position() { return m_info->m_position; }
     inline glm::vec3 get_delta_position() { return m_info->m_position - m_previous_position; }

@@ -33,7 +33,14 @@ namespace mg1
     auto view = m_scene->m_registry.view<CursorComponent, ModelComponent>();
     for (auto&& [entity, cursor, model] : view.each())
     {
-      if (!cursor.get_info()->selected()) { cursor.update(); }
+      if (!cursor.get_info()->selected())
+      {
+        if (m_update_when_mouse_pressed)
+        {
+          if (!m_gui_captured) { cursor.update_when_mouse_pressed(); }
+        }
+        else { cursor.update(); }
+      }
       CursorPosChangedEvent event{ cursor.get_info()->m_type,
                                    cursor.get_info()->m_position,
                                    cursor.get_delta_position() };
@@ -65,13 +72,24 @@ namespace mg1
     Event::try_handler<ObjectMassCentreChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CursorLayer::object_mass_centre_changed_event_handler));
+    Event::try_handler<GuiSelectableChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CursorLayer::gui_selectable_changed_event_handler));
   }
 
   bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
+    m_gui_captured = (bool)event.get_state();
     // m_update = !(bool)event.get_state();
     //    if (m_update) { push_cursor(); }
     //    else { pop_cursor(); }
+    return false;
+  }
+
+  bool CursorLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
+  {
+    if (event == GuiLabel::action_set_cursor_pos) { m_update_when_mouse_pressed = event.get_value(); }
+
     return false;
   }
 

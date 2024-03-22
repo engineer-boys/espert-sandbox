@@ -7,7 +7,9 @@ class SandBoxApp : public esp::EspApplication
 {
  private:
  public:
-  SandBoxApp() : EspApplication({ .m_title = "My window", .m_disable_cursor = false, .m_use_gui = true })
+  SandBoxApp() :
+      EspApplication(
+          { .m_title = "My window", .m_width = 1920, .m_height = 1080, .m_disable_cursor = false, .m_use_gui = true })
   {
     // push_layer(new esp_sbx::InputLayer());
     push_layer(new mg1::CadLayer());

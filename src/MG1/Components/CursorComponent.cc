@@ -61,6 +61,11 @@ namespace mg1
     }
   }
 
+  void CursorComponent::update_when_mouse_pressed()
+  {
+    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT)) { update(); }
+  }
+
   void CursorComponent::update_mouse()
   {
     auto camera = Scene::get_current_camera();

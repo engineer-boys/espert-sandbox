@@ -130,6 +130,16 @@ namespace mg1
       return false;
     }
 
+    inline int selected_count()
+    {
+      int count = 0;
+      for (auto& selectable : m_value)
+      {
+        if (selectable->is_selected()) { count++; }
+      }
+      return count;
+    }
+
     inline void create_and_post_event() override
     {
       GuiSelectableListBoxAnySelectedEvent event{ m_label, is_any_selected() };
@@ -152,6 +162,12 @@ namespace mg1
     GuiObjectInfoSelectableListBox(const std::string& label, std::vector<std::shared_ptr<GuiSelectable>> value = {}) :
         GuiSelectableListBox(label, value)
     {
+    }
+
+    inline void render() override
+    {
+      if (selected_count() > 1 && m_value[0]->is_selected()) { m_value[0]->unselect(); }
+      GuiSelectableListBox::render();
     }
 
     inline void handle_event(ObjectAddedEvent& event)

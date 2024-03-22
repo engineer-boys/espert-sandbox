@@ -14,6 +14,8 @@ namespace mg1
   {
    private:
     bool m_update{ true };
+    bool m_gui_captured{ false };
+    bool m_update_when_mouse_pressed{ false };
 
     Scene* m_scene;
 
@@ -29,6 +31,7 @@ namespace mg1
    private:
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
     bool object_mass_centre_changed_event_handler(ObjectMassCentreChangedEvent& event);
+    bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
 
     void create_cursor(CursorType type, glm::vec3 position = { 0, 0, 0 });
     void remove_cursor(ObjectInfo* info);
