@@ -24,37 +24,54 @@ namespace mg1
 
   void ObjectLayer::pre_update(float dt)
   {
-    auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-    for (auto&& [entity, torus, model] : torus_view.each())
     {
-      if (torus.get_info()->removed()) { remove_object(torus.get_info()); }
-      else if (torus.get_info()->m_dirty)
+      auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+      for (auto&& [entity, torus, model] : torus_view.each())
       {
-        auto [vertices, indices] = torus.reconstruct();
-        model.get_model().set_vertex_buffer(vertices);
-        model.get_model().set_index_buffer(indices, 0);
+        if (torus.get_info()->removed()) { remove_object(torus.get_node(), torus.get_info()); }
+        else if (torus.get_info()->m_dirty)
+        {
+          auto [vertices, indices] = torus.reconstruct();
+          model.get_model().set_vertex_buffer(vertices);
+          model.get_model().set_index_buffer(indices, 0);
+        }
+      }
+
+      auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+      for (auto&& [entity, point, model] : point_view.each())
+      {
+        if (point.get_info()->removed()) { remove_object(point.get_node(), point.get_info()); }
+        else if (point.get_info()->m_dirty)
+        {
+          auto [vertices, indices] = point.reconstruct();
+          model.get_model().set_vertex_buffer(vertices);
+          model.get_model().set_index_buffer(indices, 0);
+        }
       }
     }
 
-    auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-    for (auto&& [entity, point, model] : point_view.each())
+    // ---
     {
-      if (point.get_info()->removed()) { remove_object(point.get_info()); }
-      else if (point.get_info()->m_dirty)
+      auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+      for (auto&& [entity, torus, model] : torus_view.each())
       {
-        auto [vertices, indices] = point.reconstruct();
-        model.get_model().set_vertex_buffer(vertices);
-        model.get_model().set_index_buffer(indices, 0);
+        if (torus.get_info()->selected()) { try_add_node_to_selected(torus.get_node()); }
+        else { try_remove_node_from_selected(torus.get_node()); }
+      }
+
+      auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+      for (auto&& [entity, point, model] : point_view.each())
+      {
+        if (point.get_info()->selected()) { try_add_node_to_selected(point.get_node()); }
+        else { try_remove_node_from_selected(point.get_node()); }
       }
     }
+    // ---
   }
 
   void ObjectLayer::update(float dt)
   {
     auto camera = Scene::get_current_camera();
-
-    glm::vec3 mass_sum   = { 0, 0, 0 };
-    int selected_objects = 0;
 
     auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
     for (auto&& [entity, torus, model] : torus_view.each())
@@ -65,12 +82,6 @@ namespace mg1
 
       glm::vec3 color = torus.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
-
-      if (torus.get_info()->selected())
-      {
-        mass_sum += torus.get_node()->get_translation();
-        selected_objects++;
-      }
     }
 
     auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
@@ -84,28 +95,6 @@ namespace mg1
       uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
 
       point.check_if_clicked();
-      if (point.get_info()->selected())
-      {
-        mass_sum += point.get_node()->get_translation();
-        selected_objects++;
-      }
-    }
-
-    if (selected_objects > 0)
-    {
-      glm::vec3 new_mass_centre = mass_sum / (float)selected_objects;
-      if (new_mass_centre != m_mass_centre)
-      {
-        m_mass_centre = new_mass_centre;
-        ObjectMassCentreChangedEvent event{ true, m_mass_centre };
-        post_event(event);
-      }
-    }
-    else if (m_mass_centre != glm::vec3{ 0, 0, 0 })
-    {
-      ObjectMassCentreChangedEvent event{ false };
-      post_event(event);
-      m_mass_centre = { 0, 0, 0 };
     }
   }
 
@@ -194,16 +183,20 @@ namespace mg1
     if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
     m_mouse_cursor_pos = event.get_position();
 
-    auto torus_view = m_scene->m_registry.view<TorusComponent>();
-    for (auto&& [entity, torus] : torus_view.each())
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
     {
-      if (torus.get_info()->selected()) { torus.handle_event(event); }
-    }
-
-    auto point_view = m_scene->m_registry.view<PointComponent>();
-    for (auto&& [entity, torus] : point_view.each())
-    {
-      if (torus.get_info()->selected()) { torus.handle_event(event); }
+      if (cursor.is_type(CursorType::Object))
+      {
+        if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+          auto d_pos = event.get_delta_position();
+          cursor.get_node()->translate({ d_pos.x, 0, 0 });
+          if (EspInput::is_key_pressed(GLFW_KEY_Y)) { cursor.get_node()->translate({ 0, -d_pos.z, 0 }); }
+          if (EspInput::is_key_pressed(GLFW_KEY_Z)) { cursor.get_node()->translate({ 0, 0, d_pos.z }); }
+        }
+        break;
+      }
     }
 
     return true;
@@ -249,11 +242,98 @@ namespace mg1
     m_scene->get_root().add_child(point.get_node());
   }
 
-  void ObjectLayer::remove_object(ObjectInfo* info)
+  void ObjectLayer::remove_object(Node* node, ObjectInfo* info)
   {
+    try_remove_node_from_selected(node);
+
     EspJob::done_all_jobs();
+    node->get_parent()->remove_child(node);
     m_scene->destroy_entity(info->m_id);
-    ObjectRemovedEvent event{ info->m_name };
+    ObjectRemovedEvent obj_removed_event{ info->m_name };
+    post_event(obj_removed_event);
+  }
+  void ObjectLayer::try_add_node_to_selected(Node* node)
+  {
+    // check if node is already selected
+    auto found = std::find_if(m_selected.m_nodes.begin(),
+                              m_selected.m_nodes.end(),
+                              [&](const auto& item) { return item == node; });
+    if (found != m_selected.m_nodes.end()) { return; }
+
+    // add node to selected
+    m_selected.m_nodes.push_back(node);
+
+    // update mass centre
+    glm::vec3 mass_sum = { 0, 0, 0 };
+    for (auto& selected : m_selected.m_nodes)
+    {
+      mass_sum += selected->get_translation();
+    }
+    m_selected.m_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
+    ObjectMassCentreChangedEvent event{ true, m_selected.m_mass_centre };
     post_event(event);
+
+    // reattach node
+    Node* cursor_node;
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      if (cursor.is_type(CursorType::Object))
+      {
+        cursor_node = cursor.get_node();
+        break;
+      }
+    }
+
+    if (cursor_node)
+    {
+      auto parent = node->get_parent();
+      parent->add_child(cursor_node);
+      parent->remove_child(node);
+      cursor_node->add_child(node);
+    }
+  }
+
+  void ObjectLayer::try_remove_node_from_selected(Node* node)
+  {
+    // check if node is already selected
+    auto found = std::find_if(m_selected.m_nodes.begin(),
+                              m_selected.m_nodes.end(),
+                              [&](const auto& item) { return item == node; });
+    if (found == m_selected.m_nodes.end()) { return; }
+
+    // add node to selected
+    m_selected.m_nodes.erase(found);
+
+    // update mass centre
+    glm::vec3 mass_sum = { 0, 0, 0 };
+    for (auto& selected : m_selected.m_nodes)
+    {
+      mass_sum += selected->get_translation();
+    }
+    m_selected.m_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
+    ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
+    post_event(event);
+
+    // reattach node
+    Node* cursor_node = nullptr;
+    auto view         = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      if (cursor.is_type(CursorType::Object))
+      {
+        cursor_node = cursor.get_node();
+        break;
+      }
+    }
+
+    if (cursor_node)
+    {
+      auto parent       = cursor_node;
+      auto grand_parent = parent->get_parent();
+      node->translate(parent->get_translation());
+      parent->remove_child(node);
+      grand_parent->add_child(node);
+    }
   }
 } // namespace mg1

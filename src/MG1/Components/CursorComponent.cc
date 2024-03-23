@@ -71,8 +71,9 @@ namespace mg1
     auto camera = Scene::get_current_camera();
     glm::vec3 ray_mouse =
         ray_cast(EspInput::get_mouse_x_cs(), EspInput::get_mouse_y_cs(), camera->get_view(), camera->get_projection());
-    m_previous_position = m_info->m_position;
-    m_info->m_position  = intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE);
+    m_previous_position = m_node->get_translation();
+    m_node->set_translation(intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE));
+    m_info->m_position = m_node->get_translation();
   }
 } // namespace mg1
 

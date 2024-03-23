@@ -26,8 +26,8 @@ namespace mg1
     void update();
     void update_when_mouse_pressed();
 
-    inline glm::vec3 get_position() { return m_info->m_position; }
-    inline glm::vec3 get_delta_position() { return m_info->m_position - m_previous_position; }
+    inline glm::vec3 get_position() { return m_node->get_translation(); }
+    inline glm::vec3 get_delta_position() { return m_node->get_translation() - m_previous_position; }
     inline CursorType get_type() { return m_info->m_type; }
     inline bool is_type(CursorType type) { return m_info->m_type == type; }
 

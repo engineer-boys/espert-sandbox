@@ -16,7 +16,7 @@ namespace mg1
    public:
     IComponent(uint32_t id) : m_id{ id }, m_node{ Node::create() } {}
 
-    inline std::shared_ptr<Node> get_node() { return m_node; }
+    inline Node* get_node() { return m_node.get(); }
   };
 } // namespace mg1
 

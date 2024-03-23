@@ -76,7 +76,7 @@ namespace model_example
       }
 
       m_main_cube_node = Node::create();
-      m_scene->get_root().add_child(m_main_cube_node);
+      // m_scene->get_root().add_child(m_main_cube_node);
       m_main_cube_node->attach_entity(cubes[0]);
       m_main_cube_node->translate({ 0.f, .5f, -4.f });
       m_main_cube_node->scale(.5f);
@@ -86,7 +86,7 @@ namespace model_example
       for (int i = 1; i < CUBES; i++)
       {
         nodes[i] = Node::create();
-        nodes[i - 1]->add_child(nodes[i]);
+        // nodes[i - 1]->add_child(nodes[i]);
         nodes[i]->attach_entity(cubes[i]);
         nodes[i]->translate({ 1.5f / i, 0.f, 0.f });
         nodes[i]->scale(.5f);

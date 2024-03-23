@@ -16,7 +16,12 @@ namespace mg1
     bool m_handle_mouse{ true };
     RotationAxis m_rotation_axis{ RotationNone };
     glm::vec3 m_mouse_cursor_pos{ 0, 0, 0 };
-    glm::vec3 m_mass_centre{ 0, 0, 0 };
+
+    struct
+    {
+      std::vector<Node*> m_nodes{};
+      glm::vec3 m_mass_centre{ 0, 0, 0 };
+    } m_selected;
 
     Scene* m_scene;
 
@@ -40,7 +45,10 @@ namespace mg1
 
     void create_torus(glm::vec3 position = { 0, 0, 0 });
     void create_point(glm::vec3 position = { 0, 0, 0 });
-    void remove_object(ObjectInfo* info);
+    void remove_object(Node* node, ObjectInfo* info);
+
+    void try_add_node_to_selected(Node* node);
+    void try_remove_node_from_selected(Node* node);
   };
 }; // namespace mg1
 

@@ -88,7 +88,7 @@ namespace mg1
     auto view = m_scene->m_registry.view<GridComponent>();
     for (auto&& [entity, cursor] : view.each())
     {
-      m_scene->get_root().remove_child(cursor.get_node().get());
+      m_scene->get_root().remove_child(cursor.get_node());
     }
   }
 } // namespace mg1

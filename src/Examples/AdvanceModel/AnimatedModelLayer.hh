@@ -74,7 +74,7 @@ namespace advance_model
       {
         m_scene             = Scene::create();
         m_cesium_man.m_node = Node::create();
-        m_scene->get_root().add_child(m_cesium_man.m_node);
+        // m_scene->get_root().add_child(m_cesium_man.m_node);
 
         m_camera.set_position(glm::vec3(0.0f, 1.0f, 2.0f));
         m_camera.look_at(glm::vec3(0.0f, 1.2f, 0.0f));

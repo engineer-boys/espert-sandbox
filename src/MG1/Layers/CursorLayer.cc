@@ -97,26 +97,25 @@ namespace mg1
   {
     if (!(event == ObjectLabel::object_mass_centre_changed_event)) { return false; }
 
-    bool cursor_exists = false;
-    auto view          = m_scene->m_registry.view<CursorComponent>();
+    auto view = m_scene->m_registry.view<CursorComponent>();
     for (auto&& [entity, cursor] : view.each())
     {
       if (cursor.is_type(CursorType::Object))
       {
         if (event.create())
         {
-          cursor.get_info()->m_position = event.get_position();
-          cursor_exists                 = true;
+          cursor.get_node()->set_translation(event.get_position(), action::ESP_RELATIVE);
+          return false;
         }
         else
         {
-          remove_cursor(cursor.get_info());
+          remove_cursor(cursor.get_node(), cursor.get_info());
           return false;
         }
       }
     }
 
-    if (!cursor_exists && event.create()) { create_cursor(CursorType::Object, event.get_position()); }
+    if (event.create()) { create_cursor(CursorType::Object, event.get_position()); }
 
     return false;
   }
@@ -141,9 +140,13 @@ namespace mg1
     m_scene->get_root().add_child(cursor.get_node());
   }
 
-  void CursorLayer::remove_cursor(mg1::ObjectInfo* info)
+  void CursorLayer::remove_cursor(Node* node, ObjectInfo* info)
   {
+    auto parent = node->get_parent();
+    parent->rebase_child(nullptr, node);
+
     EspJob::done_all_jobs();
+    parent->remove_child(node);
     m_scene->destroy_entity(info->m_id);
     ObjectRemovedEvent event{ info->m_name };
     post_event(event);
@@ -163,7 +166,7 @@ namespace mg1
     auto view = m_scene->m_registry.view<CursorComponent>();
     for (auto&& [entity, cursor] : view.each())
     {
-      m_scene->get_root().remove_child(cursor.get_node().get());
+      m_scene->get_root().remove_child(cursor.get_node());
     }
   }
 

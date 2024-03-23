@@ -34,7 +34,7 @@ namespace mg1
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
 
     void create_cursor(CursorType type, glm::vec3 position = { 0, 0, 0 });
-    void remove_cursor(ObjectInfo* info);
+    void remove_cursor(Node* node, ObjectInfo* info);
     void push_cursor();
     void pop_cursor();
   };

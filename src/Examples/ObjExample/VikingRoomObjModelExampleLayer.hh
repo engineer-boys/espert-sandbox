@@ -61,7 +61,7 @@ namespace obj_example
       // create scene
       m_scene            = Scene::create();
       m_viking_room_node = Node::create();
-      m_scene->get_root().add_child(m_viking_room_node);
+      // m_scene->get_root().add_child(m_viking_room_node);
 
       m_camera.set_position(glm::vec3(0.0f, 2.0f, 3.0f));
       m_camera.look_at(glm::vec3(0.0f, 0.0f, 0.0f));

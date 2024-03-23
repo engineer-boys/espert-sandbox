@@ -367,9 +367,9 @@ namespace obj_example
 
       // attach nodes to scene
       {
-        m_scene->get_root().add_child(m_backpack.m_node);
-        m_scene->get_root().add_child(m_light.m_node);
-        m_scene->get_root().add_child(m_floor.m_node);
+        // m_scene->get_root().add_child(m_backpack.m_node);
+        // m_scene->get_root().add_child(m_light.m_node);
+        // m_scene->get_root().add_child(m_floor.m_node);
       }
     }
 
