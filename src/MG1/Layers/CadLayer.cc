@@ -91,7 +91,7 @@ namespace mg1
 
   bool CadLayer::mouse_moved_event_handler(MouseMovedEvent& event, float dt)
   {
-    if (!m_update_camera || !m_update_mouse) { return false; }
+    if (!m_none_object_selected || !m_none_action_selected || !m_mouse_captured) { return false; }
 
     if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_LEFT))
     {
@@ -104,15 +104,15 @@ namespace mg1
 
   bool CadLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
-    if (event == GuiLabel::object_none) { m_update_camera = event.get_value(); }
-    if (event == GuiLabel::action_set_cursor_pos) { m_update_camera = !event.get_value(); }
+    if (event == GuiLabel::object_none) { m_none_object_selected = event.get_value(); }
+    if (event == GuiLabel::action_none) { m_none_action_selected = event.get_value(); }
 
     return true;
   }
 
   bool CadLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
   {
-    m_update_mouse = !(bool)event.get_state();
+    m_mouse_captured = !(bool)event.get_state();
     return false;
   }
 } // namespace mg1

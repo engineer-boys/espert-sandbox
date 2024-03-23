@@ -19,8 +19,9 @@ namespace mg1
 
     std::vector<std::unique_ptr<Layer>> m_children{};
 
-    bool m_update_camera{ true };
-    bool m_update_mouse{ true };
+    bool m_none_object_selected{ true };
+    bool m_mouse_captured{ true };
+    bool m_none_action_selected{ true };
 
    public:
     CadLayer();
