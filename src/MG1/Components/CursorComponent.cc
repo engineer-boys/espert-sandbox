@@ -75,6 +75,43 @@ namespace mg1
     m_node->set_translation(intersect_vector_plane(camera->get_position(), ray_mouse, SCENE_PLANE));
     m_info->m_position = m_node->get_translation();
   }
+
+  void CursorComponent::handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis)
+  {
+    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
+    {
+      switch (rotation_axis)
+      {
+      case RotationOX:
+      {
+        m_node->rotate(dt * event.get_dy(), { 1, 0, 0 });
+        break;
+      }
+      case RotationOY:
+      {
+        m_node->rotate(dt * event.get_dx(), { 0, 1, 0 });
+        break;
+      }
+      case RotationOZ:
+      {
+        m_node->rotate(dt * (event.get_dx() + event.get_dy()) / 2, { 0, 0, 1 });
+        break;
+      }
+      default:
+      {
+        break;
+      }
+      }
+    }
+  }
+
+  void CursorComponent::handle_event(MouseScrolledEvent& event)
+  {
+    float offset_y = event.get_offset_y();
+
+    if (offset_y > 0) { m_node->scale(1.1f); }
+    else if (offset_y < 0) { m_node->scale(.9f); }
+  }
 } // namespace mg1
 
 static glm::vec3 ray_cast(float x, float y, glm::mat4 view, glm::mat4 projection)

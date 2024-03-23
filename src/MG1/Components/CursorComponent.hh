@@ -4,6 +4,7 @@
 #include "Espert.hh"
 #include "MG1/Common/ObjectInfo.hh"
 #include "MG1/Interfaces/Interfaces.hh"
+#include "MG1/Utils.hh"
 
 using namespace esp;
 
@@ -30,6 +31,9 @@ namespace mg1
     inline glm::vec3 get_delta_position() { return m_node->get_translation() - m_previous_position; }
     inline CursorType get_type() { return m_info->m_type; }
     inline bool is_type(CursorType type) { return m_info->m_type == type; }
+
+    void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);
+    void handle_event(MouseScrolledEvent& event);
 
    private:
     void update_mouse();

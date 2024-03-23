@@ -28,43 +28,6 @@ namespace mg1
     return { vertices, indices };
   }
 
-  void TorusComponent::handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis)
-  {
-    if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_RIGHT))
-    {
-      switch (rotation_axis)
-      {
-      case RotationOX:
-      {
-        m_node->rotate(dt * event.get_dy(), { 1, 0, 0 });
-        break;
-      }
-      case RotationOY:
-      {
-        m_node->rotate(dt * event.get_dx(), { 0, 1, 0 });
-        break;
-      }
-      case RotationOZ:
-      {
-        m_node->rotate(dt * (event.get_dx() + event.get_dy()) / 2, { 0, 0, 1 });
-        break;
-      }
-      default:
-      {
-        break;
-      }
-      }
-    }
-  }
-
-  void TorusComponent::handle_event(MouseScrolledEvent& event)
-  {
-    float offset_y = event.get_offset_y();
-
-    if (offset_y > 0) { m_node->scale(1.1f); }
-    else if (offset_y < 0) { m_node->scale(.9f); }
-  }
-
   void TorusComponent::handle_event(mg1::CursorPosChangedEvent& event)
   {
     if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))

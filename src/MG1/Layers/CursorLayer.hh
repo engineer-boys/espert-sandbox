@@ -16,6 +16,7 @@ namespace mg1
     bool m_update{ true };
     bool m_gui_captured{ false };
     bool m_update_when_mouse_pressed{ false };
+    RotationAxis m_rotation_axis{ RotationNone };
 
     Scene* m_scene;
 
@@ -32,6 +33,9 @@ namespace mg1
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
     bool object_mass_centre_changed_event_handler(ObjectMassCentreChangedEvent& event);
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
+    bool mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt);
+    bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
+    bool cursor_pos_changed_event_handler(CursorPosChangedEvent& event);
 
     void create_cursor(CursorType type, glm::vec3 position = { 0, 0, 0 });
     void remove_cursor(Node* node, ObjectInfo* info);

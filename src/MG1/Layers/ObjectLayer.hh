@@ -13,7 +13,6 @@ namespace mg1
   class ObjectLayer : public Layer
   {
    private:
-    bool m_handle_mouse{ true };
     RotationAxis m_rotation_axis{ RotationNone };
     glm::vec3 m_mouse_cursor_pos{ 0, 0, 0 };
 
@@ -36,10 +35,7 @@ namespace mg1
     virtual void handle_event(Event& event, float dt) override;
 
    private:
-    bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
-    bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
-    bool mouse_scrolled_event_handler(MouseScrolledEvent& event);
     bool gui_button_clicked_event_handler(GuiButtonClickedEvent& event);
     bool cursor_pos_changed_event_handler(CursorPosChangedEvent& event);
 

@@ -115,49 +115,13 @@ namespace mg1
 
   void ObjectLayer::handle_event(esp::Event& event, float dt)
   {
-    Event::try_handler<GuiMouseStateChangedEvent>(
-        event,
-        ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_mouse_state_changed_event_handler));
     Event::try_handler<GuiSelectableChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_selectable_changed_event_handler));
-    if (m_handle_mouse)
-    {
-      Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_moved_event_handler, dt));
-      Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(ObjectLayer::mouse_scrolled_event_handler));
-    }
     Event::try_handler<GuiButtonClickedEvent>(event,
                                               ESP_BIND_EVENT_FOR_FUN(ObjectLayer::gui_button_clicked_event_handler));
     Event::try_handler<CursorPosChangedEvent>(event,
                                               ESP_BIND_EVENT_FOR_FUN(ObjectLayer::cursor_pos_changed_event_handler));
-  }
-
-  bool ObjectLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
-  {
-    m_handle_mouse = !(bool)event.get_state();
-    return false;
-  }
-
-  bool ObjectLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
-  {
-    auto view = m_scene->m_registry.view<TorusComponent>();
-    for (auto&& [entity, torus] : view.each())
-    {
-      if (torus.get_info()->selected()) { torus.handle_event(event, dt, m_rotation_axis); }
-    }
-
-    return true;
-  }
-
-  bool ObjectLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
-  {
-    auto view = m_scene->m_registry.view<TorusComponent>();
-    for (auto&& [entity, torus] : view.each())
-    {
-      if (torus.get_info()->selected()) { torus.handle_event(event); }
-    }
-
-    return true;
   }
 
   bool ObjectLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
@@ -183,23 +147,7 @@ namespace mg1
     if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
     m_mouse_cursor_pos = event.get_position();
 
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
-    {
-      if (cursor.is_type(CursorType::Object))
-      {
-        if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
-        {
-          auto d_pos = event.get_delta_position();
-          cursor.get_node()->translate({ d_pos.x, 0, 0 });
-          if (EspInput::is_key_pressed(GLFW_KEY_Y)) { cursor.get_node()->translate({ 0, -d_pos.z, 0 }); }
-          if (EspInput::is_key_pressed(GLFW_KEY_Z)) { cursor.get_node()->translate({ 0, 0, d_pos.z }); }
-        }
-        break;
-      }
-    }
-
-    return true;
+    return false;
   }
 
   void ObjectLayer::create_torus(glm::vec3 position)

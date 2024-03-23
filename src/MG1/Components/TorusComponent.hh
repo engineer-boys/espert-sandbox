@@ -30,8 +30,6 @@ namespace mg1
 
     inline TorusInfo* get_info() { return m_info.get(); }
 
-    void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);
-    void handle_event(MouseScrolledEvent& event);
     void handle_event(CursorPosChangedEvent& event);
   };
 } // namespace mg1

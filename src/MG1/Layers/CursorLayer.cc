@@ -75,6 +75,10 @@ namespace mg1
     Event::try_handler<GuiSelectableChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CursorLayer::gui_selectable_changed_event_handler));
+    Event::try_handler<MouseMovedEvent>(event, ESP_BIND_EVENT_FOR_FUN(CursorLayer::mouse_moved_event_handler, dt));
+    Event::try_handler<MouseScrolledEvent>(event, ESP_BIND_EVENT_FOR_FUN(CursorLayer::mouse_scrolled_event_handler));
+    Event::try_handler<CursorPosChangedEvent>(event,
+                                              ESP_BIND_EVENT_FOR_FUN(CursorLayer::cursor_pos_changed_event_handler));
   }
 
   bool CursorLayer::gui_mouse_state_changed_event_handler(mg1::GuiMouseStateChangedEvent& event)
@@ -88,7 +92,33 @@ namespace mg1
 
   bool CursorLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
+    if (event == GuiLabel::action_none) { m_rotation_axis = RotationNone; }
+    if (event == GuiLabel::action_rot_ox) { m_rotation_axis = RotationOX; }
+    if (event == GuiLabel::action_rot_oy) { m_rotation_axis = RotationOY; }
+    if (event == GuiLabel::action_rot_oz) { m_rotation_axis = RotationOZ; }
     if (event == GuiLabel::action_set_cursor_pos) { m_update_when_mouse_pressed = event.get_value(); }
+
+    return false;
+  }
+
+  bool CursorLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
+  {
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      cursor.handle_event(event, dt, m_rotation_axis);
+    }
+
+    return false;
+  }
+
+  bool CursorLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
+  {
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      cursor.handle_event(event);
+    }
 
     return false;
   }
@@ -116,6 +146,29 @@ namespace mg1
     }
 
     if (event.create()) { create_cursor(CursorType::Object, event.get_position()); }
+
+    return false;
+  }
+
+  bool CursorLayer::cursor_pos_changed_event_handler(CursorPosChangedEvent& event)
+  {
+    if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
+
+    auto view = m_scene->m_registry.view<CursorComponent>();
+    for (auto&& [entity, cursor] : view.each())
+    {
+      if (cursor.is_type(CursorType::Object))
+      {
+        if (EspInput::is_mouse_button_pressed(GLFW_MOUSE_BUTTON_LEFT))
+        {
+          auto d_pos = event.get_delta_position();
+          cursor.get_node()->translate({ d_pos.x, 0, 0 });
+          if (EspInput::is_key_pressed(GLFW_KEY_Y)) { cursor.get_node()->translate({ 0, -d_pos.z, 0 }); }
+          if (EspInput::is_key_pressed(GLFW_KEY_Z)) { cursor.get_node()->translate({ 0, 0, d_pos.z }); }
+        }
+        break;
+      }
+    }
 
     return false;
   }
