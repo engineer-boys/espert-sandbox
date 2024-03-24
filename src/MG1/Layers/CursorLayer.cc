@@ -30,8 +30,7 @@ namespace mg1
     auto camera  = Scene::get_current_camera();
     glm::mat4 vp = camera->get_projection() * camera->get_view();
 
-    auto view = m_scene->m_registry.view<CursorComponent, ModelComponent>();
-    for (auto&& [entity, cursor, model] : view.each())
+    for (auto&& [entity, cursor, model] : m_scene->get_view<CursorComponent, ModelComponent>())
     {
       if (!cursor.get_info()->selected())
       {
@@ -103,8 +102,7 @@ namespace mg1
 
   bool CursorLayer::mouse_moved_event_handler(esp::MouseMovedEvent& event, float dt)
   {
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       cursor.handle_event(event, dt, m_rotation_axis);
     }
@@ -114,8 +112,7 @@ namespace mg1
 
   bool CursorLayer::mouse_scrolled_event_handler(esp::MouseScrolledEvent& event)
   {
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       cursor.handle_event(event);
     }
@@ -127,8 +124,7 @@ namespace mg1
   {
     if (!(event == ObjectLabel::object_mass_centre_changed_event)) { return false; }
 
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       if (cursor.is_type(CursorType::Object))
       {
@@ -154,8 +150,7 @@ namespace mg1
   {
     if (!(event == ObjectLabel::cursor_pos_changed_event && event.is_type(CursorType::Mouse))) { return false; }
 
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       if (cursor.is_type(CursorType::Object))
       {
@@ -207,8 +202,7 @@ namespace mg1
 
   void CursorLayer::push_cursor()
   {
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       m_scene->get_root().add_child(cursor.get_node());
     }
@@ -216,8 +210,7 @@ namespace mg1
 
   void CursorLayer::pop_cursor()
   {
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       m_scene->get_root().remove_child(cursor.get_node());
     }

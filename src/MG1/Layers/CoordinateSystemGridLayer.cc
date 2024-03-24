@@ -31,8 +31,7 @@ namespace mg1
     auto camera  = Scene::get_current_camera();
     glm::mat4 vp = camera->get_projection() * camera->get_view();
 
-    auto view = m_scene->m_registry.view<GridComponent, ModelComponent>();
-    for (auto&& [entity, grid, model] : view.each())
+    for (auto&& [entity, grid, model] : m_scene->get_view<GridComponent, ModelComponent>())
     {
       auto& uniform_manager = model.get_uniform_manager();
       uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &vp);
@@ -76,19 +75,17 @@ namespace mg1
 
   void CoordinateSystemGridLayer::push_grid()
   {
-    auto view = m_scene->m_registry.view<GridComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, grid] : m_scene->get_view<GridComponent>())
     {
-      m_scene->get_root().add_child(cursor.get_node());
+      m_scene->get_root().add_child(grid.get_node());
     }
   }
 
   void CoordinateSystemGridLayer::pop_grid()
   {
-    auto view = m_scene->m_registry.view<GridComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, grid] : m_scene->get_view<GridComponent>())
     {
-      m_scene->get_root().remove_child(cursor.get_node());
+      m_scene->get_root().remove_child(grid.get_node());
     }
   }
 } // namespace mg1

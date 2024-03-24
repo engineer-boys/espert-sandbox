@@ -24,104 +24,25 @@ namespace mg1
 
   void ObjectLayer::pre_update(float dt)
   {
-    {
-      auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-      for (auto&& [entity, torus, model] : torus_view.each())
-      {
-        if (torus.get_info()->removed()) { remove_object(torus.get_node(), torus.get_info()); }
-        else if (torus.get_info()->m_dirty)
-        {
-          auto [vertices, indices] = torus.reconstruct();
-          model.get_model().set_vertex_buffer(vertices);
-          model.get_model().set_index_buffer(indices, 0);
-        }
-      }
+    remove_or_reconstruct<TorusComponent>();
+    remove_or_reconstruct<PointComponent>();
 
-      auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-      for (auto&& [entity, point, model] : point_view.each())
-      {
-        if (point.get_info()->removed()) { remove_object(point.get_node(), point.get_info()); }
-        else if (point.get_info()->m_dirty)
-        {
-          auto [vertices, indices] = point.reconstruct();
-          model.get_model().set_vertex_buffer(vertices);
-          model.get_model().set_index_buffer(indices, 0);
-        }
-      }
-    }
+    pre_update_unselected_objects<TorusComponent>();
+    pre_update_unselected_objects<PointComponent>();
 
-    // ---
-    {
-      {
-        auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-        for (auto&& [entity, torus, model] : torus_view.each())
-        {
-          if (!torus.get_info()->selected()) { try_remove_node_from_selected(torus.get_node()); }
-        }
+    update_mass_centre();
 
-        auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-        for (auto&& [entity, point, model] : point_view.each())
-        {
-          if (!point.get_info()->selected()) { try_remove_node_from_selected(point.get_node()); }
-        }
-      }
-
-      // update mass centre
-      glm::vec3 mass_sum = { 0, 0, 0 };
-      for (auto& selected : m_selected.m_nodes)
-      {
-        mass_sum += selected->get_translation();
-      }
-      glm::vec3 new_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
-      if (m_selected.m_mass_centre != new_mass_centre)
-      {
-        m_selected.m_mass_centre = new_mass_centre;
-        ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
-        post_event(event);
-      }
-
-      {
-        auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-        for (auto&& [entity, torus, model] : torus_view.each())
-        {
-          if (torus.get_info()->selected()) { try_add_node_to_selected(torus.get_node()); }
-        }
-
-        auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-        for (auto&& [entity, point, model] : point_view.each())
-        {
-          if (point.get_info()->selected()) { try_add_node_to_selected(point.get_node()); }
-        }
-      }
-    }
-    // ---
+    pre_update_selected_objects<TorusComponent>();
+    pre_update_selected_objects<PointComponent>();
   }
 
   void ObjectLayer::update(float dt)
   {
-    auto camera = Scene::get_current_camera();
+    update_objects<TorusComponent>();
+    update_objects<PointComponent>();
 
-    auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-    for (auto&& [entity, torus, model] : torus_view.each())
+    for (auto&& [entity, point] : m_scene->get_view<PointComponent>())
     {
-      auto& uniform_manager = model.get_uniform_manager();
-      glm::mat4 mvp         = camera->get_projection() * camera->get_view() * torus.get_node()->get_model_mat();
-      uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
-
-      glm::vec3 color = torus.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
-      uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
-    }
-
-    auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-    for (auto&& [entity, point, model] : point_view.each())
-    {
-      auto& uniform_manager = model.get_uniform_manager();
-      glm::mat4 mvp         = camera->get_projection() * camera->get_view() * point.get_node()->get_model_mat();
-      uniform_manager.update_buffer_uniform(0, 0, 0, sizeof(glm::mat4), &mvp);
-
-      glm::vec3 color = point.get_info()->selected() ? ObjectConstants::selected_color : ObjectConstants::default_color;
-      uniform_manager.update_buffer_uniform(0, 1, 0, sizeof(glm::vec3), &color);
-
       point.check_if_clicked();
     }
   }
@@ -230,33 +151,15 @@ namespace mg1
   }
   void ObjectLayer::try_add_node_to_selected(Node* node)
   {
-    // check if node is already selected
-    auto found = std::find_if(m_selected.m_nodes.begin(),
-                              m_selected.m_nodes.end(),
-                              [&](const auto& item) { return item == node; });
-    if (found != m_selected.m_nodes.end()) { return; }
-
-    // add node to selected
-    m_selected.m_nodes.push_back(node);
+    // check if node is already selected, add if isn't
+    if (!m_selected.try_add(node)) { return; }
 
     // update mass centre
-    glm::vec3 mass_sum = { 0, 0, 0 };
-    for (auto& selected : m_selected.m_nodes)
-    {
-      mass_sum += selected->get_translation();
-    }
-    glm::vec3 new_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
-    if (m_selected.m_mass_centre != new_mass_centre)
-    {
-      m_selected.m_mass_centre = new_mass_centre;
-      ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
-      post_event(event);
-    }
+    update_mass_centre();
 
     // reattach node
     Node* cursor_node;
-    auto view = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       if (cursor.is_type(CursorType::Object))
       {
@@ -276,19 +179,12 @@ namespace mg1
 
   void ObjectLayer::try_remove_node_from_selected(Node* node)
   {
-    // check if node is already selected
-    auto found = std::find_if(m_selected.m_nodes.begin(),
-                              m_selected.m_nodes.end(),
-                              [&](const auto& item) { return item == node; });
-    if (found == m_selected.m_nodes.end()) { return; }
-
-    // remove node from selected
-    m_selected.m_nodes.erase(found);
+    // check if node is already selected, remove if is
+    if (!m_selected.try_remove(node)) { return; }
 
     // reattach node
     Node* cursor_node = nullptr;
-    auto view         = m_scene->m_registry.view<CursorComponent>();
-    for (auto&& [entity, cursor] : view.each())
+    for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
       if (cursor.is_type(CursorType::Object))
       {
@@ -301,11 +197,24 @@ namespace mg1
     {
       auto parent       = cursor_node;
       auto grand_parent = parent->get_parent();
-      // node->translate(parent->get_translation());
-      // node->rotate(parent->get_rotation());
-      // node->scale(parent->get_scale());
       parent->remove_child(node);
       grand_parent->add_child(node);
+    }
+  }
+
+  void ObjectLayer::update_mass_centre()
+  {
+    glm::vec3 mass_sum = { 0, 0, 0 };
+    for (auto& selected : m_selected.m_nodes)
+    {
+      mass_sum += selected->get_translation();
+    }
+    glm::vec3 new_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
+    if (m_selected.m_mass_centre != new_mass_centre)
+    {
+      m_selected.m_mass_centre = new_mass_centre;
+      ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
+      post_event(event);
     }
   }
 } // namespace mg1
