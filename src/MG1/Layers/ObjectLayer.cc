@@ -52,18 +52,46 @@ namespace mg1
 
     // ---
     {
-      auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
-      for (auto&& [entity, torus, model] : torus_view.each())
       {
-        if (torus.get_info()->selected()) { try_add_node_to_selected(torus.get_node()); }
-        else { try_remove_node_from_selected(torus.get_node()); }
+        auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+        for (auto&& [entity, torus, model] : torus_view.each())
+        {
+          if (!torus.get_info()->selected()) { try_remove_node_from_selected(torus.get_node()); }
+        }
+
+        auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+        for (auto&& [entity, point, model] : point_view.each())
+        {
+          if (!point.get_info()->selected()) { try_remove_node_from_selected(point.get_node()); }
+        }
       }
 
-      auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
-      for (auto&& [entity, point, model] : point_view.each())
+      // update mass centre
+      glm::vec3 mass_sum = { 0, 0, 0 };
+      for (auto& selected : m_selected.m_nodes)
       {
-        if (point.get_info()->selected()) { try_add_node_to_selected(point.get_node()); }
-        else { try_remove_node_from_selected(point.get_node()); }
+        mass_sum += selected->get_translation();
+      }
+      glm::vec3 new_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
+      if (m_selected.m_mass_centre != new_mass_centre)
+      {
+        m_selected.m_mass_centre = new_mass_centre;
+        ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
+        post_event(event);
+      }
+
+      {
+        auto torus_view = m_scene->m_registry.view<TorusComponent, ModelComponent>();
+        for (auto&& [entity, torus, model] : torus_view.each())
+        {
+          if (torus.get_info()->selected()) { try_add_node_to_selected(torus.get_node()); }
+        }
+
+        auto point_view = m_scene->m_registry.view<PointComponent, ModelComponent>();
+        for (auto&& [entity, point, model] : point_view.each())
+        {
+          if (point.get_info()->selected()) { try_add_node_to_selected(point.get_node()); }
+        }
       }
     }
     // ---
@@ -217,9 +245,13 @@ namespace mg1
     {
       mass_sum += selected->get_translation();
     }
-    m_selected.m_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
-    ObjectMassCentreChangedEvent event{ true, m_selected.m_mass_centre };
-    post_event(event);
+    glm::vec3 new_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
+    if (m_selected.m_mass_centre != new_mass_centre)
+    {
+      m_selected.m_mass_centre = new_mass_centre;
+      ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
+      post_event(event);
+    }
 
     // reattach node
     Node* cursor_node;
@@ -250,18 +282,8 @@ namespace mg1
                               [&](const auto& item) { return item == node; });
     if (found == m_selected.m_nodes.end()) { return; }
 
-    // add node to selected
+    // remove node from selected
     m_selected.m_nodes.erase(found);
-
-    // update mass centre
-    glm::vec3 mass_sum = { 0, 0, 0 };
-    for (auto& selected : m_selected.m_nodes)
-    {
-      mass_sum += selected->get_translation();
-    }
-    m_selected.m_mass_centre = mass_sum / (float)m_selected.m_nodes.size();
-    ObjectMassCentreChangedEvent event{ !m_selected.m_nodes.empty(), m_selected.m_mass_centre };
-    post_event(event);
 
     // reattach node
     Node* cursor_node = nullptr;
@@ -279,7 +301,9 @@ namespace mg1
     {
       auto parent       = cursor_node;
       auto grand_parent = parent->get_parent();
-      node->translate(parent->get_translation());
+      // node->translate(parent->get_translation());
+      // node->rotate(parent->get_rotation());
+      // node->scale(parent->get_scale());
       parent->remove_child(node);
       grand_parent->add_child(node);
     }
