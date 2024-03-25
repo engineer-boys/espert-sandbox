@@ -15,6 +15,7 @@ namespace mg1
 
       m_shader = ShaderSystem::acquire("Shaders/MG1/ObjectLayer/shader");
       m_shader->set_attachment_formats({ EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM });
+      m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
       m_shader->set_vertex_layouts({ TorusInit::S_MODEL_PARAMS.get_vertex_layouts() });
       m_shader->set_worker_layout(std::move(uniform_meta_data));

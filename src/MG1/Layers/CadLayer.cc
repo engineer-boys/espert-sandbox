@@ -13,11 +13,11 @@ namespace mg1
     // create scene render plan [OFF-SCREEN]
     {
       m_scene_render.m_block = EspBlock::build(EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM,
-                                               EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                                               EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                                { 0.1f, 0.1f, 0.2f });
       m_scene_render.m_depth_block =
           EspDepthBlock::build(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT,
-                               EspSampleCountFlag::ESP_SAMPLE_COUNT_1_BIT,
+                               EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT,
                                EspImageUsageFlag::ESP_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
       m_scene_render.m_plan = EspRenderPlan::create();
       m_scene_render.m_plan->add_block(std::shared_ptr{ m_scene_render.m_block });

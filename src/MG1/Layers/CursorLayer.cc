@@ -15,6 +15,7 @@ namespace mg1
 
       m_shader = ShaderSystem::acquire("Shaders/MG1/CursorLayer/shader");
       m_shader->set_attachment_formats({ EspBlockFormat::ESP_FORMAT_R8G8B8A8_UNORM });
+      m_shader->enable_multisampling(EspSampleCountFlag::ESP_SAMPLE_COUNT_4_BIT);
       m_shader->set_rasterizer_settings(
           { .m_polygon_mode = ESP_POLYGON_MODE_LINE, .m_cull_mode = ESP_CULL_MODE_NONE, .m_line_width = 5.f });
       m_shader->enable_depth_test(EspDepthBlockFormat::ESP_FORMAT_D32_SFLOAT, EspCompareOp::ESP_COMPARE_OP_LESS);
