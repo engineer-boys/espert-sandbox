@@ -20,6 +20,7 @@ namespace mg1
     static constexpr ImVec2 INIT_OFFSET{ 10, 10 };
 
     MouseState m_mouse_state{ GuiNotCaptured };
+    CameraType m_camera_type{ Orbit };
     glm::vec3 m_mouse_cursor_pos{ 0, 0, 0 };
 
     std::unique_ptr<GuiCheckbox> m_grid_checkbox;
@@ -36,6 +37,7 @@ namespace mg1
 
    private:
     void update_mouse_state();
+    void update_camera_type(CameraType type);
     void help_marker(const char* desc);
 
     bool object_added_event_handler(ObjectAddedEvent& event);

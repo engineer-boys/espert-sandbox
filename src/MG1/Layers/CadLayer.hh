@@ -39,7 +39,8 @@ namespace mg1
       std::unique_ptr<EspIndexBuffer> m_index_buffer;
     } m_final_render;
 
-    std::shared_ptr<OrbitCamera> m_camera;
+    std::shared_ptr<OrbitCamera> m_orbit_camera;
+    std::shared_ptr<FpsCamera> m_fps_camera;
     std::shared_ptr<Scene> m_scene;
 
     std::vector<std::unique_ptr<Layer>> m_children{};
@@ -60,6 +61,12 @@ namespace mg1
     bool mouse_moved_event_handler(MouseMovedEvent& event, float dt);
     bool gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event);
     bool gui_mouse_state_changed_event_handler(GuiMouseStateChangedEvent& event);
+    bool gui_camera_type_changed_event_handler(GuiCameraTypeChangedEvent& event);
+
+    void handle_keyboard_input(float dt);
+
+    inline bool fps_camera_selected() { return Scene::get_current_camera() == m_fps_camera.get(); }
+    inline bool orbit_camera_selected() { return Scene::get_current_camera() == m_orbit_camera.get(); }
   };
 } // namespace mg1
 

@@ -54,13 +54,18 @@ namespace mg1
 
     // create scene
     {
-      m_camera = std::make_shared<OrbitCamera>();
-      m_scene  = Scene::create();
-      m_scene->add_camera(m_camera);
+      m_orbit_camera = std::make_shared<OrbitCamera>();
+      m_orbit_camera->set_sensitivity(1.f / 4.f);
+      m_orbit_camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
+      m_fps_camera = std::make_shared<FpsCamera>();
+      m_fps_camera->set_sensitivity(2.f);
+      m_fps_camera->set_move_speed(4.f);
+      m_fps_camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
+      m_scene = Scene::create();
+      m_scene->add_camera(m_orbit_camera);
+      m_scene->add_camera(m_fps_camera);
 
-      auto camera = m_scene->get_camera(0);
-      camera->set_perspective(EspWorkOrchestrator::get_swap_chain_extent_aspect_ratio());
-      m_scene->set_current_camera(camera.get());
+      m_scene->set_current_camera(m_orbit_camera.get());
     }
 
     // create children layers
@@ -86,6 +91,8 @@ namespace mg1
     {
       child->update(dt);
     }
+
+    handle_keyboard_input(dt);
 
     // scene render plan [OFF-SCREEN]
     m_scene_render.m_plan->begin_plan();
@@ -131,6 +138,9 @@ namespace mg1
     Event::try_handler<GuiMouseStateChangedEvent>(
         event,
         ESP_BIND_EVENT_FOR_FUN(CadLayer::gui_mouse_state_changed_event_handler));
+    Event::try_handler<GuiCameraTypeChangedEvent>(
+        event,
+        ESP_BIND_EVENT_FOR_FUN(CadLayer::gui_camera_type_changed_event_handler));
   }
 
   bool CadLayer::mouse_moved_event_handler(MouseMovedEvent& event, float dt)
@@ -139,9 +149,14 @@ namespace mg1
 
     if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_LEFT))
     {
-      m_camera->rotate(event.get_dx() * dt / 2, event.get_dy() * dt / 2);
+      if (orbit_camera_selected()) { m_orbit_camera->rotate(event.get_dx(), event.get_dy(), dt); }
+      if (fps_camera_selected()) { m_fps_camera->look_at(event.get_dx(), -event.get_dy(), dt); }
     }
-    if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_RIGHT)) { m_camera->zoom(event.get_dy() * dt / 2); }
+    if (EspInput::is_mouse_button_pressed(ESP_MOUSE_BUTTON_RIGHT))
+    {
+      if (orbit_camera_selected()) { m_orbit_camera->zoom(event.get_dy(), dt); }
+      if (fps_camera_selected()) { m_fps_camera->zoom(event.get_dy(), dt); }
+    }
 
     return true;
   }
@@ -158,5 +173,37 @@ namespace mg1
   {
     m_mouse_captured = !(bool)event.get_state();
     return false;
+  }
+
+  bool CadLayer::gui_camera_type_changed_event_handler(mg1::GuiCameraTypeChangedEvent& event)
+  {
+    switch (event.get_type())
+    {
+    case Fps:
+    {
+      Scene::set_current_camera(m_fps_camera.get());
+      break;
+    }
+    case Orbit:
+    {
+      Scene::set_current_camera(m_orbit_camera.get());
+      break;
+    }
+    }
+
+    return false;
+  }
+
+  void CadLayer::handle_keyboard_input(float dt)
+  {
+    if (fps_camera_selected())
+    {
+      if (EspInput::is_key_pressed(ESP_KEY_W)) { m_fps_camera->move(FpsCamera::FORWARD, dt); }
+      if (EspInput::is_key_pressed(ESP_KEY_S)) { m_fps_camera->move(FpsCamera::BACKWARD, dt); }
+      if (EspInput::is_key_pressed(ESP_KEY_A)) { m_fps_camera->move(FpsCamera::LEFT, dt); }
+      if (EspInput::is_key_pressed(ESP_KEY_D)) { m_fps_camera->move(FpsCamera::RIGHT, dt); }
+      if (EspInput::is_key_pressed(ESP_KEY_SPACE)) { m_fps_camera->move(FpsCamera::UP, dt); }
+      if (EspInput::is_key_pressed(ESP_KEY_LEFT_SHIFT)) { m_fps_camera->move(FpsCamera::DOWN, dt); }
+    }
   }
 } // namespace mg1

@@ -11,6 +11,12 @@ namespace mg1
     GuiCaptured
   };
 
+  enum CameraType
+  {
+    Fps,
+    Orbit
+  };
+
   enum RotationAxis
   {
     RotationNone,
@@ -48,26 +54,28 @@ namespace mg1
     static const std::string rename_object_button;
     static const std::string grid_checkbox;
     static const std::string action_set_cursor_pos;
+    static const std::string gui_camera_type_changed_event;
   };
 
-  inline const std::string GuiLabel::rotation_axis         = "Rotation axis";
-  inline const std::string GuiLabel::objects               = "Objects";
-  inline const std::string GuiLabel::object_none           = "No object";
-  inline const std::string GuiLabel::actions               = "Actions";
-  inline const std::string GuiLabel::action_none           = "No action";
-  inline const std::string GuiLabel::action_rot_ox         = "Rotate around OX";
-  inline const std::string GuiLabel::action_rot_oy         = "Rotate around OY";
-  inline const std::string GuiLabel::action_rot_oz         = "Rotate around OZ";
-  inline const std::string GuiLabel::action_scale          = "Scale";
-  inline const std::string GuiLabel::action_scale_ox       = "Scale OX";
-  inline const std::string GuiLabel::action_scale_oy       = "Scale OY";
-  inline const std::string GuiLabel::action_scale_oz       = "Scale OZ";
-  inline const std::string GuiLabel::create_torus_button   = "Create torus";
-  inline const std::string GuiLabel::create_point_button   = "Create point";
-  inline const std::string GuiLabel::remove_object_button  = "Remove";
-  inline const std::string GuiLabel::rename_object_button  = "Rename";
-  inline const std::string GuiLabel::grid_checkbox         = "Grid";
-  inline const std::string GuiLabel::action_set_cursor_pos = "Set cursor position";
+  inline const std::string GuiLabel::rotation_axis                 = "Rotation axis";
+  inline const std::string GuiLabel::objects                       = "Objects";
+  inline const std::string GuiLabel::object_none                   = "No object";
+  inline const std::string GuiLabel::actions                       = "Actions";
+  inline const std::string GuiLabel::action_none                   = "No action";
+  inline const std::string GuiLabel::action_rot_ox                 = "Rotate around OX";
+  inline const std::string GuiLabel::action_rot_oy                 = "Rotate around OY";
+  inline const std::string GuiLabel::action_rot_oz                 = "Rotate around OZ";
+  inline const std::string GuiLabel::action_scale                  = "Scale";
+  inline const std::string GuiLabel::action_scale_ox               = "Scale OX";
+  inline const std::string GuiLabel::action_scale_oy               = "Scale OY";
+  inline const std::string GuiLabel::action_scale_oz               = "Scale OZ";
+  inline const std::string GuiLabel::create_torus_button           = "Create torus";
+  inline const std::string GuiLabel::create_point_button           = "Create point";
+  inline const std::string GuiLabel::remove_object_button          = "Remove";
+  inline const std::string GuiLabel::rename_object_button          = "Rename";
+  inline const std::string GuiLabel::grid_checkbox                 = "Grid";
+  inline const std::string GuiLabel::action_set_cursor_pos         = "Set cursor position";
+  inline const std::string GuiLabel::gui_camera_type_changed_event = "Camera type changed event";
 
   struct ObjectLabel
   {

@@ -41,6 +41,13 @@ namespace mg1
 
     ImGui::Text("FPS: %.1f", 1.f / dt);
     ImGui::Spacing();
+    int type = (int)m_camera_type;
+    ImGui::RadioButton("Orbit Camera", &type, (int)CameraType::Orbit);
+    ImGui::RadioButton("Fps Camera", &type, (int)CameraType::Fps);
+    ImGui::Spacing();
+
+    update_camera_type((CameraType)type);
+
     glm::vec3 pos = Scene::get_current_camera()->get_position();
     ImGui::Text("Camera pos: (%.2f,%.2f,%.2f)", pos.x, pos.y, pos.z);
     ImGui::Spacing();
@@ -112,6 +119,16 @@ namespace mg1
       m_mouse_state = (MouseState)window_hovered;
       GuiMouseStateChangedEvent mouse_state_changed_event{ m_mouse_state };
       post_event(mouse_state_changed_event);
+    }
+  }
+
+  void GuiLayer::update_camera_type(mg1::CameraType type)
+  {
+    if (m_camera_type != type)
+    {
+      m_camera_type = type;
+      GuiCameraTypeChangedEvent event{ m_camera_type };
+      post_event(event);
     }
   }
 
