@@ -8,11 +8,36 @@ using namespace esp;
 
 namespace mg1
 {
+  struct QuadVertex
+  {
+    glm::vec2 m_pos;
+    glm::vec2 m_tex_coord;
+  };
+
+  static std::vector<QuadVertex> quad{ { { -1, -1 }, { 0, 1 } },
+                                       { { 1, -1 }, { 1, 1 } },
+                                       { { 1, 1 }, { 1, 0 } },
+                                       { { -1, 1 }, { 0, 0 } } };
+
+  static std::vector<uint32_t> quad_idx{ 0, 1, 2, 2, 3, 0 };
+
   class CadLayer : public Layer
   {
    private:
-    std::shared_ptr<EspDepthBlock> m_depth_block;
-    std::unique_ptr<EspRenderPlan> m_final_render_plan;
+    struct
+    {
+      std::shared_ptr<EspBlock> m_block;
+      std::shared_ptr<EspDepthBlock> m_depth_block;
+      std::unique_ptr<EspRenderPlan> m_plan;
+    } m_scene_render;
+    struct
+    {
+      std::unique_ptr<EspRenderPlan> m_plan;
+      std::shared_ptr<EspShader> m_shader;
+      std::unique_ptr<EspUniformManager> m_uniform_manager;
+      std::unique_ptr<EspVertexBuffer> m_vertex_buffer;
+      std::unique_ptr<EspIndexBuffer> m_index_buffer;
+    } m_final_render;
 
     std::shared_ptr<OrbitCamera> m_camera;
     std::shared_ptr<Scene> m_scene;
