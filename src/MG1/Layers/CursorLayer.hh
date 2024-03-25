@@ -17,6 +17,7 @@ namespace mg1
     bool m_gui_captured{ false };
     bool m_update_when_mouse_pressed{ false };
     RotationAxis m_rotation_axis{ RotationNone };
+    ScaleAxis m_scale_axis{ ScaleNone };
 
     Scene* m_scene;
 

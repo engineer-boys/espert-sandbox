@@ -33,7 +33,7 @@ namespace mg1
     inline bool is_type(CursorType type) { return m_info->m_type == type; }
 
     void handle_event(MouseMovedEvent& event, float dt, RotationAxis rotation_axis);
-    void handle_event(MouseScrolledEvent& event);
+    void handle_event(MouseScrolledEvent& event, ScaleAxis scale_axis);
 
    private:
     void update_mouse();

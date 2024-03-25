@@ -91,10 +91,18 @@ namespace mg1
 
   bool CursorLayer::gui_selectable_changed_event_handler(GuiSelectableChangedEvent& event)
   {
-    if (event == GuiLabel::action_none) { m_rotation_axis = RotationNone; }
-    if (event == GuiLabel::action_rot_ox) { m_rotation_axis = RotationOX; }
-    if (event == GuiLabel::action_rot_oy) { m_rotation_axis = RotationOY; }
-    if (event == GuiLabel::action_rot_oz) { m_rotation_axis = RotationOZ; }
+    /*if (event == GuiLabel::action_none)
+    {
+      m_rotation_axis = RotationNone;
+      m_scale_axis    = ScaleNone;
+    }*/
+    if (event == GuiLabel::action_rot_ox) { m_rotation_axis = event.get_value() ? RotationOX : RotationNone; }
+    if (event == GuiLabel::action_rot_oy) { m_rotation_axis = event.get_value() ? RotationOY : RotationNone; }
+    if (event == GuiLabel::action_rot_oz) { m_rotation_axis = event.get_value() ? RotationOZ : RotationNone; }
+    if (event == GuiLabel::action_scale) { m_scale_axis = event.get_value() ? Scale : ScaleNone; }
+    if (event == GuiLabel::action_scale_ox) { m_scale_axis = event.get_value() ? ScaleOX : ScaleNone; }
+    if (event == GuiLabel::action_scale_oy) { m_scale_axis = event.get_value() ? ScaleOY : ScaleNone; }
+    if (event == GuiLabel::action_scale_oz) { m_scale_axis = event.get_value() ? ScaleOZ : ScaleNone; }
     if (event == GuiLabel::action_set_cursor_pos) { m_update_when_mouse_pressed = event.get_value(); }
 
     return false;
@@ -114,7 +122,7 @@ namespace mg1
   {
     for (auto&& [entity, cursor] : m_scene->get_view<CursorComponent>())
     {
-      cursor.handle_event(event);
+      cursor.handle_event(event, m_scale_axis);
     }
 
     return false;

@@ -11,7 +11,12 @@ namespace mg1
                         std::make_shared<GuiSelectable>(GuiLabel::action_rot_ox, false),
                         std::make_shared<GuiSelectable>(GuiLabel::action_rot_oy, false),
                         std::make_shared<GuiSelectable>(GuiLabel::action_rot_oz, false),
-                        std::make_shared<GuiSelectable>(GuiLabel::action_set_cursor_pos, false) });
+                        std::make_shared<GuiSelectable>(GuiLabel::action_scale, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_scale_ox, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_scale_oy, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_scale_oz, false),
+                        std::make_shared<GuiSelectable>(GuiLabel::action_set_cursor_pos, false) },
+        ImGuiComboFlags_HeightLargest);
     m_objects_list_box = std::make_unique<GuiObjectInfoSelectableListBox>(
         GuiLabel::objects,
         GuiSelectables{

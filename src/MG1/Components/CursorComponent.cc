@@ -105,12 +105,38 @@ namespace mg1
     }
   }
 
-  void CursorComponent::handle_event(MouseScrolledEvent& event)
+  void CursorComponent::handle_event(MouseScrolledEvent& event, ScaleAxis scale_axis)
   {
-    float offset_y = event.get_offset_y();
+    float offset_y     = event.get_offset_y();
+    float scale_factor = offset_y > 0 ? 1.05f : .95f;
 
-    if (offset_y > 0) { m_node->scale(1.1f); }
-    else if (offset_y < 0) { m_node->scale(.9f); }
+    switch (scale_axis)
+    {
+    case Scale:
+    {
+      m_node->scale(scale_factor);
+      break;
+    }
+    case ScaleOX:
+    {
+      m_node->scale_ox(scale_factor);
+      break;
+    }
+    case ScaleOY:
+    {
+      m_node->scale_oy(scale_factor);
+      break;
+    }
+    case ScaleOZ:
+    {
+      m_node->scale_oz(scale_factor);
+      break;
+    }
+    default:
+    {
+      break;
+    }
+    }
   }
 } // namespace mg1
 

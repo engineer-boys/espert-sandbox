@@ -19,6 +19,15 @@ namespace mg1
     RotationOZ
   };
 
+  enum ScaleAxis
+  {
+    ScaleNone,
+    Scale,
+    ScaleOX,
+    ScaleOY,
+    ScaleOZ
+  };
+
   struct GuiLabel
   {
     static const std::string rotation_axis;
@@ -29,6 +38,10 @@ namespace mg1
     static const std::string action_rot_ox;
     static const std::string action_rot_oy;
     static const std::string action_rot_oz;
+    static const std::string action_scale;
+    static const std::string action_scale_ox;
+    static const std::string action_scale_oy;
+    static const std::string action_scale_oz;
     static const std::string create_torus_button;
     static const std::string create_point_button;
     static const std::string remove_object_button;
@@ -45,6 +58,10 @@ namespace mg1
   inline const std::string GuiLabel::action_rot_ox         = "Rotate around OX";
   inline const std::string GuiLabel::action_rot_oy         = "Rotate around OY";
   inline const std::string GuiLabel::action_rot_oz         = "Rotate around OZ";
+  inline const std::string GuiLabel::action_scale          = "Scale";
+  inline const std::string GuiLabel::action_scale_ox       = "Scale OX";
+  inline const std::string GuiLabel::action_scale_oy       = "Scale OY";
+  inline const std::string GuiLabel::action_scale_oz       = "Scale OZ";
   inline const std::string GuiLabel::create_torus_button   = "Create torus";
   inline const std::string GuiLabel::create_point_button   = "Create point";
   inline const std::string GuiLabel::remove_object_button  = "Remove";

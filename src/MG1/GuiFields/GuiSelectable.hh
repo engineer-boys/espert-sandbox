@@ -19,7 +19,7 @@ namespace mg1
    public:
     GuiSelectable(const std::string& label, bool value) : GuiField<bool>(label, value), m_prev_selected{ value } {}
 
-    inline void render()
+    inline void render() override
     {
       if ((m_changed = ImGui::Selectable(m_label.c_str(), m_value)))
       {

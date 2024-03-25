@@ -11,16 +11,18 @@ namespace mg1
   {
    private:
     std::string m_preview_value;
+    ImGuiComboFlags m_flags;
 
    public:
-    GuiSelectableCombo(const std::string& label, GuiSelectables value = {}) : GuiField(label, value)
+    GuiSelectableCombo(const std::string& label, GuiSelectables value = {}, ImGuiComboFlags flags = 0) :
+        GuiField(label, value), m_flags{ flags }
     {
       m_preview_value = !m_value.empty() ? m_value[0]->get_label() : "";
     }
 
     inline void render() override
     {
-      if (ImGui::BeginCombo(m_label.c_str(), m_preview_value.c_str()))
+      if (ImGui::BeginCombo(m_label.c_str(), m_preview_value.c_str(), m_flags))
       {
         for (auto& selectable : m_value)
         {
